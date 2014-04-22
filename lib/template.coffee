@@ -49,6 +49,7 @@ watch = ()->
             readTemplate file
 
         #触发全局的事件，以便于客户端刷新页面
+        _common.onPageChanged()
 
 #获取所有模板
 fetch = (parent)->

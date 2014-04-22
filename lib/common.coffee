@@ -7,6 +7,7 @@ _fs = require 'fs'
 _path = require 'path'
 _root = null
 _configDir = '.silky'
+_pageEvent = new _events.EventEmitter()
 
 exports.root = ()->
     return _root if _root
@@ -20,10 +21,17 @@ exports.root = ()->
 exports.configDir = ()->
     _path.join exports.root(), _configDir
 
+#触发页面被改变事件
+exports.onPageChanged = ()->
+    exports.trigger 'page:change'
+
 #触发事件
 exports.trigger = (name, arg...)->
-    emitter = new events.EventEmitter()
-    emitter.emit(name, arg)
+    _pageEvent.emit(name, arg)
+
+#监听事件
+exports.addListener = (name, callback)->
+    _pageEvent.addListener name, callback
 
 #监控文件
 exports.watch = (parent, pattern, callback)->
