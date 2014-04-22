@@ -32,13 +32,27 @@ readTemplate = (file)->
     #将所有的模板都缓存起来，partial也被缓存起来，有时候可能需要渲染一模块
     _templtes[key] = content
 
+#获取模板的目录
+getTemplateDir = ()->
+    _path.join _common.root(), 'template'
+
 #监控模板的变更
 watch = ()->
+    #监控文件，如果有handlebars扩展名的文件发生变化，则执行操作
+    _common.watch getTemplateDir(), /\.handlebars$/i, (event, file)->
+        #删除模板的数据
+        if event is 'delete'
+            key = getTemplateKey file
+            delete _data[key]
+        else
+            #更新模板
+            readTemplate file
 
+        #触发全局的事件，以便于客户端刷新页面
 
 #获取所有模板
 fetch = (parent)->
-    parent = parent || _path.join _common.root(), 'template'
+    parent = parent || getTemplateDir()
     #读取所有文件
     _fs.readdirSync(parent).forEach (filename) ->
         file = _path.join parent, filename
