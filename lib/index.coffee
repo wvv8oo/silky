@@ -17,4 +17,7 @@ _router _app    #设置路由
 _app.set 'port', _config.port || 14422
 _app.listen _app.get 'port'
 
+_common.addListener 'page:change', ()->
+    console.log('abc')
+
 console.log "please visit: http://127.0.0.1:#{_app.get 'port'}"
