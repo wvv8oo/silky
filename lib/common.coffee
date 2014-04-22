@@ -2,6 +2,7 @@
     全局配置
 ###
 _events = require 'events'
+_deepWatch = require 'deep-watch'
 _fs = require 'fs'
 _path = require 'path'
 _root = null
@@ -23,3 +24,21 @@ exports.configDir = ()->
 exports.trigger = (name, arg...)->
     emitter = new events.EventEmitter()
     emitter.emit(name, arg)
+
+#监控文件
+exports.watch = (parent, pattern, callback)->
+    dw = new _deepWatch parent, (event, file)->
+        return if not pattern.test(file)
+        return callback(event, file) if event is 'change'
+
+        #rename有两种情况，删除或者新建，如果文件找不到了，则是删除
+        event = if _fs.existsSync file then 'create' else 'delete'
+        callback event, file
+
+    dw.start()
+
+    ###
+    _fs.watch parent, (event, filename)->
+        console.log(filename)
+        callback(filename) if pattern.test(filename)
+    ###
