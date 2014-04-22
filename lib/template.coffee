@@ -54,9 +54,9 @@ exports.render = (key)->
     return "无法找到模板[#{key}]" if not content
 
     try
-        console.log _data.whole
         template = _handlebars.compile content
-        template _data.whole
+        #使用json的数据进行渲染模板
+        template _data.whole.json
     catch e
         return e.message
 

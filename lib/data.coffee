@@ -6,17 +6,24 @@ _path = require 'path'
 _common = require './common'
 
 _isWatch = false        #是否在监控中
-_data = {}
+_data = {
+    json: {},
+    less: {}
+}
 
 #读取json数据到_data中
 readData = (filename)->
-    #只处理json的文件
-    return if _fs.extname(filename) isnt '.json'
+    #只处理json和less的文件
+    extname = _path.extname(filename).replace('.', '')
+    return if extname not in ['json', 'less']
 
     #读取
     file = _path.join(getDataPath(), filename)
     content = _fs.readFileSync(file, 'utf-8')
-    _data[filename] = JSON.parse content
+    key = filename.replace extname, ''
+
+    #将数据存入
+    _data[extname][key] = (if extname is 'json' then JSON.parse(content) else content)
 
 #获取数据所在的目录
 getDataPath = ()->

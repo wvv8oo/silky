@@ -3,6 +3,7 @@ _path = require 'path'
 _fs = require 'fs'
 _template = require './template'
 _less = require 'less'
+_data = require './data'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (filename, extname, res)->
@@ -41,7 +42,11 @@ responseCSS = (req, res, next)->
         paths: [_path.join(_common.root(), 'css')]
 
     parser = new _less.Parser options
-    content += "@linkColor: #000;"
+    #将全局配置中的less加入到content后面
+    content += value for key, value of _data.whole.less
+
+    console.log _data.whole.less
+    #转换
     parser.parse(content,(err, tree)->
         return res.json err if err
         res.end(tree.toCSS())
