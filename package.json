@@ -3,14 +3,16 @@
     "version": "0.0.1",
     "dependencies": {
         "handlebars": "",
-        "express": "",
+        "express": "leatest",
         "less": "",
         "json-proxy": "",
         "commander": "",
         "colorful": "",
         "async": "",
         "grunt": "",
-        "coffee-script": ""
+        "coffee-script": "",
+        "colors": "",
+        "deep-watch": ""
     },
     "bin": {"silky": "./bin/index.coffee"}
 }
