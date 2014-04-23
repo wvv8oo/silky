@@ -83,5 +83,10 @@ module.exports = (app)->
     #所有的js
     app.get "#{path}.js", responseJS
 
+    #发送客户端要的文件
+    app.get "/__/:file", (req, res, next)->
+        file = _path.join(__dirname, 'client', req.params.file)
+        res.sendfile file
+
     #404
     app.all '*', response404
