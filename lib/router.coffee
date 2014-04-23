@@ -4,6 +4,7 @@ _fs = require 'fs'
 _template = require './template'
 _less = require 'less'
 _data = require './data'
+_css = require './css'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (filename, extname, res)->
@@ -35,22 +36,11 @@ responseCSS = (req, res, next)->
     #如果不存在这个文件，则交到下一个路由
     next() if not _fs.existsSync file
 
-    #读取并转换less
-    content = _fs.readFileSync file, 'utf-8'
-    #选项
-    options =
-        paths: [_path.join(_common.root(), 'css')]
-
-    parser = new _less.Parser options
-    #将全局配置中的less加入到content后面
-    content += value for key, value of _data.whole.less
-
-    console.log _data.whole.less
-    #转换
-    parser.parse(content,(err, tree)->
-        return res.json err if err
-        res.end(tree.toCSS())
-    )
+    console.log('yes')
+    _css.render file, (err, css)->
+        #编译发生错误
+        return response500 req, res, next, JSON.stringify(err) if err
+        res.end css
 
 #响应js
 responseJS = (req, res, next)->
@@ -67,9 +57,15 @@ responseJS = (req, res, next)->
 responseStatic = (req, res, next)->
     #res.sendfile
 
+#找不到
 response404 = (req, res, next)->
     res.statusCode = 404
     res.end('404 Not Found')
+
+#服务器错误
+response500 = (req, res, next, message)->
+    res.statusCode = 500
+    res.end(message || '500 Error')
 
 module.exports = (app)->
     path = '/:file([0-9a-zA-A/]+)'
