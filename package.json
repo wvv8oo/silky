@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "dependencies": {
         "handlebars": "",
-        "express": "leatest",
+        "express": "latest",
         "less": "",
         "json-proxy": "",
         "commander": "",
@@ -12,7 +12,10 @@
         "grunt": "",
         "coffee-script": "",
         "colors": "",
-        "deep-watch": ""
+        "deep-watch": "",
+        "cheerio": "",
+        "socket.io-client": "",
+        "socket.io": ""
     },
     "bin": {"silky": "./bin/index.coffee"}
 }
