@@ -5,10 +5,11 @@ _template = require './template'
 _less = require 'less'
 _data = require './data'
 _css = require './css'
+_coffee = require 'coffee-script'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (filename, extname, res)->
-    file = _path.join _common.root(), filename + extname
+    file = _path.join SILKY.workbench, filename + extname
     #如果html文件存在，则直接输出
     if _fs.existsSync file
         res.sendfile file
@@ -32,11 +33,10 @@ responseCSS = (req, res, next)->
     return if responseFileIfExists filename, extname, res
 
     #不存在这个css，则渲染less
-    file = _path.join _common.root(), filename + '.less'
+    file = _path.join SILKY.workbench, filename + '.less'
     #如果不存在这个文件，则交到下一个路由
     next() if not _fs.existsSync file
 
-    console.log('yes')
     _css.render file, (err, css)->
         #编译发生错误
         return response500 req, res, next, JSON.stringify(err) if err
@@ -50,8 +50,15 @@ responseJS = (req, res, next)->
     return if responseFileIfExists filename, extname, res
 
     #如果没有找到，则考虑编译coffee
+    file = _path.join _common.root(), filename + '.coffee'
+
     #如果不存在这个文件，则交到下一个路由
     next() if not _fs.existsSync file
+
+    #如果存在coffee，则编译coffee并输出
+    content = _fs.readFileSync file, 'utf-8'
+    res.send _coffee.compile(content)
+
 
 #请求其它静态资源，直接输入出
 responseStatic = (req, res, next)->
