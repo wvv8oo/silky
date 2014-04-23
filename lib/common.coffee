@@ -33,6 +33,11 @@ exports.trigger = (name, arg...)->
 exports.addListener = (name, callback)->
     _pageEvent.addListener name, callback
 
+#监控文件夹，如果发生改变，就触发页面被改变的事件
+exports.watchAndTrigger = (parent, pattern)->
+    exports.watch parent, pattern, exports.onPageChanged
+
+
 #监控文件
 exports.watch = (parent, pattern, callback)->
     dw = new _deepWatch parent, (event, file)->
