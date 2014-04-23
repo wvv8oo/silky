@@ -7,6 +7,7 @@ _path = require 'path'
 _common = require './common'
 _handlebars = require 'handlebars'
 _data = require './data'
+_cheerio = require 'cheerio'
 require 'colors'
 
 #模板
@@ -71,7 +72,18 @@ exports.render = (key)->
     try
         template = _handlebars.compile content
         #使用json的数据进行渲染模板
-        template _data.whole.json
+        content = template _data.whole.json
+        #非开发环境，直接返回
+        #return content if env is 'development'
+        #在header中，插入websocket
+        #<script src="/js/require.js"></script>
+        $ = _cheerio.load content
+
+        append = "\t<!--自动附加内容-->\n\t<script src='/socket.io/socket.io.js'></script>\n\t<script src='/__/main.js'></script>
+        "
+        #在测试环境下，附加自动刷新的监控代码
+        $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
+        $.html()
     catch e
         return e.message
 
