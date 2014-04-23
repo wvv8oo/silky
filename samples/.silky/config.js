@@ -11,5 +11,14 @@ module.exports = {
     //build的配置
     build: {
 
+    },
+    //将要监控哪些文件目录
+    watch: {
+        //监控js目录，以js和coffee结尾的，将被监控
+        "js": /(js|coffee)$/i,
+        //监控less和css
+        "css": /(css|less)$/i,
+        //监控handlebars
+        "template": /(html|hbs)$/ig
     }
 }
