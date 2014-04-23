@@ -17,7 +17,7 @@ _errorTemplate = null
 
 getTemplateKey = (file)->
     #替换掉template及之间的路径
-    file = file.replace _path.join(_common.root(), 'template/'), ''
+    file = file.replace _path.join(SILKY.workbench, 'template/'), ''
     #替换掉扩展名
     file.replace _path.extname(file), ''
 
@@ -37,22 +37,8 @@ readTemplate = (file)->
 
 #获取模板的目录
 getTemplateDir = ()->
-    _path.join _common.root(), 'template'
+    _path.join SILKY.workbench, 'template'
 
-#监控模板的变更
-watch = ()->
-    #监控文件，如果有handlebars扩展名的文件发生变化，则执行操作
-    _common.watch getTemplateDir(), /\.handlebars$/i, (event, file)->
-        #删除模板的数据
-        if event is 'delete'
-            key = getTemplateKey file
-            delete _data[key]
-        else
-            #更新模板
-            readTemplate file
-
-        #触发全局的事件，以便于客户端刷新页面
-        _common.onPageChanged()
 
 #获取所有模板
 fetch = (parent)->
@@ -63,7 +49,7 @@ fetch = (parent)->
         return fetch(file) if _fs.statSync(file).isDirectory()
 
         #如果是handlebars，则读取文件
-        readTemplate(file) if _path.extname(file) is '.handlebars'
+        readTemplate(file) if _path.extname(file) is '.hbs'
 
 
 #渲染一个模板
@@ -74,16 +60,20 @@ exports.render = (key)->
     try
         template = _handlebars.compile content
         #使用json的数据进行渲染模板
-        content = template _data.whole.json
+        data = _data.whole.json
+        #附加运行时的环境
+        data.silky = SILKY
+
+        content = template data
         #非开发环境，直接返回
-        #return content if env is 'development'
+        return content if SILKY.env is not 'development'
+
         #在header中，插入websocket
-        #<script src="/js/require.js"></script>
         $ = _cheerio.load content
 
+        #在测试环境下，附加自动刷新的监控代码
         append = "\t<!--自动附加内容-->\n\t<script src='/socket.io/socket.io.js'></script>\n\t<script src='/__/main.js'></script>
         "
-        #在测试环境下，附加自动刷新的监控代码
         $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
         $.html()
     catch e
@@ -92,9 +82,18 @@ exports.render = (key)->
 #初始化
 exports.init = ()->
     fetch()
-    watch()
+
+    #监控模板被改变的事件
+    _common.addListener 'file:change:html', (event, file)->
+        #删除模板的数据
+        if event is 'delete'
+            key = getTemplateKey file
+            delete _data[key]
+        else
+            #更新模板
+            readTemplate file
 
     #读取系统出错模板，并编译
-    file = _path.join __dirname, 'client/error.handlebars'
+    file = _path.join __dirname, 'client/error.hbs'
     content =  _fs.readFileSync file, 'utf-8'
     _errorTemplate = _handlebars.compile content
