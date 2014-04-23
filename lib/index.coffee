@@ -2,7 +2,9 @@ _express = require 'express'
 _http = require 'http'
 _path = require 'path'
 _app = _express()
-_fs = require 'fs'
+_server = require('http').createServer _app
+_io = require('socket.io').listen(_server)
+
 _router = require './router'
 _common = require './common'
 _data = require './data'
@@ -15,9 +17,16 @@ _template.init()
 
 _router _app    #设置路由
 _app.set 'port', _config.port || 14422
-_app.listen _app.get 'port'
 
-_common.addListener 'page:change', ()->
-    console.log('abc')
+
+_server.listen  _app.get('port')
+
+#监听socket的事件
+_io.sockets.on 'connection', (socket)->
+    event = 'page:change'
+    #收到页面变更的事件后，通知客户端
+    _common.addListener event, ()->
+        socket.emit event, null
+
 
 console.log "please visit: http://127.0.0.1:#{_app.get 'port'}"
