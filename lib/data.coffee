@@ -19,7 +19,7 @@ getDataKey = (file)->
 readData = (file)->
     #只处理json和less的文件
     extname = _path.extname(file).replace('.', '')
-    return if extname not in ['json', 'less']
+    return if extname not in ['json', 'less', 'js']
 
     #读取
     content = _fs.readFileSync(file, 'utf-8')
@@ -28,24 +28,15 @@ readData = (file)->
     #将数据存入
     _data[extname][key] = (if extname is 'json' then JSON.parse(content) else content)
 
-#获取数据所在的目录
-getDataPath = ()->
-    #设置data的主目录，development以后需要从命令行参数中获取
-    _path.join _common.root(), '.silky', 'development'
 
-#读取所有的文件到data中，并返回
-fetch = ()->
+#入口
+exports.init = ()->
     #循环读取所有数据到缓存中
-    _fs.readdirSync(getDataPath()).forEach (filename)->
-        readData _path.join(getDataPath(), filename)
+    _fs.readdirSync(SILKY.data).forEach (filename)->
+        readData _path.join(SILKY.data, filename)
 
-#监控文件
-watch = ()->
-    return if _isWatch
-    _isWatch = true
-
-    #监控json和less是否发生的变化，如果有变化，则实时
-    _common.watch getDataPath(), /\.(json|less)$/i, (event, file)->
+    #监控数据目录中的json和less以及js是否发生的变化
+    _common.watch SILKY.data, /\.(json|less|js)$/i, (event, file)->
         extname = _path.extname(file).replace '.', ''
         #删除数据
         if event is 'delete'
@@ -55,13 +46,7 @@ watch = ()->
             #更新数据
             readData file
 
-        #触发全局事件，重新刷新客户端的数据
         _common.onPageChanged()
-
-#入口
-exports.init = ()->
-    fetch()
-    watch()
 
 exports.whole = _data
 
