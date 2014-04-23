@@ -57,7 +57,7 @@ watch = ()->
 
         #触发全局事件，重新刷新客户端的数据
         _common.onPageChanged()
-        
+
 #入口
 exports.init = ()->
     fetch()
