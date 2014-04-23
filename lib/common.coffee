@@ -5,21 +5,14 @@ _events = require 'events'
 _deepWatch = require 'deep-watch'
 _fs = require 'fs'
 _path = require 'path'
-_root = null
-_configDir = '.silky'
 _pageEvent = new _events.EventEmitter()
+_config = null
 
-exports.root = ()->
-    return _root if _root
-
-    #在当前目录下查找.silky文件，如果找不到则将主目录切换为系统安装目录
-    root = process.cwd()
-    root = _path.join(__dirname, '../', 'samples') if not _fs.existsSync(_path.join(root, _configDir))
-    root
-
+###
 #配置文件的目录
 exports.configDir = ()->
     _path.join exports.root(), _configDir
+###
 
 #触发页面被改变事件
 exports.onPageChanged = ()->
@@ -39,14 +32,18 @@ exports.watchAndTrigger = (parent, pattern)->
 
 
 #监控文件
-exports.watch = (parent, pattern, callback)->
+deepWatch = exports.watch = (parent, pattern, callback)->
     dw = new _deepWatch parent, (event, file)->
-        return if not pattern.test(file)
-        return callback(event, file) if event is 'change'
+        #console.log file, pattern, file, event
+        #console.log (not pattern or ((typeof pattern is 'object') && not pattern.test(file)))
+        #return if not pattern or ((typeof pattern is 'object') && not pattern.test(file))
 
-        #rename有两种情况，删除或者新建，如果文件找不到了，则是删除
-        event = if _fs.existsSync file then 'create' else 'delete'
-        callback event, file
+        #return callback(event, file) if event is 'change'
+
+        if pattern instanceof RegExp and pattern.test(file)
+            #rename有两种情况，删除或者新建，如果文件找不到了，则是删除
+            event = if _fs.existsSync file then 'change' else 'delete'
+            callback event, file
 
     dw.start()
 
@@ -55,3 +52,27 @@ exports.watch = (parent, pattern, callback)->
         console.log(filename)
         callback(filename) if pattern.test(filename)
     ###
+
+
+exports.init = ()->
+    _config = require SILKY.config
+
+    #监控配置文件中的文件变化
+    deepWatch _path.join(SILKY.workbench, SILKY.identity, SILKY.env)
+
+    #监控文件
+    for key, pattern of _config.watch
+        dir = _path.join(SILKY.workbench, key)
+
+        deepWatch dir, pattern, (event, file)->
+            extname = _path.extname file
+            triggerType = 'html'
+            if extname in ['.less', '.css']
+                triggerType = 'css'
+            else if extname in ['.js', '.coffee']
+                triggerType = 'js'
+
+            _pageEvent.emit 'file:change:' + triggerType, event, file
+            console.log "#{event} - #{file}".green
+            #同时引发页面内容被改变的事件
+            exports.onPageChanged()
