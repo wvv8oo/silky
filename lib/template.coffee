@@ -12,6 +12,8 @@ require 'colors'
 
 #模板
 _templtes = {}
+#系统出错的模板
+_errorTemplate = null
 
 getTemplateKey = (file)->
     #替换掉template及之间的路径
@@ -85,9 +87,14 @@ exports.render = (key)->
         $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
         $.html()
     catch e
-        return e.message
+        _errorTemplate(e)
 
 #初始化
 exports.init = ()->
     fetch()
     watch()
+
+    #读取系统出错模板，并编译
+    file = _path.join __dirname, 'client/error.handlebars'
+    content =  _fs.readFileSync file, 'utf-8'
+    _errorTemplate = _handlebars.compile content
