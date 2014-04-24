@@ -35,6 +35,7 @@ global.SILKY =
 _config = require SILKY.config
 global.SILKY.data = _path.join(workbench, identity, SILKY.env)
 
+_common.init()
 #初始化数据及路由
 require('../lib/data').init()
 require('../lib/template').init()
