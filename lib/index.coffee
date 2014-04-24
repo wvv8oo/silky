@@ -9,10 +9,6 @@ require 'colors'
 _common = require './common'
 _config = require SILKY.config
 
-#初始化数据及路由
-_common.init()
-require('./data').init()
-require('./template').init()
 require('./router')(_app)    #设置路由
 
 _app.set 'port', SILKY.port || _config.port || 14422
