@@ -3,6 +3,7 @@
 _program = require('commander')
 _fs = require('fs')
 _path = require('path')
+_common = require '../lib/common'
 require 'colors'
 
 _program
@@ -30,16 +31,32 @@ global.SILKY =
     #配置文件
     config: _path.join workbench, identity, 'config.js'
 
+#引入配置文件
+_config = require SILKY.config
 global.SILKY.data = _path.join(workbench, identity, SILKY.env)
+
+#初始化数据及路由
+require('../lib/data').init()
+require('../lib/template').init()
 
 #在当前目录下查找.silky文件，如果找不到则将主目录切换为系统安装目录
 console.log "工作目录：#{SILKY.workbench}".green
-console.log "工作环境：#{SILKY.env}".green
 
 #打包
 if _program.build
-    require('../lib/build').execute()
-    return
+    #设置为build模式
+    global.SILKY.buildMode = true
+    global.SILKY.output = _path.resolve SILKY.workbench, (_program.output || _config.build.output)
+    #如果没有设置，build的时候，默认为production模式
+    global.SILKY.env =  _program.environment || 'production'
+    console.log "工作环境：#{SILKY.env}".green
+
+    #执行构建
+    require('../lib/build').execute ()->
+        console.log('项目已被成功地构建')
+        process.exit 0
+    return      #阻止运行
 
 #非打包环境，直接运行
+console.log "工作环境：#{SILKY.env}".green
 _app = require('../lib')
