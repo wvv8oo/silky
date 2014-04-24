@@ -53,6 +53,23 @@ deepWatch = exports.watch = (parent, pattern, callback)->
         callback(filename) if pattern.test(filename)
     ###
 
+#判断是否为产品环境
+exports.isProduction = ()-> SILKY.env is 'production'
+
+#如果是产品环境，则报错，否则返回字符
+exports.combError = (error)->
+    #如果是产品环境，则直接抛出错误退出
+    return console.log error.red and process.exit 1 if this.isProduction()
+    error
+
+#替换扩展名为指定的扩展名
+exports.replaceExt = (file, ext)->
+    #取文件夹再加上扩展名，不能使用path.join
+    file.replace _path.extname(file), ext
+
+#读取文件
+exports.readFile = (file)->
+    _fs.readFileSync file, 'utf-8'
 
 exports.init = ()->
     _config = require SILKY.config
