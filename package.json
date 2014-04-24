@@ -15,7 +15,11 @@
         "deep-watch": "",
         "cheerio": "",
         "socket.io-client": "",
-        "socket.io": ""
+        "socket.io": "",
+        "mkdirp": "",
+        "fs-extra": "",
+        "uglify-js": "",
+        "clean-css": ""
     },
     "bin": {"silky": "./bin/index.coffee"}
 }
