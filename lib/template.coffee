@@ -15,7 +15,8 @@ _templtes = {}
 #系统出错的模板
 _errorTemplate = null
 
-getTemplateKey = (file)->
+#根据文件名提取key
+getTemplateKey = exports.getTemplateKey = (file)->
     #替换掉template及之间的路径
     file = file.replace _path.join(SILKY.workbench, 'template/'), ''
     #替换掉扩展名
@@ -55,7 +56,7 @@ fetch = (parent)->
 #渲染一个模板
 exports.render = (key)->
     content = _templtes[key]
-    return "无法找到模板[#{key}]" if not content
+    return _common.combError("无法找到模板[#{key}]") if not content
 
     try
         template = _handlebars.compile content
@@ -65,8 +66,8 @@ exports.render = (key)->
         data.silky = SILKY
 
         content = template data
-        #非开发环境，直接返回
-        return content if SILKY.env is not 'development'
+        #产品环境，直接返回
+        return content if _common.isProduction()
 
         #在header中，插入websocket
         $ = _cheerio.load content
@@ -77,6 +78,8 @@ exports.render = (key)->
         $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
         $.html()
     catch e
+        #调用目的是为了产品环境throw
+        _common.combError(e)
         _errorTemplate(e)
 
 #初始化
