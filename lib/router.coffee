@@ -6,6 +6,8 @@ _less = require 'less'
 _data = require './data'
 _css = require './css'
 _coffee = require 'coffee-script'
+_script = require './script'
+_precompiler = require './handlebars_precompiler'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (filename, extname, res)->
@@ -50,19 +52,14 @@ responseJS = (req, res, next)->
     return if responseFileIfExists filename, extname, res
 
     #如果没有找到，则考虑编译coffee
-    file = _path.join _common.root(), filename + '.coffee'
-
-    #如果不存在这个文件，则交到下一个路由
-    next() if not _fs.existsSync file
-
-    #如果存在coffee，则编译coffee并输出
-    content = _fs.readFileSync file, 'utf-8'
-    res.send _coffee.compile(content)
+    file = _path.join SILKY.workbench, filename + '.coffee'
+    res.send _script.compile file
 
 
 #请求其它静态资源，直接输入出
 responseStatic = (req, res, next)->
-    #res.sendfile
+    file = _path.join SILKY.workbench, req.url
+    res.sendfile file
 
 #找不到
 response404 = (req, res, next)->
@@ -76,6 +73,15 @@ response500 = (req, res, next, message)->
 
 module.exports = (app)->
     path = '/:file([0-9a-zA-A/]+)'
+
+    #临时模板路由
+    app.get "/js/template.js", (req, res, next)->
+        dir = _path.join(__dirname, '../samples/js/template')
+        #读取模板
+        tpl = _path.join __dirname, './client/precompile.hbs'
+        content = _precompiler.precompile dir, _fs.readFileSync(tpl, 'utf-8')
+        res.end content
+
     #所有html页面
     app.get "#{path}.html", responseHTML
 
@@ -91,5 +97,6 @@ module.exports = (app)->
         file = _path.join(__dirname, 'client', req.params.file)
         res.sendfile file
 
+
     #404
-    app.all '*', response404
+    app.all '*', responseStatic
