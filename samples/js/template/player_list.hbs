@@ -1,0 +1,12 @@
+{{#data}}
+    <li{{#isCurrent}} class="on"{{/isCurrent}}>
+        <a href="{{url}}">
+            <span class="a-pic-bg"></span>
+            <span class="a-pic-t1">{{stitle}}</span>
+            <span class="a-pic-bg1"></span>
+            <span class="a-pic-t2">{{title}}</span>
+            {{#isCurrent}}<span class="a-pic-t3">播放中</span>{{/isCurrent}}
+            <img alt="{{stitle}}" title="{{stitle}}"  width="220" height="113" data-original="{{img}}" class="lazy" />
+        </a>
+    </li>
+{{/data}}
