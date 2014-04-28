@@ -8,6 +8,7 @@ _common = require './common'
 _handlebars = require 'handlebars'
 _data = require './data'
 _cheerio = require 'cheerio'
+_ = require 'underscore'
 require 'colors'
 
 #模板
@@ -82,8 +83,39 @@ exports.render = (key)->
         _common.combError(e)
         _errorTemplate(e)
 
+compilePartial = (name, context)->
+    partial = _handlebars.partials[name]
+    return "无法找到partial：#{name}" if not partial
+    #查找对应的节点数据
+    template = _handlebars.compile partial
+    template(context)
+
+#注册handlebars
+registerHandlebars = ()->
+    #循环
+    _handlebars.registerHelper "loop", (name, count, options)->
+        count = [1..count] if typeof count is 'number'
+        results = []
+        for value in count
+            results.push compilePartial(name, value)
+        new _handlebars.SafeString(results.join(''))
+
+    #partial
+    _handlebars.registerHelper "partial", (name, context, options)->
+        #如果则第二个参数像options，则表示没有提供参数
+        if context and context.name is 'partial'
+            options = context
+            context = options.data.root
+
+        html = compilePartial(name, context || {})
+        new _handlebars.SafeString(html)
+
+    _handlebars.registerHelper "if", (left, right, options)->
+        return if left is right then options.fn(this) else ""
+
 #初始化
 exports.init = ()->
+    registerHandlebars()
     fetch()
 
     #监控模板被改变的事件
