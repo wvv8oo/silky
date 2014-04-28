@@ -1,4 +1,5 @@
-define ()->
+define(function(){
     return {
         name: 'test'
     }
+})

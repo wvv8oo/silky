@@ -17,7 +17,7 @@ _program
 #设置全局的环境参数
 identity = '.silky'
 workbench = process.cwd()
-workbench = _path.join(__dirname, '../', 'samples') if not _fs.existsSync _path.join(process.cwd(), identity)
+workbench = _path.join(__dirname, '..', 'samples') if not _fs.existsSync _path.join(process.cwd(), identity)
 
 global.SILKY =
     #识别为silky目录

@@ -19,7 +19,12 @@
         "mkdirp": "",
         "fs-extra": "",
         "uglify-js": "",
-        "clean-css": ""
+        "clean-css": "",
+        "underscore": ""
     },
-    "bin": {"silky": "./bin/index.coffee"}
+    "bin": {"silky": "./bin/index.coffee"},
+    "scripts": {
+        "test": "node-dev ./test/index.coffee",
+        "start": "node-dev ./lib/app.coffee"
+    }
 }
