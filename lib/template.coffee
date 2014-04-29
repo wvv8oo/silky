@@ -31,7 +31,8 @@ readTemplate = (file)->
     _common.fileLog key
 
     #不能直接编译，因为partials可能没有准备好
-    if key.split(_path.sep)[0] is 'module'
+    #路径是以module开头的
+    if /^module/.test key
         try
             console.log "partial: #{key}"
             _handlebars.registerPartial key, content
@@ -73,7 +74,7 @@ combineHoney = ($)->
 
     #处理合并项
     html = '<script>\n'
-    html += "\thoney.go(\"#{deps.join(',')}\", function() {\n"
+    html += "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
     #将所有的代码都封装到闭包中运行
     for script in scripts
         html += "\t(function(){\n#{script}\n\t}).call(this);\n"
