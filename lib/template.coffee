@@ -53,6 +53,46 @@ fetch = (parent)->
         #如果是handlebars，则读取文件
         readTemplate(file) if _path.extname(file) is '.hbs'
 
+#合并honey中的依赖
+combineHoney = ($)->
+    #全并所有<script honey=""></script>的代码
+    deps = []
+    scripts = []
+    $('script[honey]').each ()->
+        $this = $(this)
+        #合并依赖
+        deps = _.union(deps,$this.attr('honey').split(','))
+        #临时保存脚本
+        scripts.push $this.html()
+        #删除这个script标签
+        $this.remove()
+
+    #处理合并项
+    html = '<script>\n'
+    html += "\thoney.go(\"#{deps.join(',')}\", function() {\n"
+    #将所有的代码都封装到闭包中运行
+    for script in scripts
+        html += "\t(function(){\n#{script}\n\t}).call(this);\n"
+
+    html += '\n\t});\n</script>'
+
+    #将新的html合并到body里
+    $('body').append html
+
+#注入及合并js
+injectScript = (content)->
+    $ = _cheerio.load content
+    #合并honey的依赖
+    combineHoney $
+
+    #在测试环境下，附加自动刷新的监控代码
+    if not _common.isProduction()
+        append = "\t<!--自动附加内容-->\n\t<script src='/socket.io/socket.io.js'></script>\n\t<script src='/__/main.js'></script>
+                "
+        $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
+
+    $.html()
+
 
 #渲染一个模板
 exports.render = (key)->
@@ -67,17 +107,7 @@ exports.render = (key)->
         data.silky = SILKY
 
         content = template data
-        #产品环境，直接返回
-        return content if _common.isProduction()
-
-        #在header中，插入websocket
-        $ = _cheerio.load content
-
-        #在测试环境下，附加自动刷新的监控代码
-        append = "\t<!--自动附加内容-->\n\t<script src='/socket.io/socket.io.js'></script>\n\t<script src='/__/main.js'></script>
-        "
-        $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
-        $.html()
+        injectScript content
     catch e
         #调用目的是为了产品环境throw
         _common.combError(e)
