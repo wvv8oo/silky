@@ -11,7 +11,7 @@ _config = require SILKY.config
 
 require('./router')(_app)    #设置路由
 
-_app.set 'port', SILKY.port || _config.port || 14422
+_app.set 'port', SILKY.port
 _server.listen  _app.get('port')
 
 #监听socket的事件
