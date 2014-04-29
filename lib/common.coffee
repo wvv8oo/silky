@@ -7,7 +7,7 @@ _fs = require 'fs'
 _path = require 'path'
 _pageEvent = new _events.EventEmitter()
 _config = null
-
+require 'colors'
 ###
 #配置文件的目录
 exports.configDir = ()->
@@ -93,3 +93,12 @@ exports.init = ()->
             console.log "#{event} - #{file}".green
             #同时引发页面内容被改变的事件
             exports.onPageChanged()
+
+#输入当前正在操作的文件
+exports.fileLog = (file, log)->
+    file = _path.relative SILKY.workbench, file
+    console.log "#{log || " "}>#{file}"
+
+#替换掉slash，所有奇怪的字符
+exports.replaceSlash = (file)->
+    file.replace(/\W/ig, "_")

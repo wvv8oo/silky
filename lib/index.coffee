@@ -12,7 +12,12 @@ _config = require SILKY.config
 require('./router')(_app)    #设置路由
 
 _app.set 'port', SILKY.port
-_server.listen  _app.get('port')
+
+try
+    _server.listen  _app.get('port')
+catch e
+    console.log "出错了 #{e.message}"
+    process.exit 1
 
 #监听socket的事件
 _io.sockets.on 'connection', (socket)->
