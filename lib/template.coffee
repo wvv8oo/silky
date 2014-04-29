@@ -21,15 +21,19 @@ getTemplateKey = exports.getTemplateKey = (file)->
     #替换掉template及之间的路径
     file = file.replace _path.join(SILKY.workbench, 'template/'), ''
     #替换掉扩展名
-    file.replace _path.extname(file), ''
+    key = file.replace _path.extname(file), ''
+    key = _common.replaceSlash key
 
 #读取模板
 readTemplate = (file)->
     content = _fs.readFileSync file, 'utf-8'
     key = getTemplateKey file
+    _common.fileLog key
+
     #不能直接编译，因为partials可能没有准备好
     if key.split(_path.sep)[0] is 'module'
         try
+            console.log "partial: #{key}"
             _handlebars.registerPartial key, content
         catch e
             console.log "警告：#{key}读取失败，路径：#{file}".error
@@ -96,6 +100,7 @@ injectScript = (content)->
 
 #渲染一个模板
 exports.render = (key)->
+    key = _common.replaceSlash key
     content = _templtes[key]
     return _common.combError("无法找到模板[#{key}]") if not content
 
@@ -113,8 +118,11 @@ exports.render = (key)->
         _errorTemplate(e)
 
 compilePartial = (name, context)->
+    name = _common.replaceSlash name
     partial = _handlebars.partials[name]
+
     return "无法找到partial：#{name}" if not partial
+
     #查找对应的节点数据
     template = _handlebars.compile partial
     template(context)
