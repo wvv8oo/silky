@@ -24,8 +24,6 @@ global.SILKY =
     identity: identity
     #工作环境
     env: _program.environment || 'development'
-    #端口
-    port: _program.port
     #工作目录
     workbench: workbench
     #配置文件
@@ -34,7 +32,7 @@ global.SILKY =
 #引入配置文件
 _config = require SILKY.config
 global.SILKY.data = _path.join(workbench, identity, SILKY.env)
-
+global.SILKY.port = _program.port || _config.port || 14422
 _common.init()
 #初始化数据及路由
 require('../lib/data').init()

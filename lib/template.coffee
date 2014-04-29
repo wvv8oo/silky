@@ -104,8 +104,7 @@ exports.render = (key)->
         #使用json的数据进行渲染模板
         data = _data.whole.json
         #附加运行时的环境
-        data.silky = SILKY
-
+        data.silky = _.extend({}, SILKY)
         content = template data
         injectScript content
     catch e

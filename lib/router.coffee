@@ -21,7 +21,7 @@ responseFileIfExists = (filename, extname, res)->
 responseHTML = (req, res, next)->
     filename = req.params.file
     #如果文件已经存在，则直接返回，不再渲染为模板
-    return if responseFileIfExists filename, '.html', res
+    return if responseFileIfExists _path.join(filename, 'template'), '.html', res
 
     #不存在这个文件，则读取模板
     content = _template.render filename
@@ -48,6 +48,7 @@ responseCSS = (req, res, next)->
 responseJS = (req, res, next)->
     filename = req.params.file
     extname = '.js'
+    filename = filename.replace '.source', ''
     #如果文件已经存在，则直接返回
     return if responseFileIfExists filename, extname, res
 
@@ -72,7 +73,7 @@ response500 = (req, res, next, message)->
     res.end(message || '500 Error')
 
 module.exports = (app)->
-    path = '/:file([0-9a-zA-A/]+)'
+    path = '/:file([0-9a-zA-A/\\-\.]+)'
 
     #临时模板路由
     app.get "/js/template.js", (req, res, next)->
@@ -90,7 +91,7 @@ module.exports = (app)->
     #请求目录
 
     #所有的js
-    app.get "#{path}.js", responseJS
+    app.get "#{path}(.source)?.js", responseJS
 
     #发送客户端要的文件
     app.get "/__/:file", (req, res, next)->
@@ -99,4 +100,4 @@ module.exports = (app)->
 
 
     #404
-    app.all '*', responseStatic
+    #app.all '*', responseStatic
