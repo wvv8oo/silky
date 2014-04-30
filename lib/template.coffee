@@ -9,6 +9,7 @@ _handlebars = require 'handlebars'
 _data = require './data'
 _cheerio = require 'cheerio'
 _ = require 'underscore'
+_beautify = require('js-beautify').js_beautify
 require 'colors'
 
 #模板
@@ -18,11 +19,13 @@ _errorTemplate = null
 
 #根据文件名提取key
 getTemplateKey = exports.getTemplateKey = (file)->
-    #替换掉template及之间的路径
-    file = file.replace _path.join(SILKY.workbench, 'template/'), ''
+    #取相对于template的路径
+    key = _path.relative _path.join(SILKY.workbench, 'template/'), file
+
     #替换掉扩展名
-    key = file.replace _path.extname(file), ''
+    key = key.replace _path.extname(key), ''
     key = _common.replaceSlash key
+    key
 
 #读取模板
 readTemplate = (file)->
@@ -73,13 +76,15 @@ combineHoney = ($)->
         $this.remove()
 
     #处理合并项
-    html = '<script>\n'
-    html += "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
+    html = "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
     #将所有的代码都封装到闭包中运行
     for script in scripts
-        html += "\t(function(){\n#{script}\n\t}).call(this);\n"
+        html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
 
-    html += '\n\t});\n</script>'
+    html += '\n\t});'
+
+    html = _beautify html, indent_size: 4
+    html = "<script>\n#{html}\n</script>"
 
     #将新的html合并到body里
     $('body').append html
@@ -104,7 +109,6 @@ exports.render = (key)->
     key = _common.replaceSlash key
     content = _templtes[key]
     return _common.combError("无法找到模板[#{key}]") if not content
-
     try
         template = _handlebars.compile content
         #使用json的数据进行渲染模板
