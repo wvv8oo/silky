@@ -37,7 +37,9 @@ responseCSS = (req, res, next)->
     #不存在这个css，则渲染less
     file = _path.join SILKY.workbench, filename + '.less'
     #如果不存在这个文件，则交到下一个路由
-    next() if not _fs.existsSync file
+    if not _fs.existsSync file
+        console.log "CSS无法找到->#{file}".red
+        return next()
 
     _css.render file, (err, css)->
         #编译发生错误
