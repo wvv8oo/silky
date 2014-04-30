@@ -6,7 +6,9 @@ module.exports = {
     port: 14422,
     //代理配置相关，兼容json-proxy的代理配置
     proxy: {
-
+        forward: {
+            "/ajax": "http://i.hunantv.com/ajax"
+        }
     },
     //build的配置
     build: {
