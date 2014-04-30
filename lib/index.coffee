@@ -4,6 +4,8 @@ _path = require 'path'
 _app = _express()
 _server = require('http').createServer _app
 _io = require('socket.io').listen(_server, log: false)
+_proxy = require('json-proxy')
+_ = require 'underscore'
 require 'colors'
 
 _common = require './common'
@@ -14,6 +16,11 @@ require('./router')(_app)    #设置路由
 _app.set 'port', SILKY.port
 
 try
+    #集成代理
+    cfgProxy = _config.proxy || {}
+    cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
+
+    _app.use _proxy.initialize(proxy: cfgProxy)
     _server.listen  _app.get('port')
 catch e
     console.log "出错了 #{e.message}"
