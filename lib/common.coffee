@@ -59,7 +59,11 @@ exports.isProduction = ()-> SILKY.env is 'production'
 #如果是产品环境，则报错，否则返回字符
 exports.combError = (error)->
     #如果是产品环境，则直接抛出错误退出
-    return console.log error.red and process.exit 1 if this.isProduction()
+    if this.isProduction()
+        console.log error.red
+        process.exit 1
+        return
+
     error
 
 #替换扩展名为指定的扩展名
