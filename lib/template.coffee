@@ -9,7 +9,7 @@ _handlebars = require 'handlebars'
 _data = require './data'
 _cheerio = require 'cheerio'
 _ = require 'underscore'
-_beautify = require('js-beautify').js_beautify
+_htmlpretty = require('js-beautify').html
 require 'colors'
 
 #模板
@@ -79,11 +79,13 @@ combineHoney = ($)->
     html = "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
     #将所有的代码都封装到闭包中运行
     for script in scripts
+        #不处理空的script
+        continue if not html
         html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
 
     html += '\n\t});'
 
-    html = _beautify html, indent_size: 4
+    #html = _jspretty html, indent_size: 4
     html = "<script>\n#{html}\n</script>"
 
     #将新的html合并到body里
@@ -101,7 +103,7 @@ injectScript = (content)->
                 "
         $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
 
-    $.html()
+    _htmlpretty $.html()
 
 
 #渲染一个模板
