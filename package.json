@@ -1,6 +1,6 @@
 {
     "name": "silky",
-    "version": "0.0.3",
+    "version": "0.0.7",
     "dependencies": {
         "handlebars": "",
         "express": "latest",
@@ -20,7 +20,8 @@
         "fs-extra": "",
         "uglify-js": "",
         "clean-css": "",
-        "underscore": ""
+        "underscore": "",
+        "js-beautify": ""
     },
     "bin": {"silky": "./bin/index.coffee"},
     "scripts": {
