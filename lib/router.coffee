@@ -21,7 +21,7 @@ responseFileIfExists = (filename, extname, res)->
 responseHTML = (req, res, next)->
     filename = req.params.file
     #如果文件已经存在，则直接返回，不再渲染为模板
-    return if responseFileIfExists _path.join(filename, 'template'), '.html', res
+    return if responseFileIfExists _path.join('template', filename), '.html', res
 
     #不存在这个文件，则读取模板
     content = _template.render filename
