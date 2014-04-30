@@ -70,8 +70,13 @@ cssProcessor = (source, target, callback)->
 
 #输出HTML
 htmlProcessor = (source, target, callback)->
-    #交给template渲染
-    content = _template.render _template.getTemplateKey(source)
+    content
+    #如果html，则直接读取
+    if _path.extname(source) in ['.html', '.htm']
+        content = _fs.readFileSync source, 'utf-8'
+    else
+        #交给template渲染
+        content = _template.render _template.getTemplateKey(source)
     #检查是否需要压缩内联的script
     content = compressInternalJavascript content if _config.build.compress.internal
     saveFile target, content
@@ -82,6 +87,7 @@ compressInternalJavascript = (content)->
     $ = _cheerio.load content
     $('script').each ()->
         $this = $(this)
+        return $this.attr('type') is 'html/tpl'
         minify = scriptMinify $this.html()
         $this.html minify
 
@@ -158,10 +164,14 @@ compileFile = (done)->
                     target: target
 
     #处理queue中的文件，less不支持同步操作
-    _async.map queue, (item, cb)->
+    _async.mapSeries queue, (item, cb)->
+        #跳过文件夹
+        return cb() if _fs.statSync(item.source).isDirectory()
         fileHandler item.source, item.target, cb
     ,(err, result)->
+        console.log 'done'
         done()
+
 exports.execute = (done)->
     console.log "构建目录： #{SILKY.output}".green
     clearTarget()
