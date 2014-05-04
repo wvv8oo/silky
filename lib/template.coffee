@@ -10,6 +10,7 @@ _data = require './data'
 _cheerio = require 'cheerio'
 _ = require 'underscore'
 _htmlpretty = require('js-beautify').html
+_config = require SILKY.config
 require 'colors'
 
 #模板
@@ -80,7 +81,6 @@ combineHoney = ($)->
     #将所有的代码都封装到闭包中运行
     for script in scripts
         #不处理空的script
-        continue if not html
         html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
 
     html += '\n\t});'
@@ -93,6 +93,7 @@ combineHoney = ($)->
 
 #注入及合并js
 injectScript = (content)->
+    #提取
     $ = _cheerio.load content
     #合并honey的依赖
     combineHoney $
@@ -103,8 +104,7 @@ injectScript = (content)->
                 "
         $('head').append(append).append("\n\t<!--生成时间：#{new Date()}-->\n")
 
-    _htmlpretty $.html()
-
+    $.html()
 
 #渲染一个模板
 exports.render = (key)->
@@ -118,7 +118,9 @@ exports.render = (key)->
         #附加运行时的环境
         data.silky = _.extend({}, SILKY)
         content = template data
-        injectScript content
+        html = injectScript content
+
+        if _config.beautify then _htmlpretty(html) else html
     catch e
         #调用目的是为了产品环境throw
         _common.combError(e)
@@ -134,6 +136,15 @@ compilePartial = (name, context)->
     template = _handlebars.compile partial
     template(context)
 
+importCommand = (name, context, options)->
+    #如果则第二个参数像options，则表示没有提供参数
+    if context and context.name is 'partial'
+        options = context
+        context = options.data.root
+
+    html = compilePartial(name, context || {})
+    new _handlebars.SafeString(html)
+
 #注册handlebars
 registerHandlebars = ()->
     #循环
@@ -145,14 +156,8 @@ registerHandlebars = ()->
         new _handlebars.SafeString(results.join(''))
 
     #partial
-    _handlebars.registerHelper "partial", (name, context, options)->
-        #如果则第二个参数像options，则表示没有提供参数
-        if context and context.name is 'partial'
-            options = context
-            context = options.data.root
-
-        html = compilePartial(name, context || {})
-        new _handlebars.SafeString(html)
+    _handlebars.registerHelper "partial", importCommand
+    _handlebars.registerHelper "import", importCommand
 
     _handlebars.registerHelper "if", (left, right, options)->
         return if left is right then options.fn(this) else ""
