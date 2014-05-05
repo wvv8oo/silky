@@ -1,21 +1,40 @@
 #!/usr/bin/env coffee
 
 _program = require('commander')
-_fs = require('fs')
+_fs = require('fs-extra')
 _path = require('path')
 _common = require '../lib/common'
 require 'colors'
 
 _program
     .version(JSON.parse(_fs.readFileSync(_path.join(__dirname, '..', 'package.json'), 'utf8')).version)
+    .option('init', '初始化一个项目')
     .option('build', '打包项目')
+    .option('-f, --full', '创建silky项目及示例项目')
     .option('-p, --port <n>', '指定运行端口')
     .option('-o, --output <value>', '打包指定输出目录')
     .option('-e, --environment [value]', '指定项目的运行环境，默认为[development]')
     .parse(process.argv)
 
-#设置全局的环境参数
 identity = '.silky'
+
+#将示例项目复制到当前目录
+if _program.init
+    samples = _path.join(__dirname, '..', 'samples')
+    current = process.cwd()
+
+    if _program.full
+        _fs.copySync samples, current
+        console.log "Silky项目初始化成功，示例项目已被创建".green
+    else
+        silkyDir = _path.join samples, identity
+        _fs.copySync silkyDir, _path.join(current, identity)
+        console.log "Silky项目初始化成功".green
+
+    process.exit 1
+    return
+
+#设置全局的环境参数
 workbench = process.cwd()
 workbench = _path.join(__dirname, '..', 'samples') if not _fs.existsSync _path.join(process.cwd(), identity)
 
