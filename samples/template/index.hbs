@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html>
-{{>module/head}}
-<body>
-{{>module/header}}
-当前的工作环境{{silky.env}}
-{{>module/submodule/index}}
-{{>module/footer}}
-</body>
+    {{import "module/head"}}
+    <body>
+        {{import "module/header"}}
+        <div class="container">
+            <h1>Silky示例项目<em>使用import命令</em></h1>
+
+            <h2>如何使用？</h2>
+            <ol>
+                <li>请确保已经安装好node.js环境</li>
+                <li>请确定安装coffee环境，如果没有安装，请使用<code>npm install -g coffee-script</code></li>
+                <li>使用<code>npm install -g silky</code>安装silky到全局目录</li>
+                <li>在你的工作目录，执行<code>silky</code></li>
+            </ol>
+
+            <h2>功能摘要</h2>
+            <ul>
+                <li>集成HTTP功能，只需要一条命令就可以在当前目录下创建一个Silky服务器</li>
+                <li>支持代理，用于解决跨域问题</li>
+                <li>支持HTML与CSS模块化开发</li>
+                <li>实时编译coffee和less文件</li>
+                <li>自动刷新功能，在开发环境下，silky会监控相关文件的变化，并通知页面自动刷新，你无需要在网页中增加任何代码。</li>
+            </ul>
+            <div class="loop">
+                <h4>本项目用到如下第三模块，谨此表示感谢<em>使用loop命令</em></h4>
+                {{loop "module/cell" page.depends}}
+            </div>
+            <ul class="silky">
+                   <li class="title">Silky变量<em>使用each命令</em></li>
+                {{#each silky}}
+                  <li><label>{{@key}}</label><span>{{.}}</span></li>
+                {{/each}}
+            </ul>
+        </div>
+        {{import "module/footer"}}
+    </body>
 </html>
