@@ -140,10 +140,12 @@ compilePartial = (name, context)->
 
 importCommand = (name, context, options)->
     #如果则第二个参数像options，则表示没有提供参数
-    if context and context.name is 'partial'
+    if context and context.name in ['import', 'partial']
         options = context
         context = options.data.root
 
+    #合并silky到context
+    _.extend context, SILKY
     html = compilePartial(name, context || {})
     new _handlebars.SafeString(html)
 

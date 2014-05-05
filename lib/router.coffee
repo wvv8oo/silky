@@ -59,7 +59,6 @@ responseJS = (url, req, res, next)->
     jsFile = url.pathname
     #替换掉source的文件名，兼容honey
     jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
-
     #如果文件已经存在，则直接返回
     jsFile = _path.join SILKY.workbench, jsFile
     return if responseFileIfExists jsFile, res
@@ -98,10 +97,8 @@ module.exports = (app)->
     #匹配所有
     app.get "*", (req, res, next)->
         url = _url.parse(req.url)
-        console.log req.url
         #匹配html
         if /(\.(html|html)|\/)$/.test(url.pathname)
-            console.log 'html'
             return responseHTML url, req, res, next
         else if /\.css$/.test(url.pathname)
             return responseCSS url, req, res, next
