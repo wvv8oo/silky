@@ -1,18 +1,103 @@
-@import "./module/global";
+@import "/module/global";
 
 body{
   font-size: 12.5px;
-}
-
-header h1{
   color: @textColor;
 }
 
-.blueBorder{
-  .box-shadow(solid, 1px, blue);
+header, footer, .container{
+  width: 1000px;
+  margin: 0 auto;
+  clear: both;
 }
 
-.redBorder{
-  .box-shadow(solid, 1px, red);
-  color: black;
+menu{
+  padding: 0;
+  margin: 0;
+}
+
+menu li{
+  float: left;
+  list-style: none;
+  text-align: center;
+  font-size: 16px;
+  border-right: 1px solid #FFF;
+  margin: 0;
+  cursor: pointer;
+}
+
+menu li a{
+  color: white;
+  text-decoration: none;
+  display: block;
+  height: 30px;
+  width: 160px;
+  padding-top: 10px;
+}
+
+menu li a:hover{
+  color: #428BCA;
+  background-color: #FFF;
+}
+
+
+header{
+  background-color: #428BCA;
+  color: white;
+  overflow: hidden;
+  padding: 0;
+}
+
+.loop{
+  overflow: hidden;
+}
+
+.loop div{
+  float: left;
+  text-align: center;
+  font-size: 18px;
+  color: white;
+  width: 100px;
+  padding: 40px 0;
+  background-color: skyblue;
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+footer{
+  text-align: center;
+  margin-top: 50px;
+}
+
+.silky{
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+.silky .title{
+  font-size: 16px;
+  font-weight:  bold;
+  list-style: none;
+}
+
+.silky li{
+  padding: 5px 0;
+}
+
+.silky label{
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.silky span{
+  color: green;
+}
+
+code{
+  color: red;
+}
+
+em{
+  color: gray;
+  margin-left: 10px;
 }

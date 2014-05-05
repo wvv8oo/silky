@@ -1,13 +1,12 @@
 {
     "name": "silky",
-    "version": "0.0.9",
+    "version": "0.1.0",
     "dependencies": {
         "handlebars": "",
         "express": "latest",
         "less": "",
         "json-proxy": "",
         "commander": "",
-        "colorful": "",
         "async": "",
         "grunt": "",
         "coffee-script": "",

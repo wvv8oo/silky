@@ -7,9 +7,12 @@ module.exports = {
     //代理配置相关，兼容json-proxy的代理配置
     proxy: {
         forward: {
-            "/ajax": "http://i.hunantv.com/ajax"
+            //定义代理转发
+            //"/ajax": "/"
         }
     },
+    //替换掉文件名中的source
+    "replaceSource": true,
     //build的配置
     build: {
         //构建的目标目录，命令行指定的优先
@@ -23,7 +26,7 @@ module.exports = {
             //压缩html
             html: false,
             //是否压缩internal的js
-            internal: true
+            internal: false
         },
         //将要复制的文件目录，直接复制到目标
         copy: ["images"],

@@ -1,4 +1,1 @@
-define ()->
-    return {
-        name: 'test'
-    }
+console.log 'i am main.coffee'
