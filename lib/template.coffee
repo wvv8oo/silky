@@ -76,14 +76,16 @@ combineHoney = ($)->
         #删除这个script标签
         $this.remove()
 
-    #处理合并项
-    html = "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
-    #将所有的代码都封装到闭包中运行
-    for script in scripts
-        #不处理空的script
-        html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
+    #如果存在script honey的脚本
+    if scripts.length > 0
+        #处理合并项
+        html = "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
+        #将所有的代码都封装到闭包中运行
+        for script in scripts
+            #不处理空的script
+            html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
 
-    html += '\n\t});'
+        html += '\n\t});'
 
     #html = _jspretty html, indent_size: 4
     html = "<script>\n#{html}\n</script>"
