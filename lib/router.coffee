@@ -76,6 +76,8 @@ responseJS = (url, req, res, next)->
 #请求其它静态资源，直接输入出
 responseStatic = (req, res, next)->
     file = _path.join SILKY.workbench, req.url
+    #查找文件是否存在
+    return next() if not _fs.existsSync file
     res.sendfile file
 
 #找不到
