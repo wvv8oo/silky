@@ -6,8 +6,11 @@ _path = require('path')
 _common = require '../lib/common'
 require 'colors'
 
+identity = '.silky'
+version = require(_path.join(__dirname, '../package.json')).version
+
 _program
-    .version(JSON.parse(_fs.readFileSync(_path.join(__dirname, '..', 'package.json'), 'utf8')).version)
+    .version(version)
     .option('init', '初始化一个项目')
     .option('build', '打包项目')
     .option('-f, --full', '创建silky项目及示例项目')
@@ -15,8 +18,6 @@ _program
     .option('-o, --output <value>', '打包指定输出目录')
     .option('-e, --environment [value]', '指定项目的运行环境，默认为[development]')
     .parse(process.argv)
-
-identity = '.silky'
 
 #将示例项目复制到当前目录
 if _program.init
@@ -39,6 +40,7 @@ workbench = process.cwd()
 workbench = _path.join(__dirname, '..', 'samples') if not _fs.existsSync _path.join(process.cwd(), identity)
 
 global.SILKY =
+    version: version
     #识别为silky目录
     identity: identity
     #工作环境
