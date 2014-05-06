@@ -105,7 +105,7 @@ module.exports = (app)->
         else if /\.js$/.test(url.pathname)
             return responseJS url, req, res, next
         else
-            next()
+            responseStatic(req, res, next)
 
 
     ###

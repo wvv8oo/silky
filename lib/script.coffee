@@ -14,4 +14,4 @@ exports.compile = (file)->
     file = _path.join _common.replaceExt file, '.coffee'
     #文件不存在
     return null if not _fs.existsSync file
-    _coffee.compile _common.readFile(file), bare: true
+    _coffee.compile _common.readFile(file)#, bare: true

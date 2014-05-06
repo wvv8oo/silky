@@ -171,6 +171,9 @@ js目录用于存放`.js`和`.coffee`文件
 .silky文件夹是silky的配置文件
 
 #History
+##0.1.2 2014-05-06
+* 增加logo，并修复`silky init -f`没有初始化images和images-demo文件夹的bug
+* 修复无法响应静态文件的bug
 
 ##0.1.0 2014-05-05
 * 增加可运行的示例项目，默认运行即可以查看示例项目
