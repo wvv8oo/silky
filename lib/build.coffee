@@ -112,6 +112,11 @@ saveFile = (file, content)->
     directoryPromise file
     _fs.outputFileSync file, content
 
+#处理target，可能要重全命名
+getTarget = (target)->
+  target = target.replace item.source, item.target for item in _config.build.rename
+  target
+
 #处理文件
 fileHandler = (source, target, callback)->
     #确保文件夹存在
@@ -131,6 +136,7 @@ fileHandler = (source, target, callback)->
 
     #如果有使用处理器，则替换为新的扩展名
     target = _common.replaceExt target, ext if processor
+    target = getTarget target
     #输出日志
     shortSource = _path.relative SILKY.workbench, source
     shortTarget = _path.relative SILKY.output, target

@@ -17,6 +17,12 @@ module.exports = {
     build: {
         //构建的目标目录，命令行指定的优先
         output: "./build",
+        //重命名
+        rename: [
+            {
+                source: /source\.(js)$/i, target: '$1'
+            }
+        ],
         //是否压缩
         compress: {
             //压缩js，包括coffee
@@ -40,7 +46,10 @@ module.exports = {
                 ignore: /module$/i
             },
             //编译js目录
-            "js": {},
+            "js": {
+                //不编译直接复制的文件
+                copy: /\.min\.js$/i
+            },
             //编译css目录
             "css": {
                 //忽略目标目录
