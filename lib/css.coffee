@@ -9,6 +9,10 @@ _data = require './data'
 
 #渲染指定的less
 exports.render = (file, callback)->
+    #css文件不处理
+    if _path.extname(file) isnt '.less'
+      callback null, _common.readFile(file)
+      return
     #读取并转换less
     content = _fs.readFileSync file, 'utf-8'
     #选项
