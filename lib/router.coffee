@@ -58,10 +58,15 @@ responseCSS = (url, req, res, next)->
 responseJS = (url, req, res, next)->
     jsFile = url.pathname
     #替换掉source的文件名，兼容honey
-    jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
+    #jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
     #如果文件已经存在，则直接返回
     jsFile = _path.join SILKY.workbench, jsFile
     return if responseFileIfExists jsFile, res
+
+    #没有找到，考虑去掉.source文件
+    if _config.replaceSource
+      jsFile = jsFile.replace '.source.js', '.js'
+      return if responseFileIfExists jsFile, res
 
     #如果没有找到，则考虑编译coffee
     coffeeFile = _common.replaceExt jsFile, '.coffee'
