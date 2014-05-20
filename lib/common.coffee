@@ -33,25 +33,17 @@ exports.watchAndTrigger = (parent, pattern)->
 
 #监控文件
 deepWatch = exports.watch = (parent, pattern, callback)->
+  try
     dw = new _deepWatch parent, (event, file)->
-        #console.log file, pattern, file, event
-        #console.log (not pattern or ((typeof pattern is 'object') && not pattern.test(file)))
-        #return if not pattern or ((typeof pattern is 'object') && not pattern.test(file))
-
-        #return callback(event, file) if event is 'change'
-
-        if pattern instanceof RegExp and pattern.test(file)
-            #rename有两种情况，删除或者新建，如果文件找不到了，则是删除
-            event = if _fs.existsSync file then 'change' else 'delete'
-            callback event, file
+      if pattern instanceof RegExp and pattern.test(file)
+          #rename有两种情况，删除或者新建，如果文件找不到了，则是删除
+          event = if _fs.existsSync file then 'change' else 'delete'
+          callback event, file
 
     dw.start()
+  catch e
+    console.log e
 
-    ###
-    _fs.watch parent, (event, filename)->
-        console.log(filename)
-        callback(filename) if pattern.test(filename)
-    ###
 
 #判断是否为产品环境
 exports.isProduction = ()-> SILKY.env is 'production'
