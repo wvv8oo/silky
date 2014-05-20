@@ -1,4 +1,4 @@
-lib-cov
+b-cov
 *.seed
 *.log
 *.csv
@@ -6,12 +6,20 @@ lib-cov
 *.out
 *.pid
 *.gz
-.idea
 
 pids
 logs
 results
-git
+
 npm-debug.log
 node_modules
-samples/build
+bower_components
+.bowerrc
+.idea/*
+*.iml
+projectFilesBackup
+
+.DS_Store
+*~
+*.swp
+*.swo

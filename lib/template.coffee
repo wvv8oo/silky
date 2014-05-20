@@ -119,6 +119,7 @@ exports.render = (key)->
         data = _data.whole.json
         #附加运行时的环境
         data.silky = _.extend({}, SILKY)
+        data.silky.isDevelopment = false
         content = template data
         html = injectScript content
 
@@ -163,7 +164,7 @@ registerHandlebars = ()->
     _handlebars.registerHelper "partial", importCommand
     _handlebars.registerHelper "import", importCommand
 
-    _handlebars.registerHelper "if", (left, right, options)->
+    _handlebars.registerHelper "ifEqual", (left, right, options)->
         return if left is right then options.fn(this) else ""
 
 #初始化
