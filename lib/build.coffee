@@ -59,7 +59,7 @@ scriptProcessor = (source, target, callback)->
 cssProcessor = (source, target, callback)->
     _css.render source, (err, css)->
         if err
-            console.log "CSS渲染出错：#{source}".red
+            console.log "CSS Error: #{source}".red
             console.log err.message.red
             process.exit(0)
         #判断是否要压缩
@@ -176,5 +176,5 @@ exports.execute = (done)->
     console.log "构建目录： #{SILKY.output}".green
     clearTarget()
     #复制数据
-    #copyFile()
+    copyFile()
     compileFile(done)
