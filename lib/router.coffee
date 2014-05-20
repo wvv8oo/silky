@@ -68,6 +68,10 @@ responseJS = (url, req, res, next)->
       jsFile = jsFile.replace '.source.js', '.js'
       return if responseFileIfExists jsFile, res
 
+      #有可能是文件名带有.source，但实际上并没有，所以增加source作为文件名再找一次
+      sourceJs = _common.replaceExt jsFile, '.source.js'
+      return if responseFileIfExists sourceJs, res
+
     #如果没有找到，则考虑编译coffee
     coffeeFile = _common.replaceExt jsFile, '.coffee'
     #如果不存在这个文件，则交到下一个路由
