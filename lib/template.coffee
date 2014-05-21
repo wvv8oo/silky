@@ -10,7 +10,6 @@ _data = require './data'
 _cheerio = require 'cheerio'
 _ = require 'underscore'
 _htmlpretty = require('js-beautify').html
-_config = require SILKY.config
 require 'colors'
 
 #模板
@@ -21,7 +20,7 @@ _errorTemplate = null
 #根据文件名提取key
 getTemplateKey = exports.getTemplateKey = (file)->
     #取相对于template的路径
-    key = _path.relative _path.join(SILKY.workbench, 'template/'), file
+    key = _path.relative _path.join(_common.options.workbench, 'template/'), file
 
     #替换掉扩展名
     key = key.replace _path.extname(key), ''
@@ -48,7 +47,7 @@ readTemplate = (file)->
 
 #获取模板的目录
 getTemplateDir = ()->
-    _path.join SILKY.workbench, 'template'
+    _path.join _common.options.workbench, 'template'
 
 
 #获取所有模板
@@ -118,13 +117,13 @@ exports.render = (key)->
         #使用json的数据进行渲染模板
         data = _data.whole.json
         #附加运行时的环境
-        data.silky = _.extend({}, SILKY)
+        data.silky = _.extend({}, _common.options)
         data.silky.isDevelopment = false
 
         content = template data
         html = injectScript content
 
-        if _config.beautify then _htmlpretty(html) else html
+        if _common.config.beautify then _htmlpretty(html) else html
     catch e
         #调用目的是为了产品环境throw
         _common.combError(e)
@@ -148,7 +147,7 @@ importCommand = (name, context, options)->
 
     context = context || options.data.root
     #合并silky到context
-    context.silky = _.extend {}, SILKY if not context.silky
+    context.silky = _.extend {}, _common.options if not context.silky
     html = compilePartial(name, context || {})
     new _handlebars.SafeString(html)
 
@@ -156,7 +155,6 @@ importCommand = (name, context, options)->
 registerHandlebars = ()->
     #循环
     _handlebars.registerHelper "loop", (name, count, options)->
-        console.log name, count
         count = count || []
         count = [1..count] if typeof count is 'number'
         results = []

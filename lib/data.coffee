@@ -31,12 +31,15 @@ readData = (file)->
 
 #入口
 exports.init = ()->
+    ops = _common.options
+    workspace = _path.join ops.workbench, ops.identity, ops.env
+
     #循环读取所有数据到缓存中
-    _fs.readdirSync(SILKY.data).forEach (filename)->
-        readData _path.join(SILKY.data, filename)
+    _fs.readdirSync(workspace).forEach (filename)->
+        readData _path.join(workspace, filename)
 
     #监控数据目录中的json和less以及js是否发生的变化
-    _common.watch SILKY.data, /\.(json|less|js)$/i, (event, file)->
+    _common.watch workspace, /\.(json|less|js)$/i, (event, file)->
         extname = _path.extname(file).replace '.', ''
         #删除数据
         if event is 'delete'
