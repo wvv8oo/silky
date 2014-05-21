@@ -3,14 +3,11 @@
 _program = require('commander')
 _fs = require('fs-extra')
 _path = require('path')
-_common = require '../lib/common'
+_initialize = require '../lib/initialize'
 require 'colors'
 
-identity = '.silky'
-version = require(_path.join(__dirname, '../package.json')).version
-
 _program
-    .version(version)
+    .version(require(_path.join(__dirname, '../package.json')).version)
     .option('init', '初始化一个项目')
     .option('build', '打包项目')
     .option('-f, --full', '创建silky项目及示例项目')
@@ -19,8 +16,9 @@ _program
     .option('-e, --environment [value]', '指定项目的运行环境，默认为[development]')
     .parse(process.argv)
 
-#将示例项目复制到当前目录
-if _program.init
+#初始化silky项目
+initSilkyProject = ()->
+    identity = '.silky'
     samples = _path.join(__dirname, '..', 'samples')
     current = process.cwd()
 
@@ -31,52 +29,47 @@ if _program.init
         silkyDir = _path.join samples, identity
         _fs.copySync silkyDir, _path.join(current, identity)
         console.log "Silky项目初始化成功".green
-
     process.exit 1
-    return
 
-#设置全局的环境参数
-workbench = process.cwd()
-workbench = _path.join(__dirname, '..', 'samples') if not _fs.existsSync _path.join(process.cwd(), identity)
 
-global.SILKY =
-    version: version
-    #识别为silky目录
-    identity: identity
-    #工作环境
-    env: _program.environment || 'development'
-    #工作目录
-    workbench: workbench
-    #配置文件
-    config: _path.join workbench, identity, 'config.js'
-
-#引入配置文件
-_config = require SILKY.config
-global.SILKY.data = _path.join(workbench, identity, SILKY.env)
-global.SILKY.port = _program.port || _config.port || 14422
-_common.init()
-#初始化数据及路由
-require('../lib/data').init()
-require('../lib/template').init()
-
-#在当前目录下查找.silky文件，如果找不到则将主目录切换为系统安装目录
-console.log "工作目录：#{SILKY.workbench}".green
-
-#打包
-if _program.build
+#构建一个silky项目
+buildSilkyProject = ()->
     #设置为build模式
-    global.SILKY.buildMode = true
-    global.SILKY.output = _path.resolve SILKY.workbench, (_program.output || _config.build.output)
-    #如果没有设置，build的时候，默认为production模式
-    global.SILKY.env =  _program.environment || 'production'
-    console.log "工作环境：#{SILKY.env}".green
+    options =
+        workbench: process.cwd()
+        #指定为build模式
+        buildMode: true
+        #输出目录
+        output: _program.output
+        #如果没有设置，build的时候，默认为production模式
+        env:  _program.environment || 'production'
 
+    _initialize options
     #执行构建
     require('../lib/build').execute ()->
         console.log('项目已被成功地构建')
         process.exit 0
-    return      #阻止运行
 
-#非打包环境，直接运行
-console.log "工作环境：#{SILKY.env}".green
-_app = require('../lib')
+#实时运行项目
+runtime = ()->
+    options =
+        #设置全局的环境参数
+        workbench: process.cwd()
+        #工作环境
+        env: _program.environment || 'development'
+        #参数中提供的端口
+        port: _program.port
+
+    _initialize options
+    #执行app
+    require('../lib/app')
+
+
+
+
+#将示例项目复制到当前目录
+return initSilkyProject() if _program.init
+#构建一个silky项目
+return buildSilkyProject() if _program.build
+
+runtime()
