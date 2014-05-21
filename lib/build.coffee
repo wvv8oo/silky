@@ -44,6 +44,7 @@ clearTarget = ()->
 
 #
 scriptMinify = (content)->
+    return content if not _config.build.compress.is
     result = _uglify.minify content, fromString: true
     result.code
 
@@ -117,20 +118,30 @@ getTarget = (target)->
   target = target.replace item.source, item.target for item in _config.build.rename
   target
 
+#根据文件名检查，是否仅复制文件
+isCopyFile = (filters, file, shortSource)->
+    filters = filters || []
+    for filter in filters
+        return true if filter?.test(file) or filter is shortSource
+
 #处理文件
 fileHandler = (source, target, callback)->
     #确保文件夹存在
     directoryPromise source
     processor = null
     ext = null
+    compileKey = null
     switch _path.extname source
         when '.html', '.hbs'
+            compileKey = 'template'
             processor = htmlProcessor
             ext = '.html'
         when '.less', '.css'
+            compileKey = 'css'
             processor = cssProcessor
             ext = '.css'
         when '.js', '.coffee'
+            compileKey = 'js'
             processor = scriptProcessor
             ext = '.js'
 
@@ -140,11 +151,14 @@ fileHandler = (source, target, callback)->
     #输出日志
     shortSource = _path.relative SILKY.workbench, source
     shortTarget = _path.relative SILKY.output, target
-    console.log "#{shortSource} -> #{shortTarget}".green
-    #如果存在处理器，则交由处理器处理
-    if processor
+    #如果存在处理器，则交由处理器处理，且非copy文件
+
+    needCopy = isCopyFile(_config.build.compile[compileKey]?.copy, source, shortSource)
+    if not needCopy and processor
+        console.log "Compile -> #{shortTarget}".green
         processor source, target, callback
     else
+        console.log "Coyp File -> #{shortTarget}"
         #复制文件，并回调
         _fs.copySync source, target
         callback()
