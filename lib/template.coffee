@@ -120,6 +120,7 @@ exports.render = (key)->
         #附加运行时的环境
         data.silky = _.extend({}, SILKY)
         data.silky.isDevelopment = false
+
         content = template data
         html = injectScript content
 
@@ -143,10 +144,11 @@ importCommand = (name, context, options)->
     #如果则第二个参数像options，则表示没有提供参数
     if context and context.name in ['import', 'partial']
         options = context
-        context = options.data.root
+        context = _.extend {}, options.data.root
 
+    context = context || options.data.root
     #合并silky到context
-    _.extend context, SILKY
+    context.silky = _.extend {}, SILKY if not context.silky
     html = compilePartial(name, context || {})
     new _handlebars.SafeString(html)
 
@@ -154,6 +156,8 @@ importCommand = (name, context, options)->
 registerHandlebars = ()->
     #循环
     _handlebars.registerHelper "loop", (name, count, options)->
+        console.log name, count
+        count = count || []
         count = [1..count] if typeof count is 'number'
         results = []
         for value in count
