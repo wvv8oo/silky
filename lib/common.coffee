@@ -52,7 +52,8 @@ exports.isProduction = ()-> SILKY.env is 'production'
 exports.combError = (error)->
     #如果是产品环境，则直接抛出错误退出
     if this.isProduction()
-        console.log error.red
+        console.log 'Error:'.red
+        console.log error
         process.exit 1
         return
 
