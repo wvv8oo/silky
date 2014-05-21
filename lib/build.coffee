@@ -16,7 +16,6 @@ _script = require './script'
 _uglify = require 'uglify-js'
 _cleanCSS = require 'clean-css'
 
-_config = require _path.join(SILKY.config)
 require 'colors'
 
 #循环所有文件
@@ -36,15 +35,15 @@ directoryPromise = (file)->
     _mkdirp.sync dir if not _fs.existsSync dir
 
 #清除目录
-clearTarget = ()->
+clearTarget = (output)->
     #如果文件存在，则删除
-    if _fs.existsSync SILKY.output
-        _fs.removeSync SILKY.output
-        console.log "构建目录已经存在，原目录已被删除。 [#{SILKY.output}]".yellow
+    if _fs.existsSync output
+        _fs.removeSync output
+        console.log "构建目录已经存在，原目录已被删除。 [#{output}]".yellow
 
 #
 scriptMinify = (content)->
-    return content if not _config.build.compress.is
+    return content if not _common.config.build.compress.is
     result = _uglify.minify content, fromString: true
     result.code
 
@@ -64,7 +63,7 @@ cssProcessor = (source, target, callback)->
             console.log err.message.red
             process.exit(0)
         #判断是否要压缩
-        css = new _cleanCSS().minify css if _config.build.compress.css
+        css = new _cleanCSS().minify css if _common.config.build.compress.css
 
         saveFile target, css
         callback()
@@ -79,7 +78,7 @@ htmlProcessor = (source, target, callback)->
         #交给template渲染
         content = _template.render _template.getTemplateKey(source)
     #检查是否需要压缩内联的script
-    content = compressInternalJavascript content if _config.build.compress.internal
+    content = compressInternalJavascript content if _common.config.build.compress.internal
     saveFile target, content
     callback()
 
@@ -96,18 +95,20 @@ compressInternalJavascript = (content)->
 
 
 #根据config的配置复制文件到目标
-copyFile = ()->
-    _config.build.copy.forEach (item)->
-        target = _path.join(SILKY.output, item)
-        _fs.copySync _path.join(SILKY.workbench, item), target
+copyFile = (output)->
+    _common.config.build.copy.forEach (item)->
+        target = _path.join(output, item)
+        _fs.copySync _path.join(_common.options.workbench, item), target
         console.log "Copy [#{item}] to #{target}".green
 
+###
 #根据文件当前路径，来确定目标路径，并确保文件夹是否存在
 getBuildTarget = (file)->
     target = file.replace SILKY.workbench, SILKY.output
     directoryPromise target
     target
-
+###
+    
 #保存文件
 saveFile = (file, content)->
     directoryPromise file
@@ -115,7 +116,7 @@ saveFile = (file, content)->
 
 #处理target，可能要重全命名
 getTarget = (target)->
-  target = target.replace item.source, item.target for item in _config.build.rename
+  target = target.replace item.source, item.target for item in _common.config.build.rename
   target
 
 #根据文件名检查，是否仅复制文件
@@ -125,7 +126,7 @@ isCopyFile = (filters, file, shortSource)->
         return true if filter?.test(file) or filter is shortSource
 
 #处理文件
-fileHandler = (source, target, callback)->
+fileHandler = (output, source, target, callback)->
     #确保文件夹存在
     directoryPromise source
     processor = null
@@ -149,11 +150,11 @@ fileHandler = (source, target, callback)->
     target = _common.replaceExt target, ext if processor
     target = getTarget target
     #输出日志
-    shortSource = _path.relative SILKY.workbench, source
-    shortTarget = _path.relative SILKY.output, target
+    shortSource = _path.relative _common.options.workbench, source
+    shortTarget = _path.relative output, target
     #如果存在处理器，则交由处理器处理，且非copy文件
 
-    needCopy = isCopyFile(_config.build.compile[compileKey]?.copy, source, shortSource)
+    needCopy = isCopyFile(_common.config.build.compile[compileKey]?.copy, source, shortSource)
     if not needCopy and processor
         console.log "Compile -> #{shortTarget}".green
         processor source, target, callback
@@ -164,10 +165,10 @@ fileHandler = (source, target, callback)->
         callback()
 
 #根据配置，编译文件
-compileFile = (done)->
+compileFile = (output, done)->
     queue = []  #待处理的文件列表
-    for key, node of _config.build.compile
-        source = _path.join SILKY.workbench, key
+    for key, node of _common.config.build.compile
+        source = _path.join _common.options.workbench, key
         #递归文件
         fetch source,
             #是否跳过
@@ -177,7 +178,7 @@ compileFile = (done)->
             (file)->
                 #获取相当workbench的路径
                 relative = _path.relative source, file
-                target = _path.join _path.resolve(SILKY.output, node.target || key), relative
+                target = _path.join _path.resolve(output, node.target || key), relative
 
                 queue.push
                     source: file
@@ -187,14 +188,18 @@ compileFile = (done)->
     _async.mapSeries queue, (item, cb)->
         #跳过文件夹
         return cb() if _fs.statSync(item.source).isDirectory()
-        fileHandler item.source, item.target, cb
+        fileHandler output, item.source, item.target, cb
     ,(err, result)->
         console.log 'done'
         done()
 
 exports.execute = (done)->
-    console.log "构建目录： #{SILKY.output}".green
-    clearTarget()
+    output = _common.options.output || _common.config.build.output || './build'
+    output = _path.resolve __dirname, '../', output
+    console.log "Build to -> #{output}".green
+
+    #清除目录
+    clearTarget output
     #复制数据
-    copyFile()
-    compileFile(done)
+    copyFile output
+    compileFile output, done
