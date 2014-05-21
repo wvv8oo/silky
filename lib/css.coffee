@@ -17,7 +17,7 @@ exports.render = (file, callback)->
     content = _fs.readFileSync file, 'utf-8'
     #选项
     options =
-        paths: [_path.join(SILKY.workbench, 'css'), _path.join(SILKY.workbench, 'css', 'module')]
+        paths: [_path.join(_common.options.workbench, 'css'), _path.join(_common.options.workbench, 'css', 'module')]
 
     parser = new _less.Parser options
     #将全局配置中的less加入到content后面

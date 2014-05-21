@@ -1,4 +1,3 @@
-#用于非command条件下启动silky web server，用于node-dev调试
 _path = require 'path'
 _fs = require 'fs'
 
