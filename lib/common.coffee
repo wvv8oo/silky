@@ -5,14 +5,12 @@ _events = require 'events'
 _deepWatch = require 'deep-watch'
 _fs = require 'fs'
 _path = require 'path'
-_pageEvent = new _events.EventEmitter()
-_config = null
 require 'colors'
-###
-#配置文件的目录
-exports.configDir = ()->
-    _path.join exports.root(), _configDir
-###
+_ = require 'underscore'
+
+_pageEvent = new _events.EventEmitter()
+_config = null      #配置，映射到.silky/config.js文件
+_options = null     #用户传入的配置信息
 
 #触发页面被改变事件
 exports.onPageChanged = ()->
@@ -44,9 +42,30 @@ deepWatch = exports.watch = (parent, pattern, callback)->
   catch e
     console.log e
 
+#初始化watch
+initWatch = ()->
+    #监控配置文件中的文件变化
+    deepWatch _path.join(_options.workbench, _options.identity, _options.env)
+
+    #监控文件
+    for key, pattern of _config.watch
+        dir = _path.join(_options.workbench, key)
+
+        deepWatch dir, pattern, (event, file)->
+            extname = _path.extname file
+            triggerType = 'html'
+            if extname in ['.less', '.css']
+                triggerType = 'css'
+            else if extname in ['.js', '.coffee']
+                triggerType = 'js'
+
+            _pageEvent.emit 'file:change:' + triggerType, event, file
+            console.log "#{event} - #{file}".green
+            #同时引发页面内容被改变的事件
+            exports.onPageChanged()
 
 #判断是否为产品环境
-exports.isProduction = ()-> SILKY.env is 'production'
+exports.isProduction = ()-> _options.env is 'production'
 
 #如果是产品环境，则报错，否则返回字符
 exports.combError = (error)->
@@ -65,37 +84,41 @@ exports.replaceExt = (file, ext)->
     file.replace _path.extname(file), ext
 
 #读取文件
-exports.readFile = (file)->
-    _fs.readFileSync file, 'utf-8'
+exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 
-exports.init = ()->
-    _config = require SILKY.config
+#初始化
+exports.init = (options)->
+    _options =
+        env: 'development'
+        workbench: null
+        buildMode: false
 
-    #监控配置文件中的文件变化
-    deepWatch _path.join(SILKY.workbench, SILKY.identity, SILKY.env)
+    _.extend _options, options
+    _options.version = require('../package.json').version
+    _options.identity = '.silky'
 
-    #监控文件
-    for key, pattern of _config.watch
-        dir = _path.join(SILKY.workbench, key)
+    #检查是否存在.silky文件夹
+    silkyDir = _path.join _options.workbench, _options.identity
 
-        deepWatch dir, pattern, (event, file)->
-            extname = _path.extname file
-            triggerType = 'html'
-            if extname in ['.less', '.css']
-                triggerType = 'css'
-            else if extname in ['.js', '.coffee']
-                triggerType = 'js'
+    #如果在workbench中没有找到.silky的文件夹，则将目录置为silky的samples目录
+    if not _fs.existsSync silkyDir
+        _options.workbench = _path.join __dirname, '..', 'samples'
 
-            _pageEvent.emit 'file:change:' + triggerType, event, file
-            console.log "#{event} - #{file}".green
-            #同时引发页面内容被改变的事件
-            exports.onPageChanged()
+    #配置文件
+    configFile = _path.join _options.workbench, _options.identity, 'config.js'
+    _config = require configFile
+
+    exports.config = _config
+    exports.options = _options
+
+    initWatch()
 
 #输入当前正在操作的文件
 exports.fileLog = (file, log)->
-    file = _path.relative SILKY.workbench, file
+    file = _path.relative _options.workbench, file
     console.log "#{log || " "}>#{file}"
 
 #替换掉slash，所有奇怪的字符
 exports.replaceSlash = (file)->
     file.replace(/\W/ig, "_")
+
