@@ -37,7 +37,7 @@ readTemplate = (file)->
     #路径是以module开头的
     if /^module/.test key
         try
-            console.log "partial: #{key}"
+            #console.log "partial: #{key}"
             _handlebars.registerPartial key, content
         catch e
             console.log "警告：#{key}读取失败，路径：#{file}".error

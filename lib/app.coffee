@@ -1,25 +1,21 @@
+_express = require 'express'
+_http = require 'http'
+_app = _express()
+_server = require('http').createServer _app
 _path = require 'path'
 _fs = require 'fs'
+_silky = require './index'
+_common = require './common'
 
-workbench = _path.join(__dirname, '..', 'samples')
-identity = '.silky'
-global.SILKY =
-    #识别为silky目录
-    identity: identity
-    #工作环境
-    env: 'development'
-    #端口
-    port: 14422
-    #工作目录
-    workbench: workbench
-    #配置文件
-    config: _path.join workbench, identity, 'config.js'
+options =
+    workbench: process.env.WORKBENCH
+    env: process.env.NODE_ENV
+    port: process.env.PORT
 
-#引入配置文件
-global.SILKY.data = _path.join(workbench, identity, SILKY.env)
+_silky(_app, _server, options)
+_app.set 'port', _common.options.port || _common.config.port || 14422
+_server.listen _app.get('port')
 
-require('./common').init()
-#初始化数据及路由
-require('./data').init()
-require('./template').init()
-require './index'
+console.log "监听端口 #{_app.get('port')}"
+console.log "工作目录 #{_common.options.workbench}"
+console.log "工作环境 #{_common.options.env}"

@@ -4,6 +4,7 @@ _program = require('commander')
 _fs = require('fs-extra')
 _path = require('path')
 _initialize = require '../lib/initialize'
+_forever = require 'forever-monitor'
 require 'colors'
 
 _program
@@ -52,19 +53,39 @@ buildSilkyProject = ()->
 
 #实时运行项目
 runtime = ()->
+
     options =
         #设置全局的环境参数
-        workbench: process.cwd()
+        WORKBENCH: process.cwd()
         #工作环境
-        env: _program.environment || 'development'
+        NODE_ENV: _program.environment || process.env.NODE_ENV || 'development'
         #参数中提供的端口
-        port: _program.port
-
-    _initialize options
-    #执行app
-    require('../lib/app')
+        PORT: _program.port || process.env.PORT || ''
 
 
+    file = _path.join __dirname, '../lib/app.coffee'
+    child = new(_forever.Monitor)(file, {
+        logFile: '/Users/conis/temp/silky.log',
+        max: Number.MAX_VALUE,
+        command: 'coffee'
+        silent: true,
+        env: options
+    })
+
+    child.on 'stdout', (data)->
+        console.log String(data)
+
+    child.on 'error', ()->
+        console.log 'Error'.red
+        console.log arguments
+
+    child.on 'start', ()-> console.log 'Silky已经启动'.green
+    child.on 'restart', ()-> console.error "OOPS，Silky第#{child.times}重启了".red
+
+    #child.on 'exit', ()-> console.log('Exit')
+
+
+    child.start()
 
 
 #将示例项目复制到当前目录

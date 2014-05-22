@@ -1,33 +1,35 @@
 {
-    "name": "silky",
-    "version": "0.2.0",
-    "dependencies": {
-        "handlebars": "^2.0.0-alpha.2",
-        "express": "^4.2.0",
-        "less": "^1.7.0",
-        "json-proxy": "^0.1.2",
-        "commander": "^2.2.0",
-        "async": "^0.8.0",
-        "grunt": "^0.4.5",
-        "coffee-script": "^1.7.1",
-        "colors": "^0.6.2",
-        "deep-watch": "^0.1.1",
-        "cheerio": "^0.15.0",
-        "socket.io-client": "^0.9.16",
-        "socket.io": "^0.9.16",
-        "mkdirp": "^0.5.0",
-        "fs-extra": "^0.8.1",
-        "uglify-js": "^2.4.13",
-        "clean-css": "^2.1.8",
-        "underscore": "^1.6.0",
-        "js-beautify": "^1.5.1"
-    },
-    "main": "./lib/index.coffee",
-    "bin": {
-        "silky": "./bin/index.coffee"
-    },
-    "scripts": {
-        "test": "node-dev ./test/index.coffee",
-        "start": "node-dev ./lib/app.coffee"
-    }
+  "name": "silky",
+  "version": "0.2.0",
+  "dependencies": {
+    "handlebars": "^2.0.0-alpha.2",
+    "express": "^4.2.0",
+    "less": "^1.7.0",
+    "json-proxy": "^0.1.2",
+    "commander": "^2.2.0",
+    "async": "^0.8.0",
+    "grunt": "^0.4.5",
+    "coffee-script": "^1.7.1",
+    "colors": "^0.6.2",
+    "deep-watch": "^0.1.1",
+    "cheerio": "^0.15.0",
+    "socket.io-client": "^0.9.16",
+    "socket.io": "^0.9.16",
+    "mkdirp": "^0.5.0",
+    "fs-extra": "^0.8.1",
+    "uglify-js": "^2.4.13",
+    "clean-css": "^2.1.8",
+    "underscore": "^1.6.0",
+    "js-beautify": "^1.5.1",
+    "forever-monitor": "^1.2.3",
+    "watch": "^0.10.0"
+  },
+  "main": "./lib/index.coffee",
+  "bin": {
+    "silky": "./bin/index.coffee"
+  },
+  "scripts": {
+    "test": "node-dev ./test/index.coffee",
+    "start": "node-dev ./lib/app.coffee"
+  }
 }

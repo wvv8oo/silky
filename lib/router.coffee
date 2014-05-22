@@ -9,7 +9,6 @@ _coffee = require 'coffee-script'
 _script = require './script'
 _precompiler = require './handlebars_precompiler'
 _url = require 'url'
-_config = require SILKY.config
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
@@ -25,7 +24,7 @@ responseHTML = (url, req, res, next)->
     filename += 'index.html' if /\/$/.test filename
 
     #如果html文件存在，则直接返回
-    htmlFile = _path.join(SILKY.workbench, 'template', filename)
+    htmlFile = _path.join(_common.options.workbench, 'template', filename)
     return if responseFileIfExists htmlFile, res
 
     #不存在这个文件，则读取模板
@@ -38,7 +37,7 @@ responseHTML = (url, req, res, next)->
 
 #请求css，如果是less则编译
 responseCSS = (url, req, res, next)->
-    cssFile = _path.join SILKY.workbench, url.pathname
+    cssFile = _path.join _common.options.workbench, url.pathname
     #如果文件已经存在，则直接返回
     return if responseFileIfExists cssFile, res
 
@@ -60,11 +59,11 @@ responseJS = (url, req, res, next)->
     #替换掉source的文件名，兼容honey
     #jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
     #如果文件已经存在，则直接返回
-    jsFile = _path.join SILKY.workbench, jsFile
+    jsFile = _path.join _common.options.workbench, jsFile
     return if responseFileIfExists jsFile, res
 
     #没有找到，考虑去掉.source文件
-    if _config.replaceSource
+    if _common.config.replaceSource
       jsFile = jsFile.replace '.source.js', '.js'
       return if responseFileIfExists jsFile, res
 
@@ -84,7 +83,7 @@ responseJS = (url, req, res, next)->
 
 #请求其它静态资源，直接输入出
 responseStatic = (req, res, next)->
-    file = _path.join SILKY.workbench, req.url
+    file = _path.join _common.options.workbench, req.url
     #查找文件是否存在
     return next() if not _fs.existsSync file
     res.sendfile file
@@ -117,34 +116,3 @@ module.exports = (app)->
             return responseJS url, req, res, next
         else
             responseStatic(req, res, next)
-
-
-    ###
-    #临时模板路由
-    app.get "/js/template.js", (req, res, next)->
-        dir = _path.join(__dirname, '../samples/js/template')
-        #读取模板
-        tpl = _path.join __dirname, './client/precompile.hbs'
-        content = _precompiler.precompile dir, _fs.readFileSync(tpl, 'utf-8')
-        res.end content
-    ###
-
-    ###
-    #所有html页面
-    app.get "#{path}.html", responseHTML
-
-    #所有的css
-    app.get "#{path}.css", responseCSS
-    #请求目录
-
-    #所有的js
-    app.get "#{path}(.source)?.js", responseJS
-
-    #发送客户端要的文件
-    app.get "/__/:file", (req, res, next)->
-        file = _path.join(__dirname, 'client', req.params.file)
-        res.sendfile file
-    ###
-
-    #404
-    #app.all '*', responseStatic
