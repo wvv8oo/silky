@@ -97,11 +97,8 @@ exports.init = (options)->
     _options.version = require('../package.json').version
     _options.identity = '.silky'
 
-    #检查是否存在.silky文件夹
-    silkyDir = _path.join _options.workbench, _options.identity
-
     #如果在workbench中没有找到.silky的文件夹，则将目录置为silky的samples目录
-    if not _fs.existsSync silkyDir
+    if not _options.workbench or not _fs.existsSync _path.join(_options.workbench, _options.identity)
         _options.workbench = _path.join __dirname, '..', 'samples'
 
     #配置文件
@@ -116,7 +113,7 @@ exports.init = (options)->
 #输入当前正在操作的文件
 exports.fileLog = (file, log)->
     file = _path.relative _options.workbench, file
-    console.log "#{log || " "}>#{file}"
+    #console.log "#{log || " "}>#{file}"
 
 #替换掉slash，所有奇怪的字符
 exports.replaceSlash = (file)->

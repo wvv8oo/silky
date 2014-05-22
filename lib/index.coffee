@@ -6,23 +6,22 @@ _common = require './common'
 _initialize = require './initialize'
 
 #作为一个中间件提供服务
-module.exports = (app, options)->
+module.exports = (app, server, options)->
     #初始化项目
     _initialize options
+
     #监听路由
     _router(app)
 
-    config = _common.config
-
     #集成代理
-    cfgProxy = config.proxy || {}
+    cfgProxy = _common.config.proxy || {}
     cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
     app.use _proxy.initialize(proxy: cfgProxy)
 
+
     #监听socket的事件
-    io = require('socket.io').listen(options.server, log: false)
+    io = require('socket.io').listen(server, log: false)
     io.sockets.on 'connection', (socket)->
         event = 'page:change'
         #收到页面变更的事件后，通知客户端
-        _common.addListener event, ()->
-            socket.emit event, null
+        _common.addListener event, ()-> socket.emit event, null
