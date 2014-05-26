@@ -171,6 +171,15 @@ js目录用于存放`.js`和`.coffee`文件
 .silky文件夹是silky的配置文件
 
 #History
+## 0.2.1
+
+* 支持路由转发，可以根据项目实际情况使用实际并不存在的URL
+* 支持Crash后自动重启
+* 支持配置启否使用livereload，并支持AMD
+* 修复在Linux和Windows下会出现因Deep Watch而Crash的问题?
+* 支持作为Express中间件的方式被调用
+* 修复一些Bug
+
 ##0.1.2 2014-05-06
 * 增加logo，并修复`silky init -f`没有初始化images和images-demo文件夹的bug
 * 修复无法响应静态文件的bug
