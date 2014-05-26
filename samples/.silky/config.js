@@ -11,6 +11,13 @@ module.exports = {
             //"/ajax": "/"
         }
     },
+    //实时刷新
+    liveload: {
+        //实时刷新的环境，支持数组，如['development', 'production']
+        env: ['development'],
+        //是否以amd的方式加载socket.io以及main.js
+        amd: false
+    },
     //替换掉文件名中的source
     "replaceSource": true,
     //build的配置
