@@ -12,7 +12,7 @@ module.exports = {
         }
     },
     //实时刷新
-    liveload: {
+    livereload: {
         //实时刷新的环境，支持数组，如['development', 'production']
         env: ['development'],
         //是否以amd的方式加载socket.io以及main.js
