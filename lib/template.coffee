@@ -99,9 +99,9 @@ injectScript = (content)->
 	#合并honey的依赖
 	combineHoney $
 
-	liveload = _common.config.liveload
+	livereload = _common.config.livereload
 	allowEnv = liveload
-	if _common.options.env in liveload.env
+	if _common.options.env in livereload.env
 		mainJS = '/__/main.js'
 		socketJS = '/socket.io/socket.io.js'
 		append = '<!--自动附加内容-->\n'
