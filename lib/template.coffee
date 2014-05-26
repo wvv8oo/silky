@@ -100,12 +100,11 @@ injectScript = (content)->
 	combineHoney $
 
 	livereload = _common.config.livereload
-	allowEnv = liveload
 	if _common.options.env in livereload.env
 		mainJS = '/__/main.js'
 		socketJS = '/socket.io/socket.io.js'
 		append = '<!--自动附加内容-->\n'
-		if liveload.amd
+		if livereload.amd
 			append += "<script>
 										require(['#{mainJS}'])
 									</script>"
