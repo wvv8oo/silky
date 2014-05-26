@@ -12,107 +12,118 @@ _url = require 'url'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
-    #如果html文件存在，则直接输出
-    if _fs.existsSync file
-        res.sendfile file
-        return true
+	#如果html文件存在，则直接输出
+	if _fs.existsSync file
+		res.sendfile file
+		return true
 
 #请求html文件
-responseHTML = (url, req, res, next)->
-    filename = url.pathname
-    #处理根目录的问题，自动加上index.html
-    filename += 'index.html' if /\/$/.test filename
+responseHTML = (filename, req, res, next)->
+	#处理根目录的问题，自动加上index.html
+	#filename += 'index.html' if /\/$/.test filename
 
-    #如果html文件存在，则直接返回
-    htmlFile = _path.join(_common.options.workbench, 'template', filename)
-    return if responseFileIfExists htmlFile, res
+	#如果html文件存在，则直接返回
+	htmlFile = _path.join(_common.options.workbench, 'template', filename)
+	return if responseFileIfExists htmlFile, res
 
-    #不存在这个文件，则读取模板
-    #替换扩展名
-    renderKey = _common.replaceExt(filename, '')
-    #替换掉第一个/
-    renderKey = renderKey.replace /^\//, ''
-    content = _template.render renderKey
-    res.end content
+	#不存在这个文件，则读取模板
+	#替换扩展名
+	renderKey = _common.replaceExt(filename, '')
+	#替换掉第一个/
+	renderKey = renderKey.replace /^\//, ''
+	content = _template.render renderKey
+	res.end content
 
 #请求css，如果是less则编译
-responseCSS = (url, req, res, next)->
-    cssFile = _path.join _common.options.workbench, url.pathname
-    #如果文件已经存在，则直接返回
-    return if responseFileIfExists cssFile, res
+responseCSS = (filename, req, res, next)->
+	cssFile = _path.join _common.options.workbench, filename
+	#如果文件已经存在，则直接返回
+	return if responseFileIfExists cssFile, res
 
-    #不存在这个css，则渲染less
-    lessFile = _common.replaceExt cssFile, '.less'
-    #如果不存在这个文件，则交到下一个路由
-    if not _fs.existsSync lessFile
-        console.log "CSS或Less无法找到->#{url.pathname}".red
-        return next()
+	#不存在这个css，则渲染less
+	lessFile = _common.replaceExt cssFile, '.less'
+	#如果不存在这个文件，则交到下一个路由
+	if not _fs.existsSync lessFile
+		console.log "CSS或Less无法找到->#{filename}".red
+		return next()
 
-    _css.render lessFile, (err, css)->
-        #编译发生错误
-        return response500 req, res, next, JSON.stringify(err) if err
-        res.end css
+	_css.render lessFile, (err, css)->
+		#编译发生错误
+		return response500 req, res, next, JSON.stringify(err) if err
+		res.end css
 
 #响应js
-responseJS = (url, req, res, next)->
-    jsFile = url.pathname
-    #替换掉source的文件名，兼容honey
-    #jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
-    #如果文件已经存在，则直接返回
-    jsFile = _path.join _common.options.workbench, jsFile
-    return if responseFileIfExists jsFile, res
+responseJS = (filename, req, res, next)->
+	#替换掉source的文件名，兼容honey
+	#jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
+	#如果文件已经存在，则直接返回
+	jsFile = _path.join _common.options.workbench, filename
+	return if responseFileIfExists jsFile, res
 
-    #没有找到，考虑去掉.source文件
-    if _common.config.replaceSource
-      jsFile = jsFile.replace '.source.js', '.js'
-      return if responseFileIfExists jsFile, res
+	#没有找到，考虑去掉.source文件
+	if _common.config.replaceSource
+		jsFile = jsFile.replace '.source.js', '.js'
+		return if responseFileIfExists jsFile, res
 
-      #有可能是文件名带有.source，但实际上并没有，所以增加source作为文件名再找一次
-      sourceJs = _common.replaceExt jsFile, '.source.js'
-      return if responseFileIfExists sourceJs, res
+		#有可能是文件名带有.source，但实际上并没有，所以增加source作为文件名再找一次
+		sourceJs = _common.replaceExt jsFile, '.source.js'
+		return if responseFileIfExists sourceJs, res
 
-    #如果没有找到，则考虑编译coffee
-    coffeeFile = _common.replaceExt jsFile, '.coffee'
-    #如果不存在这个文件，则交到下一个路由
-    if not _fs.existsSync coffeeFile
-        console.log "Coffee或JS无法找到->#{url.pathname}".red
-        return next()
+	#如果没有找到，则考虑编译coffee
+	coffeeFile = _common.replaceExt jsFile, '.coffee'
+	#如果不存在这个文件，则交到下一个路由
+	if not _fs.existsSync coffeeFile
+		console.log "Coffee或JS无法找到->#{filename}".red
+		return next()
 
-    res.send _script.compile coffeeFile
+	res.send _script.compile coffeeFile
 
 
 #请求其它静态资源，直接输入出
 responseStatic = (req, res, next)->
-    file = _path.join _common.options.workbench, req.url
-    #查找文件是否存在
-    return next() if not _fs.existsSync file
-    res.sendfile file
+	file = _path.join _common.options.workbench, req.url
+	#查找文件是否存在
+	return next() if not _fs.existsSync file
+	res.sendfile file
 
 #找不到
 response404 = (req, res, next)->
-    res.statusCode = 404
-    res.end('404 Not Found')
+	res.statusCode = 404
+	res.end('404 Not Found')
 
 #服务器错误
 response500 = (req, res, next, message)->
-    res.statusCode = 500
-    res.end(message || '500 Error')
+	res.statusCode = 500
+	res.end(message || '500 Error')
+
+#根据路由规则替换路由
+replacePath = (origin)->
+	url = origin
+	for router in _common.config.routers
+		continue if not router.path.test(url)
+		url = url.replace router.path, router.to
+		break if router.next
+
+	console.log "#{origin} -> #{url}".green if url isnt origin
+	url
 
 module.exports = (app)->
-    #silky的文件引用
-    app.get "/__/:file", (req, res, next)->
-        file = _path.join(__dirname, 'client', req.params.file)
-        res.sendfile file
+	#silky的文件引用
+	app.get "/__/:file", (req, res, next)->
+		file = _path.join(__dirname, 'client', req.params.file)
+		res.sendfile file
 
-    #匹配所有
-    app.get "*", (req, res, next)->
-        url = _url.parse(req.url)
-        #匹配html
-        if /(\.(html|html)|\/)$/.test(url.pathname)
-            return responseHTML url, req, res, next
-        else if /\.css$/.test(url.pathname)
-            return responseCSS url, req, res, next
-        else if /\.js$/.test(url.pathname)
-            return responseJS url, req, res, next
-        else
-            responseStatic(req, res, next)
+	#匹配所有
+	app.get "*", (req, res, next)->
+		url = _url.parse(req.url)
+		path = replacePath url.pathname
+
+		#匹配html
+		if /(\.(html|html)|\/)$/.test(path)
+			return responseHTML path, req, res, next
+		else if /\.css$/.test(path)
+			return responseCSS path, req, res, next
+		else if /\.js$/.test(path)
+			return responseJS path, req, res, next
+		else
+			responseStatic(req, res, next)

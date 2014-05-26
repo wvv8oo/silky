@@ -18,6 +18,13 @@ module.exports = {
         //是否以amd的方式加载socket.io以及main.js
         amd: false
     },
+    //路由
+    routers: [
+        {
+            //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换
+            path: /^\/$/, to: 'index.html', next: true
+        }
+    ],
     //替换掉文件名中的source
     "replaceSource": true,
     //build的配置
