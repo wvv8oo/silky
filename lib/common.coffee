@@ -2,7 +2,7 @@
     全局配置
 ###
 _events = require 'events'
-_deepWatch = require 'deep-watch'
+_watch = require 'watch'
 _fs = require 'fs'
 _path = require 'path'
 require 'colors'
@@ -30,17 +30,20 @@ exports.watchAndTrigger = (parent, pattern)->
 
 
 #监控文件
-deepWatch = exports.watch = (parent, pattern, callback)->
-  try
-    dw = new _deepWatch parent, (event, file)->
-      if pattern instanceof RegExp and pattern.test(file)
-          #rename有两种情况，删除或者新建，如果文件找不到了，则是删除
-          event = if _fs.existsSync file then 'change' else 'delete'
-          callback event, file
+deepWatch = exports.watch = (parent, pattern, cb)->
+	_watch.watchTree parent, (f, curr, prev)->
+		return if typeof f is "object" and not (prev and curr)
 
-    dw.start()
-  catch e
-    console.log e
+		#不适合监控规则的跳过
+		return if not (pattern instanceof RegExp and pattern.test(f))
+		event = 'change'
+
+		if prev is null
+			event = 'new'
+		else if curr.nlink is 0
+			event = 'delete'
+
+		cb event, f
 
 #初始化watch
 initWatch = ()->
