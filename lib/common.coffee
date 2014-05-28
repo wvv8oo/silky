@@ -17,12 +17,12 @@ exports.onPageChanged = ()->
     exports.trigger 'page:change'
 
 #触发事件
-exports.trigger = (name, arg...)->
-    _pageEvent.emit(name, arg)
+exports.trigger = (name, arg...)-> _pageEvent.emit(name, arg)
 
 #监听事件
-exports.addListener = (name, callback)->
-    _pageEvent.addListener name, callback
+exports.addListener = (event, listener)-> _pageEvent.addListener event, listener
+
+exports.removeListener = (event, listener)-> _pageEvent.removeListener event, listener
 
 #监控文件夹，如果发生改变，就触发页面被改变的事件
 exports.watchAndTrigger = (parent, pattern)->
