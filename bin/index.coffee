@@ -5,6 +5,7 @@ _fs = require('fs-extra')
 _path = require('path')
 _initialize = require '../lib/initialize'
 _forever = require 'forever-monitor'
+_os = require 'os'
 require 'colors'
 
 _program
@@ -55,17 +56,22 @@ buildSilkyProject = ()->
 runtime = ()->
 
 	options =
-	#设置全局的环境参数
-		WORKBENCH: process.cwd()
-	#工作环境
-		NODE_ENV: _program.environment || process.env.NODE_ENV || 'development'
-	#参数中提供的端口
-		PORT: _program.port || process.env.PORT || ''
+    #设置全局的环境参数
+    WORKBENCH: process.cwd()
+    #工作环境
+    NODE_ENV: _program.environment || process.env.NODE_ENV || 'development'
+    #参数中提供的端口
+    PORT: _program.port || process.env.PORT || ''
 
+
+  if _os.platform() is 'win32'
+    global.SILKY = options
+    require '../lib/app.coffee'
+    return
 
 	file = _path.join __dirname, '../lib/app.coffee'
 	child = new(_forever.Monitor)(file, {
-		logFile: '/Users/conis/temp/silky.log',
+		#logFile: '/Users/conis/temp/silky.log',
 		max: 100,
 		command: 'coffee'
 		silent: true,

@@ -8,9 +8,9 @@ _silky = require './index'
 _common = require './common'
 
 options =
-    workbench: process.env.WORKBENCH
-    env: process.env.NODE_ENV
-    port: process.env.PORT
+    workbench: process.env.WORKBENCH || global.SILKY?.WORKBENCH
+    env: process.env.NODE_ENV || global.SILKY?.NODE_ENV
+    port: process.env.PORT || global.SILKY?.PORT
 
 _silky(_app, _server, options)
 _app.set 'port', _common.options.port || _common.config.port || 14422
