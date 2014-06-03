@@ -63,8 +63,8 @@ runtime = ()->
     #参数中提供的端口
     PORT: _program.port || process.env.PORT || ''
 
-
-  if _os.platform() is 'win32'
+  #暂时不使用forever
+  if _os.platform() is 'win32' or true
     global.SILKY = options
     require '../lib/app.coffee'
     return
@@ -80,6 +80,8 @@ runtime = ()->
 
 	child.on 'stdout', (data)->
 		console.log String(data)
+
+  child.on 'stderror', (data)-> console.log String(data)
 
 	child.on 'error', ()->
 		console.log 'Error'.red
