@@ -17,6 +17,7 @@ _templtes = {}
 #系统出错的模板
 _errorTemplate = null
 
+###
 #根据文件名提取key
 getTemplateKey = exports.getTemplateKey = (file)->
 	#取相对于template的路径
@@ -26,40 +27,18 @@ getTemplateKey = exports.getTemplateKey = (file)->
 	key = key.replace _path.extname(key), ''
 	key = _common.replaceSlash key
 	key
+###
 
 #读取模板
-readTemplate = (file)->
-	content = _fs.readFileSync file, 'utf-8'
-	key = getTemplateKey file
-	_common.fileLog key
+readTemplate = (fileName)->
+  file = _path.join getTemplateDir(), fileName + '.hbs'
+  _fs.readFileSync file, 'utf-8'
 
-	#不能直接编译，因为partials可能没有准备好
-	#路径是以module开头的
-	if /^module/.test key
-		try
-		#console.log "partial: #{key}"
-			_handlebars.registerPartial key, content
-		catch e
-			console.log "警告：#{key}读取失败，路径：#{file}".error
-
-	#将所有的模板都缓存起来，partial也被缓存起来，有时候可能需要渲染一模块
-	_templtes[key] = content
 
 #获取模板的目录
 getTemplateDir = ()->
 	_path.join _common.options.workbench, 'template'
 
-
-#获取所有模板
-fetch = (parent)->
-	parent = parent || getTemplateDir()
-	#读取所有文件
-	_fs.readdirSync(parent).forEach (filename) ->
-		file = _path.join parent, filename
-		return fetch(file) if _fs.statSync(file).isDirectory()
-
-		#如果是handlebars，则读取文件
-		readTemplate(file) if _path.extname(file) is '.hbs'
 
 #合并honey中的依赖
 combineHoney = ($)->
@@ -118,35 +97,32 @@ injectScript = (content)->
 	$.html()
 
 #渲染一个模板
-exports.render = (key)->
-	key = _common.replaceSlash key
-	content = _templtes[key]
-	return _common.combError("无法找到模板[#{key}]") if not content
-	try
-		template = _handlebars.compile content
-		#使用json的数据进行渲染模板
-		data = _data.whole.json
-		#附加运行时的环境
-		data.silky = _.extend({}, _common.options)
-		data.silky.isDevelopment = false
+exports.render = (fileName)->
+  try
+    content = readTemplate fileName
+    template = _handlebars.compile content
+    #使用json的数据进行渲染模板
+    data = _data.whole.json
+    #附加运行时的环境
+    data.silky = _.extend({}, _common.options)
+    data.silky.isDevelopment = false
 
-		content = template data
-		html = injectScript content
+    content = template data
+    html = injectScript content
 
-		if _common.config.beautify then _htmlpretty(html) else html
-	catch e
-	#调用目的是为了产品环境throw
-		_common.combError(e)
-		_errorTemplate(e)
+    if _common.config.beautify then _htmlpretty(html) else html
+  catch e
+    #调用目的是为了产品环境throw
+    _common.combError(e)
+    _errorTemplate(e)
 
+#编译partial
 compilePartial = (name, context)->
-	name = _common.replaceSlash name
-	partial = _handlebars.partials[name]
-
-	return "无法找到partial：#{name}" if not partial
+	content = readTemplate name
+	return "无法找到partial：#{name}" if not content
 
 	#查找对应的节点数据
-	template = _handlebars.compile partial
+	template = _handlebars.compile content
 	template(context)
 
 importCommand = (name, context, options)->
@@ -182,17 +158,6 @@ registerHandlebars = ()->
 #初始化
 exports.init = ()->
 	registerHandlebars()
-	fetch()
-
-	#监控模板被改变的事件
-	_common.addListener 'file:change:html', (event, file)->
-		#删除模板的数据
-		if event is 'delete'
-			key = getTemplateKey file
-			delete _data[key]
-		else
-			#更新模板
-			readTemplate file
 
 	#读取系统出错模板，并编译
 	file = _path.join __dirname, 'client/error.hbs'
