@@ -22,7 +22,6 @@ module.exports = (app, server, options)->
   #监听socket的事件
   io = require('socket.io').listen(server, log: false)
   io.sockets.on 'connection', (socket)->
-    console.log('绑定一次')
     event = 'page:change'
     listener = ()-> socket.emit event, null
     #收到页面变更的事件后，通知客户端

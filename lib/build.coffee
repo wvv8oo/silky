@@ -43,7 +43,7 @@ clearTarget = (output)->
 
 #
 scriptMinify = (content)->
-    return content if not _common.config.build.compress.is
+    return content if not _common.config.build.compress.js
     result = _uglify.minify content, fromString: true
     result.code
 
@@ -87,9 +87,9 @@ compressInternalJavascript = (content)->
     $ = _cheerio.load content
     $('script').each ()->
         $this = $(this)
-        return $this.attr('type') is 'html/tpl'
-        minify = scriptMinify $this.html()
-        $this.html minify
+        if $this.attr('type') isnt 'html/tpl'
+          minify = scriptMinify $this.html()
+          $this.html minify
 
     $.html()
 
@@ -108,7 +108,7 @@ getBuildTarget = (file)->
     directoryPromise target
     target
 ###
-    
+
 #保存文件
 saveFile = (file, content)->
     directoryPromise file
@@ -195,7 +195,8 @@ compileFile = (output, done)->
 
 exports.execute = (done)->
     output = _common.options.output || _common.config.build.output || './build'
-    output = _path.resolve __dirname, '../', output
+    output = _path.resolve _common.options.workbench, output
+
     console.log "Build to -> #{output}".green
 
     #清除目录

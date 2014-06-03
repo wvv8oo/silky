@@ -46,7 +46,7 @@ module.exports = {
             //压缩html
             html: false,
             //是否压缩internal的js
-            internal: false
+            internal: true
         },
         //将要复制的文件目录，直接复制到目标
         copy: ["images"],
