@@ -29,6 +29,16 @@ getTemplateKey = exports.getTemplateKey = (file)->
 	key
 ###
 
+#根据文件名提取key
+getTemplateKey = exports.getTemplateKey = (file)->
+  #取相对于template的路径
+  key = _path.relative _path.join(_common.options.workbench, 'template/'), file
+
+  #替换掉扩展名
+  key = key.replace _path.extname(key), ''
+  key = _common.replaceSlash key
+  key
+
 #读取模板
 readTemplate = (fileName)->
   file = _path.join getTemplateDir(), fileName + '.hbs'

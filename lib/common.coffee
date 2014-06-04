@@ -47,25 +47,26 @@ deepWatch = exports.watch = (parent, pattern, cb)->
 
 #初始化watch
 initWatch = ()->
-    #监控配置文件中的文件变化
-    deepWatch _path.join(_options.workbench, _options.identity, _options.env)
+  return  #暂时不做任何监控
+  #监控配置文件中的文件变化
+  deepWatch _path.join(_options.workbench, _options.identity, _options.env)
 
-    #监控文件
-    for key, pattern of _config.watch
-        dir = _path.join(_options.workbench, key)
+  #监控文件
+  for key, pattern of _config.watch
+      dir = _path.join(_options.workbench, key)
 
-        deepWatch dir, pattern, (event, file)->
-            extname = _path.extname file
-            triggerType = 'html'
-            if extname in ['.less', '.css']
-                triggerType = 'css'
-            else if extname in ['.js', '.coffee']
-                triggerType = 'js'
+      deepWatch dir, pattern, (event, file)->
+          extname = _path.extname file
+          triggerType = 'html'
+          if extname in ['.less', '.css']
+              triggerType = 'css'
+          else if extname in ['.js', '.coffee']
+              triggerType = 'js'
 
-            _pageEvent.emit 'file:change:' + triggerType, event, file
-            console.log "#{event} - #{file}".green
-            #同时引发页面内容被改变的事件
-            exports.onPageChanged()
+          _pageEvent.emit 'file:change:' + triggerType, event, file
+          console.log "#{event} - #{file}".green
+          #同时引发页面内容被改变的事件
+          exports.onPageChanged()
 
 #判断是否为产品环境
 exports.isProduction = ()-> _options.env is 'production'
