@@ -29,26 +29,9 @@ getTemplateKey = exports.getTemplateKey = (file)->
 	key
 ###
 
-#根据文件名提取key
-getTemplateKey = exports.getTemplateKey = (file)->
-  #取相对于template的路径
-  key = _path.relative _path.join(_common.options.workbench, 'template/'), file
-
-  #替换掉扩展名
-  key = key.replace _path.extname(key), ''
-  key = _common.replaceSlash key
-  key
-
-#读取模板
-readTemplate = (fileName)->
-  file = _path.join getTemplateDir(), fileName + '.hbs'
-  _fs.readFileSync file, 'utf-8'
-
-
 #获取模板的目录
-getTemplateDir = ()->
+getTemplateDir = exports.getTemplateDir = ()->
 	_path.join _common.options.workbench, 'template'
-
 
 #合并honey中的依赖
 combineHoney = ($)->
@@ -107,33 +90,35 @@ injectScript = (content)->
 	$.html()
 
 #渲染一个模板
-exports.render = (fileName)->
-  try
-    content = readTemplate fileName
-    template = _handlebars.compile content
-    #使用json的数据进行渲染模板
-    data = _data.whole.json
-    #附加运行时的环境
-    data.silky = _.extend({}, _common.options)
-    data.silky.isDevelopment = false
+exports.render = (file)->
+	try
+		content = _common.readFile file
+		template = _handlebars.compile content
+		#使用json的数据进行渲染模板
+		data = _data.whole.json
+		#附加运行时的环境
+		data.silky = _.extend({}, _common.options)
+		data.silky.isDevelopment = false
 
-    content = template data
-    html = injectScript content
+		content = template data
+		html = injectScript content
+		return if _common.config.beautify then _htmlpretty(html) else html;
 
-    if _common.config.beautify then _htmlpretty(html) else html
-  catch e
-    #调用目的是为了产品环境throw
-    _common.combError(e)
-    _errorTemplate(e)
+	catch e
+		#调用目的是为了产品环境throw
+		_common.combError(e)
+		_errorTemplate(e)
 
 #编译partial
 compilePartial = (name, context)->
-	content = readTemplate name
-	return "无法找到partial：#{name}" if not content
+  file = _path.join getTemplateDir(), name + '.hbs'
+  console.log file
+  return "无法找到partial：#{name}" if not _fs.existsSync file
 
-	#查找对应的节点数据
-	template = _handlebars.compile content
-	template(context)
+  content = _common.readFile file
+  #查找对应的节点数据
+  template = _handlebars.compile content
+  template(context)
 
 importCommand = (name, context, options)->
 	#如果则第二个参数像options，则表示没有提供参数
@@ -171,5 +156,5 @@ exports.init = ()->
 
 	#读取系统出错模板，并编译
 	file = _path.join __dirname, 'client/error.hbs'
-	content =  _fs.readFileSync file, 'utf-8'
+	content =  _common.readFile file
 	_errorTemplate = _handlebars.compile content
