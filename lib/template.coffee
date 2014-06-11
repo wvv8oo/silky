@@ -112,7 +112,6 @@ exports.render = (file)->
 #编译partial
 compilePartial = (name, context)->
   file = _path.join getTemplateDir(), name + '.hbs'
-  console.log file
   return "无法找到partial：#{name}" if not _fs.existsSync file
 
   content = _common.readFile file

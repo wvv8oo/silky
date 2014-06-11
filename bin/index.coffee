@@ -8,8 +8,10 @@ _forever = require 'forever-monitor'
 _os = require 'os'
 require 'colors'
 
+_version = require(_path.join(__dirname, '../package.json')).version
+
 _program
-.version(require(_path.join(__dirname, '../package.json')).version)
+.version(_version)
 .option('init', '初始化一个项目')
 .option('build', '打包项目')
 .option('-f, --full', '创建silky项目及示例项目')
@@ -96,6 +98,7 @@ runtime = ()->
 	child.start()
 
 
+console.log "当前运行版本：#{_version}"
 #将示例项目复制到当前目录
 return initSilkyProject() if _program.init
 #构建一个silky项目
