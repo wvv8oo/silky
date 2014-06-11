@@ -23,15 +23,12 @@ responseHTML = (filename, req, res, next)->
 	#filename += 'index.html' if /\/$/.test filename
 
 	#如果html文件存在，则直接返回
-	htmlFile = _path.join(_common.options.workbench, 'template', filename)
+	htmlFile = _path.join(_template.getTemplateDir(), filename)
 	return if responseFileIfExists htmlFile, res
 
 	#不存在这个文件，则读取模板
-	#替换扩展名
-	renderKey = _common.replaceExt(filename, '')
-	#替换掉第一个/
-	renderKey = renderKey.replace /^\//, ''
-	content = _template.render renderKey
+	hbsFile = htmlFile.replace(/\.(html)|(html)$/i, '.hbs')
+	content = _template.render hbsFile
 	res.end content
 
 #请求css，如果是less则编译
