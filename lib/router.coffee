@@ -9,6 +9,7 @@ _coffee = require 'coffee-script'
 _script = require './script'
 _precompiler = require './handlebars_precompiler'
 _url = require 'url'
+_handlebars = require 'handlebars'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
@@ -33,21 +34,22 @@ responseHTML = (filename, req, res, next)->
 
 #请求css，如果是less则编译
 responseCSS = (filename, req, res, next)->
-	cssFile = _path.join _common.options.workbench, filename
-	#如果文件已经存在，则直接返回
-	return if responseFileIfExists cssFile, res
+  cssFile = _path.join _common.options.workbench, filename
+  #如果文件已经存在，则直接返回
+  return if responseFileIfExists cssFile, res
 
-	#不存在这个css，则渲染less
-	lessFile = _common.replaceExt cssFile, '.less'
-	#如果不存在这个文件，则交到下一个路由
-	if not _fs.existsSync lessFile
-		console.log "CSS或Less无法找到->#{filename}".red
-		return next()
+  #不存在这个css，则渲染less
+  lessFile = _common.replaceExt cssFile, '.less'
+  #如果不存在这个文件，则交到下一个路由
+  if not _fs.existsSync lessFile
+    console.log "CSS或Less无法找到->#{filename}".red
+    return next()
 
-	_css.render lessFile, (err, css)->
-		#编译发生错误
-		return response500 req, res, next, JSON.stringify(err) if err
-		res.end css
+  _css.render lessFile, (err, css)->
+    #编译发生错误
+    return response500 req, res, next, JSON.stringify(err) if err
+    res.type('text/css')
+    res.end css
 
 #响应js
 responseJS = (filename, req, res, next)->
@@ -74,6 +76,24 @@ responseJS = (filename, req, res, next)->
 		return next()
 
 	res.send _script.compile coffeeFile
+
+#响应文件夹列表
+responseDirectory = (path, req, res, next)->
+  dir = _path.join _template.getTemplateDir(), path
+  files = []
+  _fs.readdirSync(dir).forEach (filename)->
+    #不处理module
+    return if /module/i.test filename
+    item =
+      filename: filename.replace '.hbs', '.html'
+    files.push item
+
+  tempfile = _path.join __dirname, './client/file_viewer.hbs'
+  template = _handlebars.compile _common.readFile(tempfile)
+  result =
+    files: files
+
+  res.end template(result)
 
 
 #请求其它静态资源，直接输入出
@@ -105,22 +125,25 @@ replacePath = (origin)->
 	url
 
 module.exports = (app)->
-	#silky的文件引用
-	app.get "/__/:file", (req, res, next)->
-		file = _path.join(__dirname, 'client', req.params.file)
-		res.sendfile file
+  #silky的文件引用
+  app.get "/__/:file", (req, res, next)->
+    file = _path.join(__dirname, 'client', req.params.file)
+    res.sendfile file
 
-	#匹配所有
-	app.get "*", (req, res, next)->
-		url = _url.parse(req.url)
-		path = replacePath url.pathname
+  #匹配所有
+  app.get "*", (req, res, next)->
+    url = _url.parse(req.url)
+    path = replacePath url.pathname
 
-		#匹配html
-		if /(\.(html|html)|\/)$/.test(path)
-			return responseHTML path, req, res, next
-		else if /\.css$/.test(path)
-			return responseCSS path, req, res, next
-		else if /\.js$/.test(path)
-			return responseJS path, req, res, next
-		else
-			responseStatic(req, res, next)
+    #匹配html
+    if /(\.(html|html))$/.test(path)
+      return responseHTML path, req, res, next
+    else if /\.css$/.test(path)
+      return responseCSS path, req, res, next
+    else if /\.js$/.test(path)
+      return responseJS path, req, res, next
+    else if /(^\/$)|(\/[^.]+$)/.test(path)
+      #显示文件夹
+      return responseDirectory path, req, res, next
+    else
+      responseStatic(req, res, next)

@@ -20,10 +20,12 @@ module.exports = {
     },
     //路由
     routers: [
+        /*
         {
             //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换
             path: /^\/$/, to: 'index.html', next: true
         }
+        */
     ],
     //替换掉文件名中的source
     "replaceSource": true,
