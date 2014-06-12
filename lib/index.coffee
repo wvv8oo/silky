@@ -10,14 +10,13 @@ module.exports = (app, server, options)->
   #初始化项目
   _initialize options
 
-  #监听路由
-  _router(app)
-
   #集成代理
   cfgProxy = _common.config.proxy || {}
   cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
   app.use _proxy.initialize(proxy: cfgProxy)
 
+  #监听路由
+  _router(app)
 
   #监听socket的事件
   io = require('socket.io').listen(server, log: false)
