@@ -63,7 +63,11 @@ cssProcessor = (source, target, callback)->
 			console.log err.message.red
 			process.exit(0)
 		#判断是否要压缩
+<<<<<<< HEAD
 		#css = new _cleanCSS().minify css if _common.config.build.compress.css
+=======
+		css = new _cleanCSS().minify css if _common.config.build.compress.css
+>>>>>>> a83ea71ddefa4c01909b87bb82cee239dd9b372b
 
 		saveFile target, css
 		callback()
