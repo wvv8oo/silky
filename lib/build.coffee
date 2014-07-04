@@ -14,7 +14,7 @@ _async = require 'async'
 _cheerio = require 'cheerio'
 _script = require './script'
 _uglify = require 'uglify-js'
-_cleanCSS = require 'clean-css'
+#_cleanCSS = require 'clean-css'
 
 require 'colors'
 
@@ -63,7 +63,7 @@ cssProcessor = (source, target, callback)->
 			console.log err.message.red
 			process.exit(0)
 		#判断是否要压缩
-		css = new _cleanCSS().minify css if _common.config.build.compress.css
+		#css = new _cleanCSS().minify css if _common.config.build.compress.css
 
 		saveFile target, css
 		callback()
