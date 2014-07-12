@@ -10,6 +10,7 @@ _common = require './common'
 options =
     workbench: process.env.WORKBENCH || global.SILKY?.WORKBENCH
     env: process.env.NODE_ENV || global.SILKY?.NODE_ENV
+    language: process.env.LANG || global.SILKY?.LANG
     port: process.env.PORT || global.SILKY?.PORT
 
 _silky(_app, _server, options)

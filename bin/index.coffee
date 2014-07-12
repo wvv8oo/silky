@@ -14,6 +14,7 @@ _program
 .version(_version)
 .option('init', '初始化一个项目')
 .option('build', '打包项目')
+.option('-l, --language', '指定输出的语言，默认为en')
 .option('-f, --full', '创建silky项目及示例项目')
 .option('-p, --port <n>', '指定运行端口')
 .option('-o, --output <value>', '打包指定输出目录')
@@ -41,12 +42,14 @@ buildSilkyProject = ()->
 	#设置为build模式
 	options =
 		workbench: process.cwd()
-	#指定为build模式
-		buildMode: true
-	#输出目录
-		output: _program.output
-	#如果没有设置，build的时候，默认为production模式
-		env:  _program.environment || 'production'
+    #指定为build模式
+    buildMode: true
+    #输出目录
+    output: _program.output
+    #如果没有设置，build的时候，默认为production模式
+    env:  _program.environment || 'production'
+    #指定语言
+    language: _program.language || 'en'
 
 	_initialize options
 	#执行构建
@@ -64,6 +67,7 @@ runtime = ()->
     NODE_ENV: _program.environment || process.env.NODE_ENV || 'development'
     #参数中提供的端口
     PORT: _program.port || process.env.PORT || ''
+    LANG: _program.language || 'en'
 
   #暂时不使用forever
   if _os.platform() is 'win32' or true
