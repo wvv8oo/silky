@@ -100,6 +100,7 @@ exports.render = (file)->
     #附加运行时的环境
     data.silky = _.extend({}, _common.options)
     data.silky.isDevelopment = false
+    data._ = data
 
     content = template data
     html = injectScript content
@@ -127,6 +128,7 @@ importCommand = (name, context, options)->
     context = _.extend {}, options.data.root
 
   context = context || options.data.root
+  context._ = options.data.root
   #合并silky到context
   context.silky = _.extend {}, _common.options if not context.silky
   html = compilePartial(name, context || {})
