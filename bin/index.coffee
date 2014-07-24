@@ -23,25 +23,25 @@ _program
 
 #初始化silky项目
 initSilkyProject = ()->
-	identity = '.silky'
-	samples = _path.join(__dirname, '..', 'samples')
-	current = process.cwd()
+  identity = '.silky'
+  samples = _path.join(__dirname, '..', 'samples')
+  current = process.cwd()
 
-	if _program.full
-		_fs.copySync samples, current
-		console.log "Silky项目初始化成功，示例项目已被创建".green
-	else
-		silkyDir = _path.join samples, identity
-		_fs.copySync silkyDir, _path.join(current, identity)
-		console.log "Silky项目初始化成功".green
-	process.exit 1
+  if _program.full
+    _fs.copySync samples, current
+    console.log "Silky项目初始化成功，示例项目已被创建".green
+  else
+    silkyDir = _path.join samples, identity
+    _fs.copySync silkyDir, _path.join(current, identity)
+    console.log "Silky项目初始化成功".green
+  process.exit 1
 
 
 #构建一个silky项目
 buildSilkyProject = ()->
-	#设置为build模式
-	options =
-		workbench: process.cwd()
+  #设置为build模式
+  options =
+    workbench: process.cwd()
     #指定为build模式
     buildMode: true
     #输出目录
@@ -51,16 +51,16 @@ buildSilkyProject = ()->
     #指定语言
     language: _program.language || 'en'
 
-	_initialize options
-	#执行构建
-	require('../lib/build').execute ()->
-		console.log('项目已被成功地构建')
-		process.exit 0
+  _initialize options
+  #执行构建
+  require('../lib/build').execute ()->
+    console.log('项目已被成功地构建')
+    process.exit 0
 
 #实时运行项目
 runtime = ()->
 
-	options =
+  options =
     #设置全局的环境参数
     WORKBENCH: process.cwd()
     #工作环境
@@ -75,31 +75,31 @@ runtime = ()->
     require '../lib/app.coffee'
     return
 
-	file = _path.join __dirname, '../lib/app.coffee'
-	child = new(_forever.Monitor)(file, {
-		#logFile: '/Users/conis/temp/silky.log',
-		max: 100,
-		command: 'coffee'
-		silent: true,
-		env: options
-	})
+  file = _path.join __dirname, '../lib/app.coffee'
+  child = new(_forever.Monitor)(file, {
+  #logFile: '/Users/conis/temp/silky.log',
+    max: 100,
+    command: 'coffee'
+    silent: true,
+    env: options
+  })
 
-	child.on 'stdout', (data)->
-		console.log String(data)
+  child.on 'stdout', (data)->
+    console.log String(data)
 
-  child.on 'stderror', (data)-> console.log String(data)
+    child.on 'stderror', (data)-> console.log String(data)
 
-	child.on 'error', ()->
-		console.log 'Error'.red
-		console.log arguments
+  child.on 'error', ()->
+    console.log 'Error'.red
+    console.log arguments
 
-	child.on 'start', ()-> console.log 'Silky已经启动'.green
-	child.on 'restart', ()-> console.error "OOPS，Silky第#{child.times}重启了".red
+  child.on 'start', ()-> console.log 'Silky已经启动'.green
+  child.on 'restart', ()-> console.error "OOPS，Silky第#{child.times}重启了".red
 
-	child.on 'exit', ()-> console.log '发生严重错误，Silky重启超过100次'.red
+  child.on 'exit', ()-> console.log '发生严重错误，Silky重启超过100次'.red
 
 
-	child.start()
+  child.start()
 
 
 console.log "当前运行版本：#{_version}"
