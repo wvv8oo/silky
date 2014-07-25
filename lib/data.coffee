@@ -29,18 +29,31 @@ readLanguage = (dir)->
 getDataKey = (file)->
   _path.basename file, _path.extname(file)
 
+#读取js文件，直接require
+readScript = (normalFile, overrideFile)->
+  #normal中不存在的不处理
+  return if not _fs.existsSync normalFile
+  normal = require normalFile
+  #没有需要覆盖的文件
+  return normal if not _fs.existsSync overrideFile
+  override = require overrideFile
+  _.extend normal, override
+
 #全并文件
 combineFile = (workbench, filename)->
   #只处理json和less的文件
   extname = _path.extname(filename).replace('.', '')
   return false if extname not in ['json', 'less', 'js']
 
-  #取正常数据
+  key = getDataKey filename
   normaFile = _path.join workbench, 'normal', filename
-  normalData = _common.readFile normaFile
-
-  #取特殊环境将要覆盖的数据
   overrideFile = _path.join workbench, _common.options.env, filename
+
+  #如果是js文件，直接引入
+  return _data.json[key] = readScript(normaFile, overrideFile) if extname is 'js'
+
+  normalData = _common.readFile normaFile
+  #取特殊环境将要覆盖的数据
   if _fs.existsSync overrideFile
     overrideData = _common.readFile overrideFile
 
@@ -51,7 +64,6 @@ combineFile = (workbench, filename)->
   else
     content = normalData + (overrideData || '')
 
-  key = getDataKey filename
   _data[extname][key] = content
 
 

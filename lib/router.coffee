@@ -24,7 +24,7 @@ responseHTML = (filename, req, res, next)->
 	#filename += 'index.html' if /\/$/.test filename
 
 	#如果html文件存在，则直接返回
-	htmlFile = _path.join(_template.getTemplateDir(), filename)
+	htmlFile = _path.join(_common.getTemplateDir(), filename)
 	return if responseFileIfExists htmlFile, res
 
 	#不存在这个文件，则读取模板
@@ -79,7 +79,7 @@ responseJS = (filename, req, res, next)->
 
 #响应文件夹列表
 responseDirectory = (path, req, res, next)->
-  dir = _path.join _template.getTemplateDir(), path
+  dir = _path.join _common.getTemplateDir(), path
   files = []
   _fs.readdirSync(dir).forEach (filename)->
     #不处理module
