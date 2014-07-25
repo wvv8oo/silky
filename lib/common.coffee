@@ -90,6 +90,9 @@ exports.replaceExt = (file, ext)->
 #读取文件
 exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 
+exports.getTemplateDir = ()->
+  _path.join _options.workbench, 'template'
+
 #初始化
 exports.init = (options)->
     _options =
@@ -122,4 +125,3 @@ exports.fileLog = (file, log)->
 #替换掉slash，所有奇怪的字符
 exports.replaceSlash = (file)->
     file.replace(/\W/ig, "_")
-
