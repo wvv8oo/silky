@@ -29,9 +29,6 @@ getTemplateKey = exports.getTemplateKey = (file)->
 	key
 ###
 
-#获取模板的目录
-getTemplateDir = exports.getTemplateDir = ()->
-  _path.join _common.options.workbench, 'template'
 
 #合并honey中的依赖
 combineHoney = ($)->
@@ -111,51 +108,9 @@ exports.render = (file)->
     _common.combError(e)
     _errorTemplate(e)
 
-#编译partial
-compilePartial = (name, context)->
-  file = _path.join getTemplateDir(), name + '.hbs'
-  return "无法找到partial：#{name}" if not _fs.existsSync file
-
-  content = _common.readFile file
-  #查找对应的节点数据
-  template = _handlebars.compile content
-  template(context)
-
-importCommand = (name, context, options)->
-  #如果则第二个参数像options，则表示没有提供参数
-  if context and context.name in ['import', 'partial']
-    options = context
-    context = _.extend {}, options.data.root
-
-  context = context || options.data.root
-  context._ = options.data.root
-  #合并silky到context
-  context.silky = _.extend {}, _common.options if not context.silky
-  html = compilePartial(name, context || {})
-  new _handlebars.SafeString(html)
-
-#注册handlebars
-registerHandlebars = ()->
-  #循环
-  _handlebars.registerHelper "loop", (name, count, options)->
-    count = count || []
-    count = [1..count] if typeof count is 'number'
-    results = []
-    for value in count
-      results.push compilePartial(name, value)
-    new _handlebars.SafeString(results.join(''))
-
-  #partial
-  _handlebars.registerHelper "partial", importCommand
-  _handlebars.registerHelper "import", importCommand
-
-  _handlebars.registerHelper "ifEqual", (left, right, options)->
-    return if left is right then options.fn(this) else ""
 
 #初始化
 exports.init = ()->
-  registerHandlebars()
-
   #读取系统出错模板，并编译
   file = _path.join __dirname, 'client/error.hbs'
   content =  _common.readFile file
