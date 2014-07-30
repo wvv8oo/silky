@@ -48,6 +48,21 @@ loopCommand = (name, count, options)->
 
 #注册handlebars
 exports.init = ->
+  #获取xPath
+  _handlebars.registerHelper 'xPath', (path, value, options)->
+    if not options
+      options = value
+      value = options.data.root
+    _common.xPathMapValue path, value
+
+  #获取当前时间
+  _handlebars.registerHelper 'now', ()-> new Date().toString()
+
+  #打印出变量
+  _handlebars.registerHelper 'print', (value)->
+    return '<empty>' if value is undefined
+    new _handlebars.SafeString JSON.stringify(value)
+
   _handlebars.registerHelper 'css', _linkHelper.linkCommand
   #引入外部脚本，支持文件夹引用
   _handlebars.registerHelper 'script', _linkHelper.linkCommand
