@@ -120,7 +120,7 @@ replacePath = (origin)->
 	for router in _common.config.routers
 		continue if not router.path.test(url)
 		url = url.replace router.path, router.to
-		break if router.next
+		break if not router.next
 
 	console.log "#{origin} -> #{url}".green if url isnt origin
 	url
