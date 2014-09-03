@@ -69,6 +69,8 @@ injectScript = (content)->
   combineHoney $
 
   livereload = _common.config.livereload
+  #临时禁用livereload，现在无法使用
+  livereload.env = []
   if _common.options.env in livereload.env
     mainJS = '/__/main.js'
     socketJS = '/socket.io/socket.io.js'

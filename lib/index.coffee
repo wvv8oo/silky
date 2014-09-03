@@ -18,6 +18,7 @@ module.exports = (app, server, options)->
   #监听路由
   _router(app)
 
+  ###
   #监听socket的事件
   io = require('socket.io').listen(server, log: false)
   io.sockets.on 'connection', (socket)->
@@ -27,3 +28,4 @@ module.exports = (app, server, options)->
     _common.addListener event, listener
 
     socket.on 'disconnect', (socket)-> _common.removeListener event, listener
+  ###
