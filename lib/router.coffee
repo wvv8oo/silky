@@ -98,11 +98,14 @@ responseDirectory = (path, req, res, next)->
 
 
 #请求其它静态资源，直接输入出
+
+
 responseStatic = (req, res, next)->
-	file = _path.join _common.options.workbench, req.url
-	#查找文件是否存在
-	return next() if not _fs.existsSync file
-	res.sendfile file
+  url = _url.parse(req.url)
+  file = _path.join _common.options.workbench, url.pathname
+  #查找文件是否存在
+  return next() if not _fs.existsSync file
+  res.sendfile file
 
 #找不到
 response404 = (req, res, next)->
