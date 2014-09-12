@@ -40,9 +40,15 @@ orCommand = (args..., options)->
 loopCommand = (name, count, options)->
   #循环
   count = count || []
-  count = [1..count] if typeof count is 'number'
+  isNumber = typeof count is 'number'
+  count = [1..count] if isNumber
   results = []
-  results.push compilePartial(name, value) for value in count
+
+  for value in count
+    #如果循环次数量，则将上级数据传递下去
+    context = if isNumber then _.extend({'$index': value}, options.data.root) else value
+    results.push compilePartial(name, context)
+
   new _handlebars.SafeString(results.join(''))
 
 
