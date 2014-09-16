@@ -18,9 +18,9 @@ exports.render = (file, callback)->
     #选项
     options =
       paths: [
-        _path.dirname file,
-        _path.join(_common.options.workbench, 'css'),
-        _path.join(_common.options.workbench, 'css', 'module')
+        _path.join(_common.options.workbench, 'css')
+#        _path.dirname file
+#        _path.join(_common.options.workbench, 'css', 'module')
       ]
 
     parser = new _less.Parser options

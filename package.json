@@ -1,13 +1,13 @@
 {
   "name": "silky",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "dependencies": {
-    "handlebars": "*",
-    "express": "*",
-    "less": "*",
-    "json-proxy": "*",
+    "handlebars": "2.0.0-alpha.2",
+    "express": "4.2.0",
+    "less": "1.7.3",
+    "json-proxy": "0.1.2",
     "commander": "*",
-    "async": "*",
+    "async": "0.8.0",
     "grunt": "*",
     "coffee-script": "*",
     "colors": "*",
@@ -18,7 +18,7 @@
     "underscore": "*",
     "js-beautify": "*",
     "forever-monitor": "*",
-    "watch": "*"
+    "watch": "0.10.0"
   },
   "main": "./lib/index.coffee",
   "bin": {
