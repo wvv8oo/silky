@@ -23,6 +23,7 @@ importCommand = (name, context, options)->
     context = _.extend {}, options.data.root
 
   context = context || options.data.root
+  context = context() if _.isFunction context
   context._ = options.data.root
   #合并silky到context
   context.silky = _.extend {}, _common.options if not context.silky
