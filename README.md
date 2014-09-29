@@ -1,10 +1,10 @@
 #Silky
 
+**文档非常老旧，新增加了很多功能，有空我更新一下**
+
 Silky是一个多用户协作的前端开发环境，正如她的名字一样，Silky希望让前端的协作开发能如丝般的润滑。Silky基于Handlebars和Less，选择Handlebars作为模板引擎的原因是因为它很简单，Less的争议性可能没有模板引擎这么大，毕竟可供选择的并不多。
 
-对于重构人员来说，TA可能只需要记住三条模板命令就能轻松实现模块化开发了。Silky除了支持原来的Handlebars命令，还对Handlebars进行扩展，支持`partial`，`loop`以及`if`，未来可能还会支持更多的命令。
-
-Silky是金鹰网的内部工具，所有会有极少部分功能是供金鹰网内容使用的。未来也有可能会支持其它模板引擎和其它CSS脚本语言。
+对于重构人员来说，TA可能只需要记住几条模板命令就能轻松实现模块化开发了。Silky除了支持原来的Handlebars命令，还对Handlebars进行扩展，支持`import`，`loop`，未来可能还会支持更多的命令。
 
 #功能摘要
 
@@ -12,7 +12,9 @@ Silky是金鹰网的内部工具，所有会有极少部分功能是供金鹰网
 * 支持代理，用于解决跨域问题
 * 支持HTML与CSS模块化开发
 * 实时编译coffee和less文件
-* 自动刷新功能，在开发环境下，silky会监控相关文件的变化，并通知页面自动刷新，你无需要在网页中增加任何代码。
+* 支持路由重写
+* 支持多环境
+* 支持多语言
 
 #安装
 1. 在*nix下，使用`sudo npm install -g silky`执行安装，在此之前，请确保你已经安装了node.js。请注意，silky必需全局安装。
@@ -214,4 +216,4 @@ js目录用于存放`.js`和`.coffee`文件
 
 #Authors
 
-Conis: [conis.yi@gmail.com](conis.yi@gmail.com)
+Conis: [wvv8oo@gmail.com](wvv8oo@gmail.com)
