@@ -100,9 +100,9 @@ responseDirectory = (path, req, res, next)->
 #请求其它静态资源，直接输入出
 
 
-responseStatic = (req, res, next)->
+responseStatic = (realpath, req, res, next)->
   url = _url.parse(req.url)
-  file = _path.join _common.options.workbench, url.pathname
+  file = _path.join _common.options.workbench, realpath
   #查找文件是否存在
   return next() if not _fs.existsSync file
   res.sendfile file
@@ -137,17 +137,17 @@ module.exports = (app)->
   #匹配所有
   app.get "*", (req, res, next)->
     url = _url.parse(req.url)
-    path = replacePath url.pathname
+    realpath = replacePath url.pathname
 
     #匹配html
-    if /(\.(html|html))$/.test(path)
-      return responseHTML path, req, res, next
-    else if /\.css$/.test(path)
-      return responseCSS path, req, res, next
-    else if /\.js$/.test(path)
-      return responseJS path, req, res, next
-    else if /(^\/$)|(\/[^.]+$)/.test(path)
+    if /(\.(html|html))$/.test(realpath)
+      return responseHTML realpath, req, res, next
+    else if /\.css$/.test(realpath)
+      return responseCSS realpath, req, res, next
+    else if /\.js$/.test(realpath)
+      return responseJS realpath, req, res, next
+    else if /(^\/$)|(\/[^.]+$)/.test(realpath)
       #显示文件夹
-      return responseDirectory path, req, res, next
+      return responseDirectory realpath, req, res, next
     else
-      responseStatic(req, res, next)
+      responseStatic(realpath, req, res, next)
