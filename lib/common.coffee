@@ -125,3 +125,10 @@ exports.fileLog = (file, log)->
 #替换掉slash，所有奇怪的字符
 exports.replaceSlash = (file)->
     file.replace(/\W/ig, "_")
+
+#x.y.x这样的文本式路径，从data中找出对应的值
+exports.xPathMapValue = (xPath, data)->
+  value = data
+  xPath.split('.').forEach (key)->
+    return if not (value = value[key])
+  value

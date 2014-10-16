@@ -13,5 +13,11 @@ module.exports = {
         "match": /\.css|less$/,
         path: /(less)$/,
         to: 'css'
+    },
+    func: function(){
+        return [
+            Math.random(),
+            Math.random()
+        ]
     }
 }

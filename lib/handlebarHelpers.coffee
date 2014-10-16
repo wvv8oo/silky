@@ -23,6 +23,7 @@ importCommand = (name, context, options)->
     context = _.extend {}, options.data.root
 
   context = context || options.data.root
+  context = context() if _.isFunction context
   context._ = options.data.root
   #合并silky到context
   context.silky = _.extend {}, _common.options if not context.silky
@@ -40,14 +41,35 @@ orCommand = (args..., options)->
 loopCommand = (name, count, options)->
   #循环
   count = count || []
-  count = [1..count] if typeof count is 'number'
+  isNumber = typeof count is 'number'
+  count = [1..count] if isNumber
   results = []
-  results.push compilePartial(name, value) for value in count
+
+  for value in count
+    #如果循环次数量，则将上级数据传递下去
+    context = if isNumber then _.extend({'$index': value}, options.data.root) else value
+    results.push compilePartial(name, context)
+
   new _handlebars.SafeString(results.join(''))
 
 
 #注册handlebars
 exports.init = ->
+  #获取xPath
+  _handlebars.registerHelper 'xPath', (path, value, options)->
+    if not options
+      options = value
+      value = options.data.root
+    _common.xPathMapValue path, value
+
+  #获取当前时间
+  _handlebars.registerHelper 'now', ()-> new Date().toString()
+
+  #打印出变量
+  _handlebars.registerHelper 'print', (value)->
+    return '<empty>' if value is undefined
+    new _handlebars.SafeString JSON.stringify(value)
+
   _handlebars.registerHelper 'css', _linkHelper.linkCommand
   #引入外部脚本，支持文件夹引用
   _handlebars.registerHelper 'script', _linkHelper.linkCommand

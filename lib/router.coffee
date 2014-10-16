@@ -98,11 +98,14 @@ responseDirectory = (path, req, res, next)->
 
 
 #请求其它静态资源，直接输入出
+
+
 responseStatic = (req, res, next)->
-	file = _path.join _common.options.workbench, req.url
-	#查找文件是否存在
-	return next() if not _fs.existsSync file
-	res.sendfile file
+  url = _url.parse(req.url)
+  file = _path.join _common.options.workbench, url.pathname
+  #查找文件是否存在
+  return next() if not _fs.existsSync file
+  res.sendfile file
 
 #找不到
 response404 = (req, res, next)->
@@ -120,7 +123,7 @@ replacePath = (origin)->
 	for router in _common.config.routers
 		continue if not router.path.test(url)
 		url = url.replace router.path, router.to
-		break if router.next
+		break if not router.next
 
 	console.log "#{origin} -> #{url}".green if url isnt origin
 	url

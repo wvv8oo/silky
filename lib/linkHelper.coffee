@@ -37,16 +37,10 @@ getLinkUrl = (type, url)->
   url += extname if not _path.extname(url)    #检查是否有扩展名
   url = linkTemplate.replace '{{url}}', url
 
-#x.y.x这样的文本式路径，从data中找出对应的值
-xPathMapValue = (xPath, data)->
-  value = data
-  xPath.split('.').forEach (key)->
-    return if not (value = value[key])
-  value
 
 #分析路径
 replaceNestVariable = (text, data)->
-  text.replace /\<(.+?)\>/g, (k, xPath)-> xPathMapValue xPath, data
+  text.replace /\<(.+?)\>/g, (k, xPath)-> _common.xPathMapValue xPath, data
 
 #拼接多个文件
 joinFile = (path, files, data)->
