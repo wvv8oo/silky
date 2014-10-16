@@ -33,7 +33,9 @@
                   <li><label>{{@key}}</label><span>{{.}}</span></li>
                 {{/each}}
             </ul>
+
+            {{import "module/cell" global.func}}
         </div>
-        {{import "module/footer"}}
+        {{import "module/footer" global.footer}}
     </body>
 </html>

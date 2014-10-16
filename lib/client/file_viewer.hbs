@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title>所有页面</title>
+    <meta charset="utf-8" />
+</head>
+
+<body>
+    <h3></h3>
+    <ul>
+        <li><a href="/">/</a></li>
+        <li><a href="../">..</a></li>
+        {{#each files}}
+            <li><a href="{{url}}">{{filename}}</a></li>
+        {{/each}}
+    </ul>
+</body>
+</html>

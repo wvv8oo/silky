@@ -1,6 +1,6 @@
-{
+module.exports = {
     "title": "Silky",
     "root": "",
-    "keyword": "keyword",
+    "keyword": "deploy, frontend",
     "description": "description"
 }

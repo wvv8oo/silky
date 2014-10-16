@@ -3,8 +3,21 @@
     <meta name="keyword" content="{{global.keyword}}" />
     <meta name="description" content="{{global.description}}" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <title>Silky示例项目</title>
-    <link rel="stylesheet" href="{{global.root}}/css/normalize.css" type="text/css" media="screen" charset="utf-8" />
-    <link rel="stylesheet" href="{{global.root}}/css/main.css" type="text/css" media="screen" charset="utf-8" />
-    <script src="{{global.root}}/js/main.js"></script>
+    <title>Silky示例项目：{{$.default.title}}</title>
+    <!--从global配置文件中引入-->
+    {{css global.linkCSS}}
+    <!--引入多个文件在同一个文件夹下-->
+    {{!css '<global.root>/css/' 'css1,css2'}}
+    <!--引入单个文件-->
+    {{!css '<global.root>/css/main.css'}}
+    <!--引入js文件，规则与css相同-->
+    {{script '<global.root>/js/main.js'}}
+
+    <script>
+        //测试函数
+        function test(arg1, arg2){
+            var text = '<a href="http://example.com" cid="{0}" url="{1}">链接</a>';
+            console.log(arg1, arg2)
+        }
+    </script>
 </head>

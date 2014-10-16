@@ -1,37 +1,31 @@
-_express = require 'express'
-_http = require 'http'
-_path = require 'path'
-_app = _express()
-_server = require('http').createServer _app
-_io = require('socket.io').listen(_server, log: false)
+require 'colors'
 _proxy = require('json-proxy')
 _ = require 'underscore'
-require 'colors'
-
+_router = require './router'
 _common = require './common'
-_config = require SILKY.config
+_initialize = require './initialize'
 
-require('./router')(_app)    #设置路由
+#作为一个中间件提供服务
+module.exports = (app, server, options)->
+  #初始化项目
+  _initialize options
 
-_app.set 'port', SILKY.port
+  #集成代理
+  cfgProxy = _common.config.proxy || {}
+  cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
+  app.use _proxy.initialize(proxy: cfgProxy)
 
-try
-    #集成代理
-    cfgProxy = _config.proxy || {}
-    cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
+  #监听路由
+  _router(app)
 
-    _app.use _proxy.initialize(proxy: cfgProxy)
-    _server.listen  _app.get('port')
-catch e
-    console.log "出错了 #{e.message}"
-    process.exit 1
-
-#监听socket的事件
-_io.sockets.on 'connection', (socket)->
+  ###
+  #监听socket的事件
+  io = require('socket.io').listen(server, log: false)
+  io.sockets.on 'connection', (socket)->
     event = 'page:change'
+    listener = ()-> socket.emit event, null
     #收到页面变更的事件后，通知客户端
-    _common.addListener event, ()->
-        socket.emit event, null
+    _common.addListener event, listener
 
-console.log '警告：80端口需要su权限'.red if _app.get('port') is '80'
-console.log "请访问 http://localhost:#{_app.get 'port'}"
+    socket.on 'disconnect', (socket)-> _common.removeListener event, listener
+  ###
