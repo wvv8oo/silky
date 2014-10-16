@@ -52,6 +52,10 @@ loopCommand = (name, count, options)->
 
   new _handlebars.SafeString(results.join(''))
 
+#仅循环block内html
+justLoopCommand = (count, options)->
+  count = ~~count
+  new Array(count + 1).join options.fn(this)
 
 #注册handlebars
 exports.init = ->
@@ -73,8 +77,11 @@ exports.init = ->
   _handlebars.registerHelper 'css', _linkHelper.linkCommand
   #引入外部脚本，支持文件夹引用
   _handlebars.registerHelper 'script', _linkHelper.linkCommand
+  
   #循环
   _handlebars.registerHelper "loop", loopCommand
+  _handlebars.registerHelper "justloop", justLoopCommand
+
   #partial与import
   _handlebars.registerHelper "partial", importCommand
   _handlebars.registerHelper "import", importCommand
