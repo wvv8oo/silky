@@ -1,6 +1,6 @@
 {
   "name": "silky",
-  "version": "0.4.9",
+  "version": "0.5.1",
   "dependencies": {
     "handlebars": "2.0.0-alpha.2",
     "express": "4.2.0",

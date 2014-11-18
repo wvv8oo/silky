@@ -29,7 +29,7 @@ exports.linkCommand = (args...)->
 getLinkUrl = (type, url)->
   if type is 'css'
     extname = '.css'
-    linkTemplate = '<link rel="stylesheet" href="{{url}}" type="text/css" media="screen" charset="utf-8" />'
+    linkTemplate = '<link rel="stylesheet" href="{{url}}" type="text/css" charset="utf-8" />'
   else
     extname = '.js'
     linkTemplate = '<script src="{{url}}" language="javascript"></script>'

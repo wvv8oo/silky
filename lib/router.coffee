@@ -117,16 +117,20 @@ response500 = (req, res, next, message)->
 	res.statusCode = 500
 	res.end(message || '500 Error')
 
-#根据路由规则替换路由
-replacePath = (origin)->
-	url = origin
-	for router in _common.config.routers
-		continue if not router.path.test(url)
-		url = url.replace router.path, router.to
-		break if not router.next
+#处理用户自定义的路由
+routeFilter = (origin)->
+  route =
+    url: origin
+    rule: null
 
-	console.log "#{origin} -> #{url}".green if url isnt origin
-	url
+  for rule in _common.config.routers
+    continue if not rule.path.test(origin)
+    route.url = origin.replace rule.path, rule.to
+    route.rule = rule
+    break if not rule.next
+
+  console.log "#{origin} -> #{route.url}".green if route.url isnt origin
+  route
 
 module.exports = (app)->
   #silky的文件引用
@@ -137,10 +141,14 @@ module.exports = (app)->
   #匹配所有
   app.get "*", (req, res, next)->
     url = _url.parse(req.url)
-    realpath = replacePath url.pathname
+    route = routeFilter url.pathname
 
+    realpath = route.url
+    #直接响应静态文件
+    if route.rule?.static
+      return responseStatic realpath, req, res, next
     #匹配html
-    if /(\.(html|html))$/.test(realpath)
+    else if /(\.(html|html))$/.test(realpath)
       return responseHTML realpath, req, res, next
     else if /\.css$/.test(realpath)
       return responseCSS realpath, req, res, next
