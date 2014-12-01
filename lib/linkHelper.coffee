@@ -79,7 +79,9 @@ joinFileWithConfig = (config, data)->
     file = _path.join dir, filename
     stat = _fs.statSync file
     return if stat.isDirectory()
-    url = _path.join(baseUrl, filename)
+    #主动加上/
+    baseUrl += '/' if not /\/$/.test baseUrl
+    url = baseUrl + filename
     url = url.replace(config.path, config.to) if config.path and config.to
     result.push url
   result

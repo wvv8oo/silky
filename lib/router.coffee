@@ -86,7 +86,7 @@ responseDirectory = (path, req, res, next)->
     return if /module/i.test filename
     item =
       filename: filename
-      url: _path.join(path, filename.replace('.hbs', '.html'))
+      url: path + '/' + filename.replace('.hbs', '.html')
     files.push item
 
   tempfile = _path.join __dirname, './client/file_viewer.hbs'
