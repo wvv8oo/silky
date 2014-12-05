@@ -86,7 +86,9 @@ responseDirectory = (path, req, res, next)->
     return if /module/i.test filename
     item =
       filename: filename
-      url: path + '/' + filename.replace('.hbs', '.html')
+      url: path + filename.replace('.hbs', '.html')
+
+    item.url += '/' if /\/[^\.]+$/.test(item.url)
     files.push item
 
   tempfile = _path.join __dirname, './client/file_viewer.hbs'
@@ -143,6 +145,7 @@ module.exports = (app)->
     url = _url.parse(req.url)
     route = routeFilter url.pathname
 
+    console.log req.url
     realpath = route.url
     #直接响应静态文件
     if route.rule?.static
@@ -154,7 +157,7 @@ module.exports = (app)->
       return responseCSS realpath, req, res, next
     else if /\.js$/.test(realpath)
       return responseJS realpath, req, res, next
-    else if /(^\/$)|(\/[^.]+$)/.test(realpath)
+    else if /(^\/$)|(\/[^\.]+$)/.test(realpath)
       #显示文件夹
       return responseDirectory realpath, req, res, next
     else
