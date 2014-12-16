@@ -1,15 +1,19 @@
-_common = require './common'
 _path = require 'path'
 _fs = require 'fs'
-_template = require './template'
 _less = require 'less'
 _data = require './data'
-_css = require './css'
 _coffee = require 'coffee-script'
-_script = require './script'
-_precompiler = require './handlebars_precompiler'
 _url = require 'url'
 _handlebars = require 'handlebars'
+_async = require 'async'
+_mime = require 'mime'
+
+_hookHost = require './plugin/host'
+_hooks = require './plugin/hooks'
+_common = require './common'
+_template = require './processor/template'
+_script = require './processor/script'
+_css = require './processor/css'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
@@ -18,19 +22,43 @@ responseFileIfExists = (file, res)->
 		res.sendfile file
 		return true
 
+#响应纯内容数据
+responseContent = (content, mime, req, res, next)->
+  data =
+    content: content
+    mime: mime
+    response: res
+    request: req
+    next: next
+    stop: false
+
+  _hookHost.triggerHook _hooks.route.willResponse, data, (err)->
+    return if  data.stop
+    res.type data.mime if data.mime
+    res.end data.content
+
+
 #请求html文件
 responseHTML = (filename, req, res, next)->
-	#处理根目录的问题，自动加上index.html
-	#filename += 'index.html' if /\/$/.test filename
+  #兼容旧版的template目录，新版本不需要template文件夹
+  rootDir = if _common.config.compatibleModel
+      _common.getTemplateDir()
+    else
+      _common.options.workbench
 
-	#如果html文件存在，则直接返回
-	htmlFile = _path.join(_common.getTemplateDir(), filename)
-	return if responseFileIfExists htmlFile, res
+  #如果html文件存在，则直接返回
+  htmlFile = _path.join rootDir, filename
+  return if responseFileIfExists htmlFile, res
 
-	#不存在这个文件，则读取模板
-	hbsFile = htmlFile.replace(/\.(html)|(html)$/i, '.hbs')
-	content = _template.render hbsFile
-	res.end content
+  #不存在这个文件，则读取模板
+  hbsFile = htmlFile.replace(/\.(html)|(html)$/i, '.hbs')
+  #没有这个模板文件，返回404错误
+  if not _fs.existsSync hbsFile
+    console.log "HTML或者hbs文件没找到->#{filename}".red
+    return next()
+
+  content = _template.render hbsFile
+  responseContent content, _mime.lookup('html'), req, res, next
 
 #请求css，如果是less则编译
 responseCSS = (filename, req, res, next)->
@@ -48,60 +76,92 @@ responseCSS = (filename, req, res, next)->
   _css.render lessFile, (err, css)->
     #编译发生错误
     return response500 req, res, next, JSON.stringify(err) if err
-    res.type('text/css')
-    res.end css
+    responseContent css, _mime.lookup('css'), req, res, next
 
 #响应js
 responseJS = (filename, req, res, next)->
-	#替换掉source的文件名，兼容honey
-	#jsFile = jsFile.replace '.source.js', '.js' if _config.replaceSource
-	#如果文件已经存在，则直接返回
-	jsFile = _path.join _common.options.workbench, filename
-	return if responseFileIfExists jsFile, res
+  #如果文件已经存在，则直接返回
+  jsFile = _path.join _common.options.workbench, filename
+  return if responseFileIfExists jsFile, res
 
-	#没有找到，考虑去掉.source文件
-	if _common.config.replaceSource
-		jsFile = jsFile.replace '.source.js', '.js'
-		return if responseFileIfExists jsFile, res
+  #如果没有找到，则考虑编译coffee
+  coffeeFile = _common.replaceExt jsFile, '.coffee'
+  #如果不存在这个文件，则交到下一个路由
+  if not _fs.existsSync coffeeFile
+    console.log "Coffee或JS无法找到->#{filename}".red
+    return next()
 
-		#有可能是文件名带有.source，但实际上并没有，所以增加source作为文件名再找一次
-		sourceJs = _common.replaceExt jsFile, '.source.js'
-		return if responseFileIfExists sourceJs, res
-
-	#如果没有找到，则考虑编译coffee
-	coffeeFile = _common.replaceExt jsFile, '.coffee'
-	#如果不存在这个文件，则交到下一个路由
-	if not _fs.existsSync coffeeFile
-		console.log "Coffee或JS无法找到->#{filename}".red
-		return next()
-
-	res.send _script.compile coffeeFile
+  content =  _script.compile coffeeFile
+  responseContent content, _mime.lookup('js'), req, res, next
 
 #响应文件夹列表
 responseDirectory = (path, req, res, next)->
-  dir = _path.join _common.getTemplateDir(), path
+  #兼容旧版的template目录
+  if _common.config.compatibleModel
+    dir = _path.join _common.getTemplateDir(), path
+  else
+    dir = _path.join _common.options.workbench, path
+
+#  return next() if not _fs.existsSync dir
+
   files = []
+  content = null
   _fs.readdirSync(dir).forEach (filename)->
-    #不处理module
-    return if /module/i.test filename
     item =
       filename: filename
       url: path + filename.replace('.hbs', '.html')
 
+    #如果是文件夹，在后台加上/
     item.url += '/' if /\/[^\.]+$/.test(item.url)
     files.push item
 
-  tempfile = _path.join __dirname, './client/file_viewer.hbs'
-  template = _handlebars.compile _common.readFile(tempfile)
-  result =
-    files: files
+  queue = []
+  #触发hook
+  queue.push(
+    (done)->
+      data =
+        files: files
+        response: res
+        request: req
+        next: next
+        directory: dir
+        stop: false
 
-  res.end template(result)
+      _hookHost.triggerHook _hooks.route.willPrepareDirectory, data, (err)->
+        files = data.files
+        done data.stop
+  )
 
+  #根据模板响应数据
+  queue.push(
+    (done)->
+      tempfile = _path.join __dirname, './client/file_viewer.hbs'
+      templateFn = _handlebars.compile _common.readFile(tempfile)
+      data = files: files
+      content = templateFn data
+      done null
+  )
+
+  #触发hook
+  queue.push(
+    (done)->
+      data =
+        content: content
+        response: res
+        request: req
+        next: next
+        directory: dir
+
+      _hookHost.triggerHook _hooks.route.didPrepareDirectory, data, (err)->
+        content = data.content
+        done null
+  )
+
+  _async.waterfall queue, (err)->
+    return err if err
+    res.end content
 
 #请求其它静态资源，直接输入出
-
-
 responseStatic = (realpath, req, res, next)->
   url = _url.parse(req.url)
   file = _path.join _common.options.workbench, realpath
@@ -120,7 +180,7 @@ response500 = (req, res, next, message)->
 	res.end(message || '500 Error')
 
 #处理用户自定义的路由
-routeFilter = (origin)->
+routeRewrite = (origin)->
   route =
     url: origin
     rule: null
@@ -143,22 +203,32 @@ module.exports = (app)->
   #匹配所有
   app.get "*", (req, res, next)->
     url = _url.parse(req.url)
-    route = routeFilter url.pathname
+    route = routeRewrite url.pathname
+    data =
+      request: req
+      response: res
+      next: next
+      stop: false
+      route: route
 
-    console.log req.url
-    realpath = route.url
-    #直接响应静态文件
-    if route.rule?.static
-      return responseStatic realpath, req, res, next
-    #匹配html
-    else if /(\.(html|html))$/.test(realpath)
-      return responseHTML realpath, req, res, next
-    else if /\.css$/.test(realpath)
-      return responseCSS realpath, req, res, next
-    else if /\.js$/.test(realpath)
-      return responseJS realpath, req, res, next
-    else if /(^\/$)|(\/[^\.]+$)/.test(realpath)
-      #显示文件夹
-      return responseDirectory realpath, req, res, next
-    else
-      responseStatic(realpath, req, res, next)
+    #路由处理前的hook
+    _hookHost.triggerHook _hooks.route.initial, data, (err)->
+      #阻止路由的响应
+      return if data.stop
+
+      realpath = data.route.url
+
+      #强制响应静态文件
+      if data.route.rule?.static
+        return responseStatic realpath, req, res, next
+      else if /(\.(html|html))$/.test(realpath)   #匹配html
+        return responseHTML realpath, req, res, next
+      else if /\.css$/.test(realpath)
+        return responseCSS realpath, req, res, next
+      else if /\.js$/.test(realpath)
+        return responseJS realpath, req, res, next
+      else if /(^\/$)|(\/[^\.]+$)/.test(realpath)
+        #显示文件夹
+        return responseDirectory realpath, req, res, next
+      else
+        responseStatic(realpath, req, res, next)
