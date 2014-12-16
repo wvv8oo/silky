@@ -1,14 +1,14 @@
 ###
     用于处理less
 ###
-_common = require './common'
+_common = require './../common'
 _fs = require 'fs'
 _path = require 'path'
 _less = require 'less'
-_data = require './data'
+_data = require './../data'
 
 #渲染指定的less
-exports.render = (file, callback)->
+exports.render = (file, cb)->
     #css文件不处理
     if _path.extname(file) isnt '.less'
       callback null, _common.readFile(file)
@@ -28,4 +28,6 @@ exports.render = (file, callback)->
     content += value for key, value of _data.whole.less
 
     #转换
-    parser.parse content, (err, tree)-> callback err, (tree.toCSS(cleancss: true) if not err)
+    parser.parse content, (err, tree)->
+      return cb err if err
+      cb null, tree.toCSS(cleancss: false)

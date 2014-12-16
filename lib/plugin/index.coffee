@@ -10,12 +10,14 @@ _host = require './host'
 #扫描当前工作目录下的插件
 scanPlugins = ()->
   folder = 'plugin'
-  workbenchDir = _path.join _common.options.workbench, _common.options.identity, folder
-  scanPluginsInSpecificDirectory workbenchDir
+  localPluginDir = _path.join _common.options.workbench, _common.options.identity, folder
+  scanPluginsInSpecificDirectory localPluginDir
 
-  home = process.env[if process.platform is 'win32' then 'USERPROFILE' else 'HOME']
-  profileDir = _path.join home, _common.options.identity, folder
-  scanPluginsInSpecificDirectory profileDir
+  #扫描全局的插件，用户可以在全局配置文件中 指定，如果没有指定，则在home目录
+  defaultGlobalPluginDir = _path.join _common.homeDirectory, _common.options.identity, folder
+  globalPluginDir = _common.config.globalPluginDirectory || defaultGlobalPluginDir
+  scanPluginsInSpecificDirectory globalPluginDir
+  _common.debug "Global Plugin -> #{globalPluginDir}".green
 
 registerPlugin = (file, pluginName)->
   try
@@ -25,6 +27,7 @@ registerPlugin = (file, pluginName)->
     #_plugins.push plugin
     silky = _host.silkyForHook(pluginName)
     plugin.registerPlugin silky
+    _common.debug "Plugin Loaded -> #{pluginName}".green
   catch e
     console.log "插件加载失败->#{file}"
     console.log e

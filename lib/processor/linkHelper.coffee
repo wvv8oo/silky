@@ -1,8 +1,8 @@
 _handlebars = require 'handlebars'
 _path = require 'path'
-_common = require './common'
+_common = require '../common'
 _fs = require 'fs-extra'
-_ = require 'underscore'
+_ = require 'lodash'
 
 #处理链接
 exports.linkCommand = (args...)->

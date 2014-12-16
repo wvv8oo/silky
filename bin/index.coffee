@@ -3,12 +3,17 @@
 _program = require('commander')
 _fs = require('fs-extra')
 _path = require('path')
-_initialize = require '../lib/initialize'
 _forever = require 'forever-monitor'
 _os = require 'os'
 require 'colors'
 
+_initialize = require '../lib/initialize'
+_update = require '../lib/update'
+
 _version = require(_path.join(__dirname, '../package.json')).version
+
+#检查silky是否有更新
+_update.checkSilky _version
 
 _program
 .version(_version)
@@ -19,6 +24,7 @@ _program
 .option('-p, --port <n>', '指定运行端口')
 .option('-o, --output <value>', '打包指定输出目录')
 .option('-e, --environment [value]', '指定项目的运行环境，默认为[development]')
+.option('-d, --debug', '以debug的方式运行，这将会输出大量的日志')
 .parse(process.argv)
 
 #初始化silky项目
@@ -50,16 +56,19 @@ buildSilkyProject = ()->
     env:  _program.environment || 'production'
     #指定语言
     language: _program.language || 'en'
+    debug: Boolean(_program.debug)
 
   _initialize options
+
+  #保持silky一直运行，当然这并不是一个好方法
+  setTimeout (-> console.log 'Timeout'), 1000 * 24 * 60 * 60
   #执行构建
   require('../lib/build').execute ()->
-    console.log('项目已被成功地构建')
+    console.log('项目构建完成')
     process.exit 0
 
 #实时运行项目
 runtime = ()->
-
   options =
     #设置全局的环境参数
     WORKBENCH: process.cwd()
@@ -68,6 +77,7 @@ runtime = ()->
     #参数中提供的端口
     PORT: _program.port || process.env.PORT || ''
     LANG: _program.language || 'en'
+    DEBUG: Boolean(_program.debug)
 
   #暂时不使用forever
   if _os.platform() is 'win32' or true
@@ -101,8 +111,9 @@ runtime = ()->
 
   child.start()
 
+console.log "Silky Version->#{_version}"
+console.log "Debug model -> enable".red if _program.debug
 
-console.log "当前运行版本：#{_version}"
 #将示例项目复制到当前目录
 return initSilkyProject() if _program.init
 #构建一个silky项目

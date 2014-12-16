@@ -1,9 +1,10 @@
 _handlebars = require 'handlebars'
 _path = require 'path'
-_common = require './common'
+_common = require '../common'
 _fs = require 'fs-extra'
-_ = require 'underscore'
+_ = require 'lodash'
 _linkHelper = require './linkHelper'
+_moment = require 'moment'
 
 #编译partial
 compilePartial = (name, context)->
@@ -57,17 +58,24 @@ justLoopCommand = (count, options)->
   count = ~~count
   new Array(count + 1).join options.fn(this)
 
+xPathCommand = (path, value, options)->
+  if not options
+    options = value
+    value = options.data.root
+
+  _common.xPathMapValue path, value
+
+
 #注册handlebars
 exports.init = ->
   #获取xPath
-  _handlebars.registerHelper 'xPath', (path, value, options)->
-    if not options
-      options = value
-      value = options.data.root
-    _common.xPathMapValue path, value
+  _handlebars.registerHelper 'xPath', xPathCommand
 
   #获取当前时间
-  _handlebars.registerHelper 'now', ()-> new Date().toString()
+  _handlebars.registerHelper 'now', (formatter)->
+    now = _moment()
+    #默认返回时间戳
+    if formatter then now.format(formatter) else now.valueOf()
 
   #打印出变量
   _handlebars.registerHelper 'print', (value)->
@@ -90,3 +98,5 @@ exports.init = ->
 
   #or
   _handlebars.registerHelper 'or', orCommand
+  #timestamp
+

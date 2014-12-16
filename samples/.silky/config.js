@@ -1,9 +1,10 @@
-/*
-    导出的配置文件
- */
 module.exports = {
-    //默认使用80端口，*nix下需要sudo
+    //配置文件的版本，和silky的版本无关
+    version: 0.2,
+    //80端口在*nix下需要sudo
     port: 14422,
+    //使用兼容模式，即可以兼容0.5.5之前的silky项目
+    compatibleModel: true,
     //代理配置相关，兼容json-proxy的代理配置
     proxy: {
         forward: {
@@ -11,36 +12,42 @@ module.exports = {
             //"/ajax": "/"
         }
     },
-    //实时刷新
-    livereload: {
-        //实时刷新的环境，支持数组，如['development', 'production']
-        env: ['development'],
-        //是否以amd的方式加载socket.io以及main.js
-        amd: false
-    },
     //路由
     routers: [
         /*
-        {
-            //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换
-            path: /^\/$/, to: 'index.html', next: true
-        }
-        */
+         {
+         //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换，static：是否为静态文件，静态文件直接返回
+         path: /^\/$/, to: 'index.html', next: true, static: true
+         }
+         */
     ],
-    //替换掉文件名中的source
-    "replaceSource": true,
+    //插件的配置
+    plugin: {
+        example: {
+            info: '这里是配置文件啦'
+        }
+    },
     //build的配置
     build: {
         //构建的目标目录，命令行指定的优先
         output: "./build",
+        //将要复制的文件目录，直接复制到目标
+        copy: [/^images(\-demo)?$/i],
+        //完全忽略处理的文件
+        ignore: [/^template\/module$/i, /^css\/module$/i, /(^|\/)\.(.+)$/],
         //重命名
         rename: [
             {
-                source: /source\.(js)$/i, target: '$1'
+                source: /source\.(js)$/i, target: '$1', next: false
+            },
+            {
+                source: /^template\/(.+)/i, target: '$1', next: false
             }
         ],
         //是否压缩
         compress: {
+            //将要忽略压缩的文件
+            ignore: [],
             //压缩js，包括coffee
             js: true,
             //压缩css，包括less
@@ -49,37 +56,9 @@ module.exports = {
             html: false,
             //是否压缩internal的js
             internal: true
-        },
-        //将要复制的文件目录，直接复制到目标
-        copy: ["images"],
-        //将要编译处理的目录，如果存在less/coffee，则会直接编译
-        compile: {
-            //将template直接输出到目标目录下
-            "template":{
-                //保存到目标
-                target: './',
-                //要忽略的路径
-                ignore: /module$/i
-            },
-            //编译js目录
-            "js": {
-                //不编译直接复制的文件
-                copy: /\.min\.js$/i
-            },
-            //编译css目录
-            "css": {
-                //忽略目标目录
-                ignore: /module$/i
-            }
         }
-    },
-    //将要监控哪些文件目录，当监控中的内容被更改后，会触发客户端的自动更新事件
-    watch: {
-        //监控js目录，以js和coffee结尾的，将被监控
-        "js": /(js|coffee)$/i,
-        //监控less和css
-        "css": /(css|less)$/i,
-        //监控handlebars
-        "template": /(html|hbs)$/ig
     }
 }
+/*
+    silky运行的配置文件
+ */

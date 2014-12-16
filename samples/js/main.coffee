@@ -1,1 +1,4 @@
-console.log 'i am main.coffee'
+test = (message)->
+  console.log message
+
+test 'i am main.coffee'

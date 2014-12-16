@@ -1,6 +1,6 @@
 require 'colors'
 _proxy = require('json-proxy')
-_ = require 'underscore'
+_ = require 'lodash'
 _router = require './router'
 _common = require './common'
 _initialize = require './initialize'

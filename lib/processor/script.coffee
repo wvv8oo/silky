@@ -2,7 +2,7 @@
     处理js和coffee
 ###
 _path = require 'path'
-_common = require './common'
+_common = require '../common'
 _coffee = require 'coffee-script'
 _fs = require 'fs'
 

@@ -4,7 +4,7 @@
 _fs = require 'fs-extra'
 _path = require 'path'
 _common = require './common'
-_ = require 'underscore'
+_ = require 'lodash'
 
 _isWatch = false        #是否在监控中
 _data = {
@@ -46,8 +46,8 @@ combineFile = (workbench, filename)->
   return false if extname not in ['json', 'less', 'js']
 
   key = getDataKey filename
-  normaFile = _path.join workbench, 'normal', filename
-  overrideFile = _path.join workbench, _common.options.env, filename
+  normaFile = _path.join workbench, 'data', 'normal', filename
+  overrideFile = _path.join workbench, 'data', _common.options.env, filename
 
   #如果是js文件，直接引入
   return _data.json[key] = readScript(normaFile, overrideFile) if extname is 'js'
@@ -73,7 +73,7 @@ exports.init = ()->
   #读取normal的数据
   workspace = _path.join ops.workbench, ops.identity
   #循环读取所有数据到缓存中
-  _fs.readdirSync(_path.join workspace, 'normal').forEach (filename)->
+  _fs.readdirSync(_path.join workspace, 'data', 'normal').forEach (filename)->
     combineFile workspace, filename
 
   #循环读取所有语言到数据中

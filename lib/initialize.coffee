@@ -1,5 +1,5 @@
 module.exports = (options)->
     require('./common').init(options)
     require('./data').init()
-    require('./template').init()
-    require('./handlebarHelpers.coffee').init()
+    require('./processor/template').init()
+    require('./processor/handlebarHelpers.coffee').init()

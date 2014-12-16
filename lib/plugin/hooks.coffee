@@ -17,7 +17,3 @@ module.exports =
     didCompile: 'build:didCompile'
     willProcess: 'build:willProcess'   #预处理文件或者文件夹，复制或者编译(仅限于coffee/less/handlebars)
     didProcess: 'build:didProcess'     #预处理结束
-#    willCopy: 'build:willCopy'
-#    didCopy: 'build:didCopy'
-  #编译
-#  compile:

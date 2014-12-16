@@ -4,11 +4,11 @@
 
 _fs = require 'fs'
 _path = require 'path'
-_common = require './common'
+_common = require '../common'
 _handlebars = require 'handlebars'
-_data = require './data'
+_data = require '../data'
 _cheerio = require 'cheerio'
-_ = require 'underscore'
+_ = require 'lodash'
 _htmlpretty = require('js-beautify').html
 require 'colors'
 
@@ -54,12 +54,11 @@ combineHoney = ($)->
       html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
 
     html += '\n\t});'
+    #html = _jspretty html, indent_size: 4
+    html = "<script>\n#{html}\n</script>"
 
-  #html = _jspretty html, indent_size: 4
-  html = "<script>\n#{html}\n</script>"
-
-  #将新的html合并到body里
-  $('body').append html
+    #将新的html合并到body里
+    $('body').append html
 
 #注入及合并js
 injectScript = (content)->
@@ -102,7 +101,9 @@ exports.render = (file)->
     data._ = data
 
     content = template data
-    html = injectScript content
+#    html = injectScript content
+    #暂时不注入script，以后用livereload的时候再考虑
+    html = content
     return if _common.config.beautify then _htmlpretty(html) else html;
 
   catch e
@@ -114,6 +115,6 @@ exports.render = (file)->
 #初始化
 exports.init = ()->
   #读取系统出错模板，并编译
-  file = _path.join __dirname, 'client/error.hbs'
+  file = _path.join __dirname, '../client/error.hbs'
   content =  _common.readFile file
   _errorTemplate = _handlebars.compile content

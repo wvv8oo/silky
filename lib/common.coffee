@@ -3,14 +3,18 @@
 ###
 _events = require 'events'
 _watch = require 'watch'
-_fs = require 'fs'
+_fs = require 'fs-extra'
 _path = require 'path'
 require 'colors'
-_ = require 'underscore'
+_ = require 'lodash'
+_plugin = require './plugin'
+_update = require './update'
 
 _pageEvent = new _events.EventEmitter()
-_config = null      #配置，映射到.silky/config.js文件
 _options = null     #用户传入的配置信息
+
+#用户的home目录
+exports.homeDirectory = process.env[if process.platform is 'win32' then 'USERPROFILE' else 'HOME']
 
 #触发页面被改变事件
 exports.onPageChanged = ()->
@@ -29,22 +33,23 @@ exports.watchAndTrigger = (parent, pattern)->
     exports.watch parent, pattern, exports.onPageChanged
 
 
-#监控文件
-deepWatch = exports.watch = (parent, pattern, cb)->
-	_watch.watchTree parent, (f, curr, prev)->
-		return if typeof f is "object" and not (prev and curr)
+##监控文件
+#deepWatch = exports.watch = (parent, pattern, cb)->
+#	_watch.watchTree parent, (f, curr, prev)->
+#		return if typeof f is "object" and not (prev and curr)
+#
+#		#不适合监控规则的跳过
+#		return if not (pattern instanceof RegExp and pattern.test(f))
+#		event = 'change'
+#
+#		if prev is null
+#			event = 'new'
+#		else if curr.nlink is 0
+#			event = 'delete'
+#
+#		cb event, f
 
-		#不适合监控规则的跳过
-		return if not (pattern instanceof RegExp and pattern.test(f))
-		event = 'change'
-
-		if prev is null
-			event = 'new'
-		else if curr.nlink is 0
-			event = 'delete'
-
-		cb event, f
-
+###
 #初始化watch
 initWatch = ()->
   return  #暂时不做任何监控
@@ -67,6 +72,7 @@ initWatch = ()->
           console.log "#{event} - #{file}".green
           #同时引发页面内容被改变的事件
           exports.onPageChanged()
+###
 
 #判断是否为产品环境
 exports.isProduction = ()-> _options.env is 'production'
@@ -90,6 +96,9 @@ exports.replaceExt = (file, ext)->
 #读取文件
 exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 
+#保存文件
+exports.writeFile = (file, content)-> _fs.outputFileSync file, content
+
 exports.getTemplateDir = ()->
   _path.join _options.workbench, 'template'
 
@@ -108,14 +117,26 @@ exports.init = (options)->
     if not _options.workbench or not _fs.existsSync _path.join(_options.workbench, _options.identity)
         _options.workbench = _path.join __dirname, '..', 'samples'
 
-    #配置文件
-    configFile = _path.join _options.workbench, _options.identity, 'config.js'
-    _config = require configFile
+    globalConfig = {}
+    localConfig = {}
+    #读取配置文件
+    configFileName = 'config.js'
+    #读取全局配置文件
+    globalConfigFile = _path.join exports.homeDirectory, _options.identity, configFileName
+    globalConfig = require(globalConfigFile) if _fs.existsSync globalConfigFile
 
-    exports.config = _config
+    #配置文件
+    localConfigFile = _path.join _options.workbench, _options.identity, configFileName
+    localConfig = require(localConfigFile) if _fs.existsSync localConfigFile
+
+    #用本地配置覆盖全局配置
+    exports.config = _.extend globalConfig, localConfig
     exports.options = _options
 
-    initWatch()
+    #检查配置文件是否需要升级
+    _update.checkConfig()
+#    initWatch()
+    _plugin.init()      #初始化插件
 
 #输入当前正在操作的文件
 exports.fileLog = (file, log)->
@@ -132,3 +153,25 @@ exports.xPathMapValue = (xPath, data)->
   xPath.split('.').forEach (key)->
     return if not (value = value[key])
   value
+
+#简单的匹配，支持绝对匹配，正则匹配，以及匿名函数匹配
+exports.simpleMatch = (rules, value)->
+  return false if not rules
+  rules = [rules] if not (rules instanceof Array)
+  result = false
+  for rule in rules
+    if rule instanceof RegExp   #正则匹配
+      result = rule.test(value)
+    else if typeof rule is 'function'
+      result = rule(value)
+    else
+      result = rule is value
+
+    return result if result
+
+  false
+
+exports.debug = (message)->
+
+  return if not _options.debug
+  console.log message

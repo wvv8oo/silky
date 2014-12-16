@@ -3,7 +3,6 @@ _hooks = {}
 _q = require 'q'
 _ = require 'lodash'
 _common = require '../common'
-_config = _common.config
 
 #注册一个插件
 exports.silkyForHook = (pluginName)->
@@ -44,8 +43,9 @@ exports.triggerHook = (hookName, data, cb)->
     -> index < hooks.length and not stop
     ((done)->
       hook = hooks[index++]
+      _common.debug "Plugin -> #{hook.pluginName}; Priority -> #{hook.options.priority}; Hook -> #{hookName}"
       #获取插件的配置信息
-      options = _config.plugin?[hook.pluginName]
+      options = _common.config.plugin?[hook.pluginName]
       #异步处理
       if hook.options.async
         hook.factory data, options, -> done null
