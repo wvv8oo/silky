@@ -14,7 +14,7 @@ scanPlugins = ()->
   scanPluginsInSpecificDirectory localPluginDir
 
   #扫描全局的插件，用户可以在全局配置文件中 指定，如果没有指定，则在home目录
-  defaultGlobalPluginDir = _path.join _common.homeDirectory, _common.options.identity, folder
+  defaultGlobalPluginDir = _path.join _common.homeDirectory(), _common.options.identity, folder
   globalPluginDir = _common.config.globalPluginDirectory || defaultGlobalPluginDir
   scanPluginsInSpecificDirectory globalPluginDir
   _common.debug "Global Plugin -> #{globalPluginDir}".green

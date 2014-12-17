@@ -40,14 +40,14 @@ readScript = (normalFile, overrideFile)->
   _.extend normal, override
 
 #全并文件
-combineFile = (workbench, filename)->
+combineFile = (filename)->
   #只处理json和less的文件
   extname = _path.extname(filename).replace('.', '')
   return false if extname not in ['json', 'less', 'js']
 
   key = getDataKey filename
-  normaFile = _path.join workbench, 'data', 'normal', filename
-  overrideFile = _path.join workbench, 'data', _common.options.env, filename
+  normaFile = _path.join _common.identityDir(), 'data', 'normal', filename
+  overrideFile = _path.join _common.identityDir(), 'data', _common.options.env, filename
 
   #如果是js文件，直接引入
   return _data.json[key] = readScript(normaFile, overrideFile) if extname is 'js'
@@ -71,26 +71,15 @@ combineFile = (workbench, filename)->
 exports.init = ()->
   ops = _common.options
   #读取normal的数据
-  workspace = _path.join ops.workbench, ops.identity
+  normalDir = _path.join _common.identityDir(), 'data', 'normal'
+  #目录不存在，不查读取数据
+  return if not _fs.existsSync normalDir
+
   #循环读取所有数据到缓存中
-  _fs.readdirSync(_path.join workspace, 'data', 'normal').forEach (filename)->
-    combineFile workspace, filename
+  _fs.readdirSync(normalDir).forEach (filename)->
+    combineFile filename
 
   #循环读取所有语言到数据中
-  readLanguage _path.join(workspace, 'language', ops.language)
-
-#    暂时不watch，因为data文件一般改得少
-#    #监控数据目录中的json和less以及js是否发生的变化
-#    _common.watch workspace, /\.(json|less|js)$/i, (event, file)->
-#        extname = _path.extname(file).replace '.', ''
-#        #删除数据
-#        if event is 'delete'
-#            key = getDataKey file
-#            delete _data[extname][key]
-#        else
-#            #更新数据
-#            readData file
-#
-#        _common.onPageChanged()
+  readLanguage _path.join(_common.identityDir(), 'language', ops.language)
 
 exports.whole = _data

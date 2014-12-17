@@ -6,10 +6,7 @@ _common = require './common'
 _initialize = require './initialize'
 
 #作为一个中间件提供服务
-module.exports = (app, server, options)->
-  #初始化项目
-  _initialize options
-
+module.exports = (app, server, startServer)->
   #集成代理
   cfgProxy = _common.config.proxy || {}
   cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
@@ -17,6 +14,23 @@ module.exports = (app, server, options)->
 
   #监听路由
   _router(app)
+
+  #启动服务，如果是第三方调用，则可能不需要启动服务器
+  return if not startServer
+  app.set 'port', _common.options.port || _common.config.port || 14422
+  server.on 'error', (err) ->
+    if err.code is 'EADDRINUSE'
+      console.log "端口冲突，请使用其它端口".red
+      return process.exit(1)
+
+    console.log "Silky发生严重错误".red
+    console.log err.message.red
+
+  server.listen app.get('port')
+  console.log "Port -> #{app.get('port')}"
+  console.log "Workbench -> #{_common.options.workbench}"
+  console.log "Environment -> #{_common.options.env}"
+  console.log "Please visit http://localhost:#{app.get('port')}"
 
   ###
   #监听socket的事件
