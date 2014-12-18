@@ -1,7 +1,7 @@
 #转换对象
 convertObject = (source)->
   list = []
-  list.push("'#{key}': #{convert(value)}") for key, value of source
+  list.push("\"#{key}\": #{convert(value)}") for key, value of source
 
   "{#{list.join(',')}}"
 

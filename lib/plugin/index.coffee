@@ -29,8 +29,10 @@ registerPlugin = (file, pluginName)->
     plugin.registerPlugin silky
     _common.debug "Plugin Loaded -> #{pluginName}".green
   catch e
-    console.log "插件加载失败->#{file}"
+    console.log "插件加载失败->#{pluginName}".red
+    console.log file
     console.log e
+    process.exit 1
 
 #扫描插件
 scanPluginsInSpecificDirectory = (dir)->

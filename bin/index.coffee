@@ -16,6 +16,8 @@ _build = require('../lib/build')
 _version = require(_path.join(__dirname, '../package.json')).version
 
 console.log "Silky Version -> #{_version}"
+#检查silky是否有更新
+_update.checkSilky _version
 
 init = (options)->
   defaultOptions =
@@ -25,19 +27,19 @@ init = (options)->
 
   #初始化
   _initialize _.extend(defaultOptions, options)
+  _update.checkConfig()
   #初始化插件模块
   require('../lib/plugin').init()
-#检查silky是否有更新
-_update.checkSilky _version
 
 #安装插件的命令
 _program.command('install [names...]')
 .option('-g, --global', '安装到全局目录下')
 .option('-d, --debug', '启动调试模式')
+.option('-s, --source [value]', '指定安装源，可以是git地址或者本地目录')
 .description('安装插件')
 .action((names, program)->
   init()
-  _pluginPackage.install names, program.global
+  _pluginPackage.install names, program.global, program.source
 )
 
 #卸载插件

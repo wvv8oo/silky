@@ -5,6 +5,8 @@ _path = require 'path'
 _common = require '../common'
 _fs = require 'fs-extra'
 _ = require 'lodash'
+_childProcess = require('child_process')
+_async = require 'async'
 
 #获取插件的目录
 getPluginDirectory = (isGlobal)->
@@ -18,28 +20,65 @@ updateGitRepos = (remoteRepos, localRepos, cb)->
   else
     command = "git clone #{remoteRepos} #{localRepos}"
 
-  require('child_process').exec command, cb
+  _childProcess.exec command, cb
 
 #从本地目录安装插件
-installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir)->
-  return console.log "插件#{pluginName}不存在".red if not _fs.existsSync sourcePluginDir
+installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
+  return console.log "#插件{pluginName}不存在，安装失败".red if not _fs.existsSync sourcePluginDir
+  #如果没有给插件名称，则取源的文件名（这里其实应该读package.json，再取名称好一点）
+  pluginName = pluginName || _path.basename(sourcePluginDir)
   targetPluginDir = _path.join pluginRootDir, pluginName
   #删除目录，如果已经存在
   _fs.removeSync targetPluginDir if _fs.existsSync targetPluginDir
   _fs.copySync sourcePluginDir, targetPluginDir
-  console.log "#{pluginName}安装成功".green
+
+  #运行npm install
+  command = "cd #{targetPluginDir} && npm install"
+  _childProcess.exec command, (err)->
+    if err
+      console.log "#{pluginName}安装失败".red
+      console.log err
+    else
+      console.log "#{pluginName}安装成功".green
+    cb null
 
 #在指定仓库中安装插件列表
-installPluginsFromLocalDir = (names, pluginRootDir, localRepos)->
-  _.map names, (pluginName)->
-    #在仓库中的插件目录
-    sourcePluginDir = _path.join localRepos, pluginName
-    installPluginFromLocalDir pluginName, pluginRootDir, sourcePluginDir
+installPluginsFromLocalDir = (names, pluginRootDir, localRepos, cb)->
+  index = 0
+  _async.whilst(
+    -> index < names.length
+    ((done)->
+      pluginName = names[index++]
+      #在仓库中的插件目录
+      sourcePluginDir = _path.join localRepos, pluginName
+      installPluginFromLocalDir pluginName, pluginRootDir, sourcePluginDir, (err)-> done null
+    ), cb
+  )
+
+#从指定源中安装
+installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
+  #没有以git结尾，直接从本地安装
+  if not /\.git$/i.test source
+    #直接从本地安装
+    return installPluginFromLocalDir pluginName, pluginRootDir, source, cb
+
+  #从git仓库安装
+  cacheDir = _path.join _common.globalCacheDirectory(), 'cache_repos', pluginName
+  _fs.removeSync cacheDir
+
+  updateGitRepos source, cacheDir, (err)->
+    if err
+      console.log '安装失败'.red
+      return console.log err
+
+    installPluginFromLocalDir pluginName, pluginRootDir, cacheDir, cb
+
+
 
 #从标准仓库中安装
 installFromStandardRepos = (names, pluginRootDir)->
   remoteRepos = 'https://github.com/wvv8oo/silky-plugins.git'
-  localRepos = _path.join _common.globalSilkyIdentityDir(), 'plugin_repos'
+  localRepos = _path.join _common.globalCacheDirectory(), 'plugins'
 
   #更新仓库
   updateGitRepos remoteRepos, localRepos, (err)->
@@ -47,16 +86,21 @@ installFromStandardRepos = (names, pluginRootDir)->
       console.log '安装失败'.red
       return console.log err
 
-    installPluginsFromLocalDir names, pluginRootDir, localRepos
+    installPluginsFromLocalDir names, pluginRootDir, localRepos, ->
 
 #安装插件
-exports.install = (names, isGlobal)->
+exports.install = (names, isGlobal, source)->
   pluginRootDir = getPluginDirectory(isGlobal)
 
   return console.log "当前目录不是有效的Silky目录".red if not isGlobal and not _common.isSilkyProject()
   console.log "installing..."
-  #暂时只从标准仓库安装，以后可以从
-  installFromStandardRepos names, pluginRootDir
+
+  #从指定的源安装，只安装一个
+  if source
+    installFromSpecificSource names[0], pluginRootDir, source, ->
+  else
+    #从标准库中安装，可以安装多个
+    installFromStandardRepos names, pluginRootDir, ->
 
 #删除插件
 exports.uninstall = (names, isGlobal)->
@@ -75,7 +119,7 @@ exports.list = (isGlobal)->
   total = 0
   console.log '\n'
   console.log pluginRootDir
-  console.log 'Plugins: '
+#  console.log 'Plugins: '
   plugins = _fs.readdirSync pluginRootDir
   _.map plugins, (pluginName)->
     pluginDir = _path.join pluginRootDir, pluginName
@@ -86,4 +130,4 @@ exports.list = (isGlobal)->
     pkg = _fs.readJSONFileSync pluginPackage, 'utf-8'
     console.log "#{pluginName}->#{pkg.version}".green
 
-  console.log "#{total} plugin(s) has been already installed."
+  console.log "#{total}个插件已经被安装"

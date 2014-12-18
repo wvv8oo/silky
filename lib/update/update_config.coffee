@@ -29,7 +29,7 @@ updateTo10 = ()->
   config.plugin = {}
   config.routers = [
     path: /^(.+)\.source(\.js)$/, to: '$1$2', next: false
-  ]
+  ].concat(config.routers)
 
   delete config.beautify
   delete config.livereload
@@ -37,16 +37,19 @@ updateTo10 = ()->
   delete config.watch
   delete config.build.compile
 
-  config.build.ignore = [/^template\/module$/i, /^css\/module$/i, /(^|\/)\.(.+)$/, /\.min\.js$/]
-  config.build.rename = rename: [
+  config.build.ignore = [/^template\/module$/i, /^css\/module$/i, /(^|\/)\.(.+)$/]
+  config.build.rename = [
     {
       source: /^template\/(.+)/i, target: '$1', next: false
     }
   ].concat(config.build.rename)
 
+  #默认忽略掉带min的文件名
+  config.build.compress.ignore = [/\.(min|pack)\.js$/]
+
   #保存并美化代码
   beautify = require('js-beautify').js_beautify
-  ott = require './objectToString'
+  ott = require '../object2String'
   content = ott config
   content = "module.exports = #{content}"
   content = beautify(content, { indent_size: 2 })

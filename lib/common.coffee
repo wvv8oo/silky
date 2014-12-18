@@ -16,7 +16,7 @@ _options = null
 #  #如果在workbench中没有找到.silky的文件夹，则将目录置为silky的samples目录
 #  if not workbench or not _fs.existsSync _path.join(workbench, exports.identity)
 #    workbench = _path.join __dirname, '..', 'samples'
-readConfig = ()->
+readConfig = ->
   globalConfig = {}
   localConfig = {}
 
@@ -37,28 +37,32 @@ readConfig = ()->
   #用本地配置覆盖全局配置
   _.extend globalConfig, localConfig
 
-exports.globalSilkyIdentityDir = ()-> _path.join exports.homeDirectory(), exports.options.identity
+#全局的siky目录
+exports.globalSilkyIdentityDir = -> _path.join exports.homeDirectory(), exports.options.identity
+#仓库的缓存目录
+exports.globalCacheDirectory = -> _path.join exports.globalSilkyIdentityDir(), 'cache'
+
 #检查工作目录是否为合法的silky目录
-exports.isSilkyProject = ()->
+exports.isSilkyProject = ->
   _fs.existsSync exports.identityDir()
 
 #获取identity的目录
-exports.identityDir = ()-> _path.join _options.workbench, _options.identity
+exports.identityDir = -> _path.join _options.workbench, _options.identity
 
 #获取工作区的插件目录
-exports.workbenchPluginDirectory = ()->
+exports.workbenchPluginDirectory = ->
   _path.join exports.identityDir(), 'plugin'
 
 #获取全局的插件目录
-exports.globalPluginDirectory = ()->
+exports.globalPluginDirectory = ->
   _options.globalPluginDirectory || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
 
 #用户的home目录
-exports.homeDirectory = ()->
+exports.homeDirectory = ->
   process.env[if process.platform is 'win32' then 'USERPROFILE' else 'HOME']
 
 #判断是否为产品环境
-exports.isProduction = ()->
+exports.isProduction = ->
   _options.env is 'production'
 
 #如果是产品环境，则报错，否则返回字符
@@ -78,7 +82,7 @@ exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 #保存文件
 exports.writeFile = (file, content)-> _fs.outputFileSync file, content
 #获取模板文件，针对于旧版本的silky
-exports.getTemplateDir = ()-> _path.join _options.workbench, 'template'
+exports.getTemplateDir = -> _path.join _options.workbench, 'template'
 #替换掉slash，所有奇怪的字符
 exports.replaceSlash = (file)-> file.replace(/\W/ig, "_")
 
