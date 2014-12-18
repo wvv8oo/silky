@@ -26,7 +26,7 @@ updateTo10 = ()->
   #升级配置文件
   config.version = 0.2
   config.compatibleModel = true
-  config.plugin = {}
+  config.plugins = {}
   config.routers = [
     path: /^(.+)\.source(\.js)$/, to: '$1$2', next: false
   ].concat(config.routers)

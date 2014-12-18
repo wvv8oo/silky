@@ -8,22 +8,22 @@ _ = require 'lodash'
 _childProcess = require('child_process')
 _async = require 'async'
 
-#获取插件的目录
-getPluginDirectory = (isGlobal)->
-  if isGlobal then _common.globalPluginDirectory() else _common.workbenchPluginDirectory()
-
 #更新仓库，如果仓库不存在，则clone仓库
 updateGitRepos = (remoteRepos, localRepos, cb)->
+  console.log "正在同步git仓库..."
   #目录已经存在，则clone
   if _fs.existsSync localRepos
     command = "cd #{localRepos} && git pull"
   else
     command = "git clone #{remoteRepos} #{localRepos}"
 
-  _childProcess.exec command, cb
+  _childProcess.exec command, (err)->
+    console.log "同步git仓库完成"
+    cb err
 
 #从本地目录安装插件
 installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
+  console.log "准备安装#{pluginName}"
   return console.log "#插件{pluginName}不存在，安装失败".red if not _fs.existsSync sourcePluginDir
   #如果没有给插件名称，则取源的文件名（这里其实应该读package.json，再取名称好一点）
   pluginName = pluginName || _path.basename(sourcePluginDir)
@@ -74,7 +74,6 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
     installPluginFromLocalDir pluginName, pluginRootDir, cacheDir, cb
 
 
-
 #从标准仓库中安装
 installFromStandardRepos = (names, pluginRootDir)->
   remoteRepos = 'https://github.com/wvv8oo/silky-plugins.git'
@@ -89,22 +88,21 @@ installFromStandardRepos = (names, pluginRootDir)->
     installPluginsFromLocalDir names, pluginRootDir, localRepos, ->
 
 #安装插件
-exports.install = (names, isGlobal, source)->
-  pluginRootDir = getPluginDirectory(isGlobal)
-
-  return console.log "当前目录不是有效的Silky目录".red if not isGlobal and not _common.isSilkyProject()
+exports.install = (names, oringal)->
+  pluginRootDir = _common.globalPluginDirectory()
   console.log "installing..."
 
   #从指定的源安装，只安装一个
-  if source
-    installFromSpecificSource names[0], pluginRootDir, source, ->
+  if oringal
+    installFromSpecificSource names[0], pluginRootDir, oringal, ->
   else
     #从标准库中安装，可以安装多个
     installFromStandardRepos names, pluginRootDir, ->
 
 #删除插件
-exports.uninstall = (names, isGlobal)->
-  pluginRootDir = getPluginDirectory(isGlobal)
+exports.uninstall = (names)->
+  pluginRootDir = _common.globalPluginDirectory()
+
   _.map names, (pluginName)->
     pluginDir = _path.join pluginRootDir, pluginName
     return console.log "#{pluginName}不存在" if not _fs.existsSync pluginDir

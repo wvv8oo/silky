@@ -19,7 +19,7 @@ console.log "Silky Version -> #{_version}"
 #检查silky是否有更新
 _update.checkSilky _version
 
-init = (options)->
+init = (options, loadPlugin)->
   defaultOptions =
     workbench: process.cwd()
     version: _version
@@ -29,27 +29,25 @@ init = (options)->
   _initialize _.extend(defaultOptions, options)
   _update.checkConfig()
   #初始化插件模块
-  require('../lib/plugin').init()
+  require('../lib/plugin').init() if loadPlugin
 
 #安装插件的命令
 _program.command('install [names...]')
-.option('-g, --global', '安装到全局目录下')
 .option('-d, --debug', '启动调试模式')
-.option('-s, --source [value]', '指定安装源，可以是git地址或者本地目录')
 .description('安装插件')
 .action((names, program)->
   init()
-  _pluginPackage.install names, program.global, program.source
+  _pluginPackage.install names, program.original, program.save
 )
 
 #卸载插件
 _program.command('uninstall [names...]')
 .description('卸载插件')
 .option('-d, --debug', '启动调试模式')
-.option('-g, --global', '卸载全局目录的插件')
+.option('-s, --save', '保存插件信息到配置文件中')
 .action((names, program)->
   init()
-  _pluginPackage.uninstall names, program.global
+  _pluginPackage.uninstall names, program.save
 )
 
 #列出插件
@@ -98,7 +96,7 @@ _program.command('build')
     debug: Boolean(_program.debug)
 
   options.language = _program.language if _program.language
-  init options
+  init options, true
 
   #保持silky一直运行，当然这并不是一个好方法
   setTimeout (-> console.log 'Timeout'), 1000 * 24 * 60 * 60
@@ -126,7 +124,7 @@ _program
 
   #显示示例项目
   options.workbench = _path.join(__dirname, '..', 'samples') if program.sample
-  init options
+  init options, true
 
   #非合法的silky项目，警告用户
   if not _common.isSilkyProject()
