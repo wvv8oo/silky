@@ -59,4 +59,6 @@ updateTo10 = ()->
   process.exit(0)
 
 exports.execute = ()->
+  #非silky project不用升级
+  return if not _common.isSilkyProject()
   updateTo10()

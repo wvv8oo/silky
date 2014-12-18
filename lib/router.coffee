@@ -109,10 +109,16 @@ responseDirectory = (path, req, res, next)->
   _fs.readdirSync(dir).forEach (filename)->
     item =
       filename: filename
-      url: path + filename.replace('.hbs', '.html')
+      url: path + filename
+
+    #只有silky项目，才会将hbs的扩展名改为html
+    item.url = item.url.replace('.hbs', '.html') if _common.isSilkyProject()
+
+    fullPath = _path.join dir, filename
+    stat = _fs.statSync fullPath
 
     #如果是文件夹，在后台加上/
-    item.url += '/' if /\/[^\.]+$/.test(item.url)
+    item.url += '/?dir=true' if stat.isDirectory()
     files.push item
 
   queue = []
@@ -204,6 +210,8 @@ module.exports = (app)->
   app.get "*", (req, res, next)->
     url = _url.parse(req.url)
     route = routeRewrite url.pathname
+    isDir = Boolean(req.query.dir)
+
     data =
       request: req
       response: res
@@ -218,17 +226,19 @@ module.exports = (app)->
 
       realpath = data.route.url
 
-      #强制响应静态文件
-      if data.route.rule?.static
-        return responseStatic realpath, req, res, next
-      else if /(\.(html|html))$/.test(realpath)   #匹配html
-        return responseHTML realpath, req, res, next
-      else if /\.css$/.test(realpath)
-        return responseCSS realpath, req, res, next
-      else if /\.js$/.test(realpath)
-        return responseJS realpath, req, res, next
-      else if /(^\/$)|(\/[^\.]+$)/.test(realpath)
-        #显示文件夹
-        return responseDirectory realpath, req, res, next
-      else
-        responseStatic(realpath, req, res, next)
+      #返回目录
+      if isDir or /(^\/$)|(\/[^\.]+$)/.test(realpath) then return responseDirectory realpath, req, res, next
+
+      #非silky项目强制返回静态文件，规则要求直接返回静态文件
+      if not _common.isSilkyProject() or data.route.rule?.static
+        return responseStatic(realpath, req, res, next)
+
+      #匹配html
+      if /(\.(html|html))$/.test(realpath) then return responseHTML realpath, req, res, next
+      #处理css
+      if /\.css$/.test(realpath) then return responseCSS realpath, req, res, next
+      #处理js
+      if /\.js$/.test(realpath) then return responseJS realpath, req, res, next
+
+      #不符合所有规则，则返回静态文件
+      responseStatic(realpath, req, res, next)
