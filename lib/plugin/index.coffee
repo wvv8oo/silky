@@ -32,7 +32,7 @@ registerPlugin = (pluginName, options)->
     #_plugins.push plugin
     silky = _host.silkyForHook(pluginName)
     plugin.registerPlugin silky, options
-    _common.debug "Plugin Loaded -> #{pluginName}".green
+    console.log "插件加载成功 -> #{pluginName}".green
   catch e
     console.log "插件加载失败->#{pluginName}".red
     console.log file
@@ -51,12 +51,12 @@ registerPlugin = (pluginName, options)->
 #根据配置文件加载插件
 loadPluginsWithConfig = ()->
   #globalSilkyPluginDir
-  plugins = _common.options.plugins || {}
+  plugins = _common.config.plugins || {}
   #注册插件
   registerPlugin(pluginName, options) for pluginName, options of plugins
 
 
 exports.init = ()->
-  scanPlugins()
+  loadPluginsWithConfig()
   #扫描完插件需要重新排序，不然无法实现优先级
   _host.sort()

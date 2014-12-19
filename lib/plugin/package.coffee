@@ -110,13 +110,13 @@ exports.uninstall = (names)->
     console.log "插件#{pluginName}已经被卸载".green
 
 #列出所有的插件
-exports.list = (isGlobal)->
-  pluginRootDir = getPluginDirectory(isGlobal)
+exports.list = ()->
+  pluginRootDir = _common.globalPluginDirectory()
   return console.log "没有安装任何插件".green if not _fs.existsSync pluginRootDir
 
   total = 0
-  console.log '\n'
-  console.log pluginRootDir
+  console.log '正在检测已经安装的插件'
+  console.log "插件安装目录：#{pluginRootDir}"
 #  console.log 'Plugins: '
   plugins = _fs.readdirSync pluginRootDir
   _.map plugins, (pluginName)->

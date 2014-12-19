@@ -46,8 +46,8 @@ combineFile = (filename)->
   return false if extname not in ['json', 'less', 'js']
 
   key = getDataKey filename
-  normaFile = _path.join _common.identityDir(), 'data', 'normal', filename
-  overrideFile = _path.join _common.identityDir(), 'data', _common.options.env, filename
+  normaFile = _path.join _common.localSilkyIdentityDir(), 'data', 'normal', filename
+  overrideFile = _path.join _common.localSilkyIdentityDir(), 'data', _common.options.env, filename
 
   #如果是js文件，直接引入
   return _data.json[key] = readScript(normaFile, overrideFile) if extname is 'js'
@@ -71,7 +71,7 @@ combineFile = (filename)->
 exports.init = ()->
   ops = _common.options
   #读取normal的数据
-  normalDir = _path.join _common.identityDir(), 'data', 'normal'
+  normalDir = _path.join _common.localSilkyIdentityDir(), 'data', 'normal'
   #目录不存在，不查读取数据
   return if not _fs.existsSync normalDir
 
@@ -80,6 +80,6 @@ exports.init = ()->
     combineFile filename
 
   #循环读取所有语言到数据中
-  readLanguage _path.join(_common.identityDir(), 'language', ops.language)
+  readLanguage _path.join(_common.localSilkyIdentityDir(), 'language', ops.language)
 
 exports.whole = _data

@@ -5,10 +5,13 @@ _events = require 'events'
 _watch = require 'watch'
 _fs = require 'fs-extra'
 _path = require 'path'
-require 'colors'
 _ = require 'lodash'
 _plugin = require './plugin'
 _update = require './update'
+_object2string = require './object2string'
+_beautify = require('js-beautify').js_beautify
+
+require 'colors'
 
 #用户传入的配置信息
 _options = null
@@ -20,38 +23,44 @@ readConfig = ->
   globalConfig = {}
   localConfig = {}
 
-  #读取配置文件
-  configFileName = 'config.js'
   #读取全局配置文件
-  globalConfigFile = _path.join exports.globalSilkyIdentityDir(), configFileName
+  globalConfigFile = exports.globalConfigFile()
   globalConfig = require(globalConfigFile) if _fs.existsSync globalConfigFile
+  exports.globalConfig = globalConfig
 
   #工作文件夹的配置文件
-  localConfigFile = _path.join exports.identityDir(), configFileName
+  localConfigFile = exports.localConfigFile()
   #如果当前项目文件夹没有配置，则加载默认的配置
   if not _fs.existsSync localConfigFile
     localConfigFile = _path.join(__dirname, 'default_config')
 
   localConfig = require(localConfigFile)
 
-  #用本地配置覆盖全局配置
-  _.extend globalConfig, localConfig
+  #复制global config中的custom节点
+  globalCustom = _.extend {}, globalConfig.custom
+  #合并本地配置到全局配置
+  _.extend globalCustom, localConfig
+
+#全局配置文件的路径
+exports.globalConfigFile = -> _path.join exports.globalSilkyIdentityDir(), 'config.js'
+#本地配置的文件路径
+exports.localConfigFile = -> _path.join exports.localSilkyIdentityDir(), 'config.js'
+
+#保存全局配置
+exports.saveGlobalConfig = ()->
+  exports.saveObjectAsCode exports.globalConfig, exports.globalConfigFile()
 
 #全局的siky目录
 exports.globalSilkyIdentityDir = -> _path.join exports.homeDirectory(), exports.options.identity
 #仓库的缓存目录
-exports.globalCacheDirectory = -> _path.join exports.globalSilkyIdentityDir(), 'cache'
+exports.globalCacheDirectory = -> _path.join exports.globalSilkyIdentityDir(), '.cache'
 
 #检查工作目录是否为合法的silky目录
 exports.isSilkyProject = ->
-  _fs.existsSync exports.identityDir()
+  _fs.existsSync exports.localSilkyIdentityDir()
 
 #获取identity的目录
-exports.identityDir = -> _path.join _options.workbench, _options.identity
-
-#获取工作区的插件目录
-exports.workbenchPluginDirectory = ->
-  _path.join exports.identityDir(), 'plugin'
+exports.localSilkyIdentityDir = -> _path.join _options.workbench, _options.identity
 
 #获取全局的插件目录
 exports.globalPluginDirectory = ->
@@ -121,6 +130,13 @@ exports.simpleMatch = (rules, value)->
     return result if result
 
   false
+
+#保存对象为代码文件
+exports.saveObjectAsCode = (object, file)->
+  content = _object2string object
+  content = "module.exports = #{content}"
+  content = _beautify(content, { indent_size: 2 })
+  exports.writeFile file, content
 
 exports.debug = (message)->
   return if not _options.debug

@@ -16,8 +16,6 @@ _build = require('../lib/build')
 _version = require(_path.join(__dirname, '../package.json')).version
 
 console.log "Silky Version -> #{_version}"
-#检查silky是否有更新
-_update.checkSilky _version
 
 init = (options, loadPlugin)->
   defaultOptions =
@@ -27,6 +25,8 @@ init = (options, loadPlugin)->
 
   #初始化
   _initialize _.extend(defaultOptions, options)
+  #检查silky是否有更新
+  _update.checkSilky _version
   _update.checkConfig()
   #初始化插件模块
   require('../lib/plugin').init() if loadPlugin
@@ -37,6 +37,7 @@ _program.command('install [names...]')
 .description('安装插件')
 .action((names, program)->
   init()
+  return console.log("安装插件请使用：silky install [pluginName]".red) if names.length is 0
   _pluginPackage.install names, program.original, program.save
 )
 
@@ -47,6 +48,7 @@ _program.command('uninstall [names...]')
 .option('-s, --save', '保存插件信息到配置文件中')
 .action((names, program)->
   init()
+  return console.log("卸载插件请使用：silky uninstall [pluginName]".red) if names.length is 0
   _pluginPackage.uninstall names, program.save
 )
 
@@ -170,5 +172,12 @@ _program
 )
 
 _program.version(_version).parse(process.argv)
+
+(->
+  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list']
+  if _.difference(_program.rawArgs, mustIncludeCommand).length is _program.rawArgs.length
+    console.log "提示：新版本的silky请使用silky start启动".cyan
+)()
+
 #console.log "Debug model -> enable".red if _program.debug
 

@@ -7,10 +7,8 @@ _common = require '../common'
 
 #升级到1.0版本，即升级到支持插件的版本
 updateTo10 = ()->
-  identityDir = _path.join _common.options.workbench, _common.options.identity
-  configFile = _path.join identityDir, 'config.js'
   #检查配置文件的版本
-  config = require configFile
+  config = require _common.localConfigFile()
   return if config.version >= 0.2
 
 #  复制development和normal、product到data目录
@@ -47,14 +45,7 @@ updateTo10 = ()->
   #默认忽略掉带min的文件名
   config.build.compress.ignore = [/\.(min|pack)\.js$/]
 
-  #保存并美化代码
-  beautify = require('js-beautify').js_beautify
-  ott = require '../object2String'
-  content = ott config
-  content = "module.exports = #{content}"
-  content = beautify(content, { indent_size: 2 })
-
-  _common.writeFile configFile, content
+  _common.saveObjectAsCode config, configFile
   console.log '升级silky配置文件成功，请重新启动silky'.green
   process.exit(0)
 
