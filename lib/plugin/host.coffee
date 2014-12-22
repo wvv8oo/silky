@@ -5,7 +5,7 @@ _ = require 'lodash'
 _common = require '../common'
 
 #注册一个插件
-exports.silkyForHook = (pluginName)->
+exports.silkyForHook = (pluginName, pluginPriority)->
   #注册一个handlebars的helper
   registerHandlebarsHelper: (name, factory)->
     console.log '注册handlebars helper的功能还没有完成'
@@ -20,6 +20,8 @@ exports.silkyForHook = (pluginName)->
       options = {}
 
     options = _.extend {priority: 100, async: false}, options
+    #配置文件中强制指定了插件的优先级
+    options.priority = pluginPriority if pluginPriority isnt undefined
     _hooks[hookName] = [] if not _hooks[hookName]
     _hooks[hookName].push
       pluginName: pluginName

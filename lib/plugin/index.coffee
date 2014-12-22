@@ -22,6 +22,8 @@ _host = require './host'
 #根据插件名称，从全局插件目录中注册插件
 registerPlugin = (pluginName, options)->
   file = _path.join _common.globalPluginDirectory(), pluginName
+  #插件已经指定了源，则从指定源中加载
+  file = options.source if options.source
 
   try
     if not _fs.existsSync file
@@ -32,7 +34,7 @@ registerPlugin = (pluginName, options)->
     return console.log("#{filename}不是一个合法的Silky插件") if not plugin.silkyPlugin
     #将插件加入到插件列表，并注册hook
     #_plugins.push plugin
-    silky = _host.silkyForHook(pluginName)
+    silky = _host.silkyForHook(pluginName, options.priority)
     plugin.registerPlugin silky, options
     console.log "插件加载成功 -> #{pluginName}".green
   catch e
