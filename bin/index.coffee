@@ -83,6 +83,7 @@ _program.command('init')
 
 _program.command('build')
 .description('构建项目')
+.option('-c, --config [value]', '指定配置文件目录')
 .option('-o, --output [value]', '指定输出目录')
 .option('-d, --debug', '启动调试模式')
 .option('-f, --force', '强行构建当前目录，适用于编译非Silky项目')
@@ -97,10 +98,10 @@ _program.command('build')
     env:  program.environment || 'production'
     #是否为debug模式
     debug: Boolean(program.debug)
+    config: program.config
 
   options.language = program.language if program.language
   init options, true
-
 
   if not _common.isSilkyProject()
     message = if program.force then "提示：当前构建的目录非Silky目录".cyan else ""

@@ -29,9 +29,17 @@ readConfig = ->
   exports.globalConfig = globalConfig
 
   #工作文件夹的配置文件
-  localConfigFile = exports.localConfigFile()
+  #指定了配置文件的路径
+  if _options.config
+    localConfigFile = _path.resolve __dirname, _options.config
+  else
+    localConfigFile = exports.localConfigFile()
+
+  console.log "配置文件路径 -> #{localConfigFile}"
+
   #如果当前项目文件夹没有配置，则加载默认的配置
   if not _fs.existsSync localConfigFile
+    console.log "没有找到配置文件，加载配置默认的配置文件"
     localConfigFile = _path.join(__dirname, 'default_config')
 
   localConfig = require(localConfigFile)
