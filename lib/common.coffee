@@ -57,7 +57,10 @@ exports.globalCacheDirectory = -> _path.join exports.globalSilkyIdentityDir(), '
 
 #检查工作目录是否为合法的silky目录
 exports.isSilkyProject = ->
-  _fs.existsSync exports.localSilkyIdentityDir()
+  local = exports.localSilkyIdentityDir()
+  global = exports.globalSilkyIdentityDir()
+  #当前.silky非全局.silky，且存在.silky才被认为是silky项目
+  local isnt global and _fs.existsSync(exports.localSilkyIdentityDir())
 
 #获取identity的目录
 exports.localSilkyIdentityDir = -> _path.join _options.workbench, _options.identity
