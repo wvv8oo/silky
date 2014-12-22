@@ -71,7 +71,7 @@ _program.command('init')
   samples = _path.join(__dirname, '..', 'samples')
   current = process.cwd()
 
-  if _program.force
+  if program.force
     _fs.copySync samples, current
     console.log "Silky项目初始化成功，示例项目已被创建".green
   else
@@ -85,20 +85,26 @@ _program.command('build')
 .description('构建项目')
 .option('-o, --output [value]', '指定输出目录')
 .option('-d, --debug', '启动调试模式')
+.option('-f, --force', '强行构建当前目录，适用于编译非Silky项目')
 .option('-e, --environment [value]', '指定项目的运行环境，默认为 production')
 .action((program)->
   options =
     #指定为build模式
     buildMode: true
     #输出目录
-    output: _program.output
+    output: program.output
     #如果没有设置，build的时候，默认为production模式
-    env:  _program.environment || 'production'
+    env:  program.environment || 'production'
     #是否为debug模式
-    debug: Boolean(_program.debug)
+    debug: Boolean(program.debug)
 
-  options.language = _program.language if _program.language
+  options.language = program.language if program.language
   init options, true
+
+
+  if not _common.isSilkyProject()
+    message = if program.force then "提示：当前构建的目录非Silky目录".cyan else ""
+    return console.log ""
 
   #保持silky一直运行，当然这并不是一个好方法
   setTimeout (-> console.log 'Timeout'), 1000 * 24 * 60 * 60
@@ -119,10 +125,10 @@ _program
 .action((program)->
   options =
     #参数中提供的端口
-    port: _program.port || process.env.PORT || ''
-    debug: Boolean(_program.debug)
+    port: program.port || process.env.PORT || ''
+    debug: Boolean(program.debug)
 
-  options.language = _program.language if _program.language
+  options.language = program.language if program.language
 
   #显示示例项目
   options.workbench = _path.join(__dirname, '..', 'samples') if program.sample
@@ -171,7 +177,9 @@ _program
 #  child.start()
 )
 
-_program.version(_version).parse(process.argv)
+#版本和描述
+versionDesc = "Version: #{_version}; Silky: #{_path.join __dirname, '..'}"
+_program.version(versionDesc).parse(process.argv)
 
 (->
   mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list']

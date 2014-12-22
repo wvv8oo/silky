@@ -22,10 +22,8 @@ module.exports = {
          */
     ],
     //插件的配置
-    plugin: {
-        example: {
-            info: '这里是配置文件啦'
-        }
+    plugins: {
+        "honey": {}
     },
     //build的配置
     build: {

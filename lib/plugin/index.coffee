@@ -24,7 +24,9 @@ registerPlugin = (pluginName, options)->
   file = _path.join _common.globalPluginDirectory(), pluginName
 
   try
-    return console.log "插件#{pluginName}不存在".red if not _fs.existsSync file
+    if not _fs.existsSync file
+      console.log "插件#{pluginName}不存在，请使用 npm install #{pluginName} 安装".red
+      return
 
     plugin = require file
     return console.log("#{filename}不是一个合法的Silky插件") if not plugin.silkyPlugin

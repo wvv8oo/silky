@@ -13,18 +13,19 @@ updateTo10 = ()->
 
 #  复制development和normal、product到data目录
   ['development', 'production', 'normal'].forEach (folder)->
-    source = _path.join identityDir, folder
-    target = _path.join(identityDir, 'data', folder)
-    #确保目录存在
-    _fs.ensureDirSync target
+    source = _path.join _common.localSilkyIdentityDir(), folder
+    target = _path.join(_common.localSilkyIdentityDir(), 'data', folder)
 
     return if not _fs.existsSync source
+    #确保目录存在
+    _fs.ensureDirSync target
     _fs.renameSync source, target
 
   #升级配置文件
   config.version = 0.2
   config.compatibleModel = true
-  config.plugins = {}
+  #默认加载honey的插件
+  config.plugins = honey: {}
   config.routers = [
     path: /^(.+)\.source(\.js)$/, to: '$1$2', next: false
   ].concat(config.routers)
@@ -45,7 +46,7 @@ updateTo10 = ()->
   #默认忽略掉带min的文件名
   config.build.compress.ignore = [/\.(min|pack)\.js$/]
 
-  _common.saveObjectAsCode config, configFile
+  _common.saveObjectAsCode config, _common.localConfigFile()
   console.log '升级silky配置文件成功，请重新启动silky'.green
   process.exit(0)
 
