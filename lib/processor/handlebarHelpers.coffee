@@ -72,10 +72,9 @@ exports.init = ->
   _handlebars.registerHelper 'xPath', xPathCommand
 
   #获取当前时间
-  _handlebars.registerHelper 'now', (formatter)->
+  _handlebars.registerHelper 'now', (formatter, options)->
     now = _moment()
-    #默认返回时间戳
-    if formatter then now.format(formatter) else now.valueOf()
+    if typeof(formatter) is 'string' then now.format(formatter) else now.valueOf()
 
   #打印出变量
   _handlebars.registerHelper 'print', (value)->

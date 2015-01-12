@@ -76,10 +76,10 @@ exports.localSilkyIdentityDir = -> _path.join _options.workbench, _options.ident
 #获取全局的插件目录
 exports.globalPluginDirectory = ->
   _options.globalPluginDirectory || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
-
 #用户的home目录
 exports.homeDirectory = ->
   process.env[if process.platform is 'win32' then 'USERPROFILE' else 'HOME']
+
 
 #判断是否为产品环境
 exports.isProduction = ->
