@@ -12,7 +12,7 @@ exports.silkyForHook = (pluginName, pluginPriority)->
   #注册一个cli命令
   registerCommand: ()->
     console.log '注册command的功能还没有完成'
-
+  options: _common.config
   #注册一个hook
   registerHook:  (hookName, options, factory)->
     if typeof(options) is 'function'

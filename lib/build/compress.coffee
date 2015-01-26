@@ -3,6 +3,7 @@ _async = require 'async'
 _fs = require 'fs-extra'
 _path = require 'path'
 _cleanCSS = require 'clean-css'
+_cheerio = require 'cheerio'
 
 _hookHost = require '../plugin/host'
 _script = require '../processor/script'
@@ -33,16 +34,17 @@ compressCSS = (file, relativePath, cb)->
 compressHTML = (file, relativePath, cb)->
   return cb null if not _buildConfig.compress.html and not _buildConfig.compress.internal
 
+  content = _common.readFile file
   console.log "Compress HTML-> #{relativePath}".green
   compressInternal = _buildConfig.compress.internal and /<script.+<\/script>/i.test(content)
   rewrite = compressInternal or _buildConfig.compress.html
 
-  content = _common.readFile file
   #如果不包含script在页面中，则不需要压缩
   if compressInternal
     #压缩internal的script
     content = compressInternalJavascript content
-  else if _buildConfig.compress.html
+
+  if _buildConfig.compress.html
     #暂时不压缩html，以后考虑压缩html
     content = content
 

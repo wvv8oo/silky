@@ -75,7 +75,8 @@ exports.localSilkyIdentityDir = -> _path.join _options.workbench, _options.ident
 
 #获取全局的插件目录
 exports.globalPluginDirectory = ->
-  _options.globalPluginDirectory || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
+  exports.config.globalPluginDirectory || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
+
 #用户的home目录
 exports.homeDirectory = ->
   process.env[if process.platform is 'win32' then 'USERPROFILE' else 'HOME']
@@ -117,6 +118,7 @@ exports.init = (options)->
   _options.identity = '.silky'
   exports.options = _options
   exports.config = readConfig()
+
 
 #x.y.x这样的文本式路径，从data中找出对应的值
 exports.xPathMapValue = (xPath, data)->

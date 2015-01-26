@@ -55,10 +55,9 @@ _program.command('uninstall [names...]')
 #列出插件
 _program.command('list')
 .description('列出所有插件')
-.option('-g, --global', '卸载全局目录的插件')
 .action((program)->
   init()
-  _pluginPackage.list program.global
+  _pluginPackage.list()
 )
 
 #初始化项目
