@@ -47,7 +47,7 @@ exports.triggerHook = (hookName, data, cb)->
       hook = hooks[index++]
       _common.debug "Plugin -> #{hook.pluginName}; Priority -> #{hook.options.priority}; Hook -> #{hookName}"
       #获取插件的配置信息
-      options = _common.config.plugin?[hook.pluginName]
+      options = _common.config.plugins?[hook.pluginName]
       #异步处理
       if hook.options.async
         hook.factory data, options, -> done null

@@ -30,4 +30,9 @@ exports.render = (file, cb)->
     #转换
     parser.parse content, (err, tree)->
       return cb err if err
-      cb null, tree.toCSS(cleancss: false)
+      try
+        cssContent = tree.toCSS(cleancss: false)
+        cb err, cssContent
+      catch e
+        cb e
+
