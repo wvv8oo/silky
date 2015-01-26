@@ -3,15 +3,18 @@ _hooks = {}
 _q = require 'q'
 _ = require 'lodash'
 _common = require '../common'
+_handlebars = require 'handlebars'
 
 #注册一个插件
 exports.silkyForHook = (pluginName, pluginPriority)->
   #注册一个handlebars的helper
   registerHandlebarsHelper: (name, factory)->
-    console.log '注册handlebars helper的功能还没有完成'
+    _handlebars.registerHelper name, factory
+
   #注册一个cli命令
   registerCommand: ()->
-    console.log '注册command的功能还没有完成'
+    console.log '此功能还没有完成'
+
   options: _common.config
   #注册一个hook
   registerHook:  (hookName, options, factory)->
