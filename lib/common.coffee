@@ -6,6 +6,8 @@ _watch = require 'watch'
 _fs = require 'fs-extra'
 _path = require 'path'
 _ = require 'lodash'
+_watch = require 'watch'
+
 _plugin = require './plugin'
 _update = require './update'
 _object2string = require './object2string'
@@ -47,7 +49,7 @@ readConfig = ->
   #复制global config中的custom节点
   globalCustom = _.extend {}, globalConfig.custom
   #合并本地配置到全局配置
-  _.extend globalCustom, localConfig
+  exports.config = _.extend globalCustom, localConfig
 
 #全局配置文件的路径
 exports.globalConfigFile = -> _path.join exports.globalSilkyIdentityDir(), 'config.js'
@@ -72,6 +74,9 @@ exports.isSilkyProject = ->
 
 #获取identity的目录
 exports.localSilkyIdentityDir = -> _path.join _options.workbench, _options.identity
+
+#获取语言的文件夹
+exports.languageDirectory = -> _path.join(exports.localSilkyIdentityDir(), 'language', _options.language)
 
 #获取全局的插件目录
 exports.globalPluginDirectory = ->
@@ -117,7 +122,10 @@ exports.init = (options)->
   _.extend _options, options
   _options.identity = '.silky'
   exports.options = _options
-  exports.config = readConfig()
+  readConfig()
+
+  #监控文件的变化，有改动重新读取配置文件
+  _fs.watch exports.globalConfigFile(), (event, filename)-> readConfig()
 
 
 #x.y.x这样的文本式路径，从data中找出对应的值
