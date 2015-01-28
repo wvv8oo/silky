@@ -42,7 +42,7 @@ compressHTML = (file, relativePath, cb)->
   #如果不包含script在页面中，则不需要压缩
   if compressInternal
     #压缩internal的script
-    content = compressInternalJavascript content
+    content = compressInternalJavascript file, content
 
   if _buildConfig.compress.html
     #暂时不压缩html，以后考虑压缩html
@@ -52,21 +52,27 @@ compressHTML = (file, relativePath, cb)->
   cb null
 
 #调用cheerio，提取并压缩内联的js
-compressInternalJavascript = (content)->
+compressInternalJavascript = (file, content)->
   $ = _cheerio.load content
   #跳过模板部分
   $('script').each ()->
     $this = $(this)
     if $this.attr('type') isnt 'html/tpl'
-      minify = scriptMinify $this.html()
+      minify = scriptMinify file, $this.html()
       $this.html minify
 
   $.html()
 
 #压缩javascript的内容
-scriptMinify = (content)->
-  result = _uglify.minify content, fromString: true
-  result.code
+scriptMinify = (file, content)->
+  try
+    result = _uglify.minify content, fromString: true
+    result.code
+  catch e
+    console.log "编译JS出错，文件：#{file}".red
+    console.log e
+    console.log content.red
+    return content
 
 #压缩文件，仅压缩html/js/
 compressSingleFile = (file, cb)->

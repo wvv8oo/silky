@@ -96,23 +96,16 @@ exports.init = ()->
 watch = ()->
   dataDir = _path.join _common.localSilkyIdentityDir(), 'data'
   #监控数据文件的变化
-  _watch.watchTree dataDir, (f, curr, prev)->
-#    if typeof f is "object" && prev is null && curr is null
-#      console.log 'Finished walking the tree'
-#    else if prev is null
-#      console.log 'f is a new file'
-#    else if curr.nlink is 0
-#      console.log 'f was removed'
-#    else
-#      console.log 'f was changed'
-
-    return if typeof f is "object" && prev is null && curr is null
-    combineFile _path.basename(f)
+  if _fs.exists dataDir
+    _watch.watchTree dataDir, (f, curr, prev)->
+      return if typeof f is "object" && prev is null && curr is null
+      combineFile _path.basename(f)
 
   #监控语言文件的变化
   langDir = _common.languageDirectory()
-  _fs.watch langDir, (event, filename)->
-    file = _path.join langDir, filename
-    readLanguageFile file
+  if _fs.exists langDir
+    _fs.watch langDir, (event, filename)->
+      file = _path.join langDir, filename
+      readLanguageFile file
 
 exports.whole = _data

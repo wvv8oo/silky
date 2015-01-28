@@ -30,63 +30,6 @@ getTemplateKey = exports.getTemplateKey = (file)->
 ###
 
 
-#合并honey中的依赖
-combineHoney = ($)->
-  #全并所有<script honey=""></script>的代码
-  deps = []
-  scripts = []
-  $('script[honey]').each ()->
-    $this = $(this)
-    #合并依赖
-    deps = _.union(deps,$this.attr('honey').split(','))
-    #临时保存脚本
-    scripts.push $this.html()
-    #删除这个script标签
-    $this.remove()
-
-  #如果存在script honey的脚本
-  if scripts.length > 0
-    #处理合并项
-    html = "\thoney.go(\"#{_.compact(deps).join(',')}\", function() {\n"
-    #将所有的代码都封装到闭包中运行
-    for script in scripts
-      #不处理空的script
-      html += "\t(function(){\n#{script}\n\t}).call(this);\n\n"
-
-    html += '\n\t});'
-    #html = _jspretty html, indent_size: 4
-    html = "<script>\n#{html}\n</script>"
-
-    #将新的html合并到body里
-    $('body').append html
-
-#注入及合并js
-injectScript = (content)->
-  #提取
-  $ = _cheerio.load content
-  #合并honey的依赖
-  combineHoney $
-
-  livereload = _common.config.livereload
-  #临时禁用livereload，现在无法使用
-  livereload.env = []
-  if _common.options.env in livereload.env
-    mainJS = '/__/main.js'
-    socketJS = '/socket.io/socket.io.js'
-    append = '<!--自动附加内容-->\n'
-    if livereload.amd
-      append += "<script>
-      										require(['#{mainJS}'])
-      									</script>"
-    else
-      append += "<script src='#{socketJS}'>
-      										</script>\n
-      										<script src='#{mainJS}'></script>\n"
-    append += "<!--生成时间：#{new Date()}-->\n"
-    $('head').append(append)
-
-  $.html()
-
 #渲染一个模板
 exports.render = (file)->
   try
