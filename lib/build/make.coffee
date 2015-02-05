@@ -21,25 +21,27 @@ pathIsIgnore = (source, relativePath)->
 
   rules = _common.config.build.ignore || []
   for rule in rules
-    ignore = rule.test relativePath
+    ignore = if typeof rule is 'string'
+        rule is relativePath
+      else
+        rule.test(relativePath)
+
     break if ignore
   ignore
 
 #根据配置，替换目标路径
-replaceTargetWithConfig = (target)->
-  relativePath = _path.relative _outputRoot, target
-
+replaceTargetWithConfig = (relativePath)->
   for item in _buildConfig.rename
     if item.source.test relativePath
       relativePath = relativePath.replace item.source, item.target
       break if not item.next
 
-  _path.join _outputRoot, relativePath
+  relativePath
 
 #替换掉目标的扩展名，内置的几种处理方式
-replaceTargetExt = (source, target)->
+replaceTargetExt = (relativePath)->
   maps = coffee: 'js', hbs: 'html', less: 'css'
-  target.replace /\.(coffee|hbs|less)$/i, (full, ext)-> ".#{maps[ext] || ext}"
+  relativePath.replace /\.(coffee|hbs|less)$/i, (full, ext)-> ".#{maps[ext] || ext}"
 
 #  targetExt = null
 #  if /\.hbs$/i.test source
@@ -61,8 +63,7 @@ arrangeDirectory = (source, target, cb)->
     ((done)->
       filename = files[index++]
       newSource = _path.join source, filename
-      newTarget = _path.join target, filename
-      arrangeObject newSource, newTarget, done
+      arrangeObject newSource, done
     ),
     cb
   )
@@ -112,7 +113,7 @@ arrangeSingleFile = (source, target, cb)->
   _async.waterfall queue, (err)-> cb err
 
 #处理一个对象，可能是文件或者文件夹
-arrangeObject = (source, target, cb)->
+arrangeObject = (source, cb)->
   #相对路径用于识别是否需要跳过或者
   relativePath = _path.relative _common.options.workbench, source
   ignore = pathIsIgnore(source, relativePath)
@@ -122,11 +123,11 @@ arrangeObject = (source, target, cb)->
     return cb null
 
   stat = _fs.statSync source
-  #对于文件类型，要考虑需要替换为编译后的扩展名
-  target = replaceTargetExt source, target if not stat.isDirectory()
-
   #根据规则，替换target的路径
-  target = replaceTargetWithConfig target
+  relativePath = replaceTargetWithConfig relativePath
+  #对于文件类型，要考虑需要替换为编译后的扩展名
+  relativePath = replaceTargetExt relativePath if not stat.isDirectory()
+  target = _path.join _outputRoot, relativePath
 
   copyOnly = false
   queue = []
@@ -172,4 +173,4 @@ arrangeObject = (source, target, cb)->
 exports.execute = (output, cb)->
   _buildConfig = _common.config?.build
   _outputRoot = output
-  arrangeObject _common.options.workbench, output, cb
+  arrangeObject _common.options.workbench, cb

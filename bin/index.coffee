@@ -60,6 +60,7 @@ _program.command('list')
 .action((program)->
   init()
   _pluginPackage.list()
+  process.exit 0
 )
 
 #初始化项目

@@ -38,7 +38,7 @@ module.exports = {
         //将要复制的文件目录，直接复制到目标
         copy: [/^images(\-demo)?$/i],
         //完全忽略处理的文件
-        ignore: [/^template\/module$/i, /^css\/module$/i, /(^|\/)\.(.+)$/],
+        ignore: [/^template\/module$/i, /^css\/module$/i, /(^|\/)\.(.+)$/, /\.(log)$/i],
         //重命名
         rename: [
             {

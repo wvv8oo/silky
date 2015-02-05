@@ -23,9 +23,7 @@ exports.execute = (type, source, options, cb)->
     when 'less' then return lessCompiler source, options, cb
     when 'coffee' then return coffeeCompiler source, options, cb
     when 'hbs' then return handlebarsCompiler source, options, cb
-
-  #如果没有合适的编译器处理，则复制文件
-  _common.copyFile source, options.target, cb
+    else return cb null, false
 
 #编译coffee
 coffeeCompiler = (source, options, cb)->

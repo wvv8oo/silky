@@ -40,16 +40,20 @@ responseContent = (content, mime, req, res, next)->
 
 
 #统一处理响应
-response = (source, route, options, req, res, next)->
+response = (route, options, req, res, next)->
   #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
-  return if /\.(html|htm|js|css)^/i.test(source) and responseFileIfExists(source, res)
+  return if /\.(html|htm|js|css)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
+
+  #如果没有找到文件，则替换与编译器同名的扩展名
+  route.realpath = _common.replaceExt route.realpath, ".#{route.compiler}"
 
   #交给编译器
-  _compiler.execute route.compiler, source, options, (err, content)->
+  _compiler.execute route.compiler, route.realpath, options, (err, content)->
     #编译发生错误
     return response500 req, res, next, JSON.stringify(err) if err
     #没有编译成功，可能是文件格式没有匹配或者其它原因
-    return responseStatic(source, req, res, next) if content is false
+    return responseStatic(route.realpath, req, res, next) if content is false
+    #响应数据到客户端
     responseContent content, route.mime, req, res, next
 
 ###
@@ -93,28 +97,31 @@ responseJS = (file, req, res, next)->
 ###
 
 #响应文件夹列表
-responseDirectory = (path, req, res, next)->
+responseDirectory = (dir, req, res, next)->
+  basePath = _common.options.workbench
   #兼容旧版的template目录
   if _common.config.compatibleModel
-    dir = _path.join _common.getTemplateDir(), path
-  else
-    dir = _path.join _common.options.workbench, path
+    basePath = _path.join basePath, 'template'
 
-  return next() if not _fs.existsSync dir
-  return next() if not _fs.statSync(dir).isDirectory()
+  relativePath = _path.relative _common.options.workbench, dir
+
+  realPath = _path.join basePath, relativePath
+  return next() if not _fs.existsSync realPath
+  return next() if not _fs.statSync(realPath).isDirectory()
 
   files = []
   content = null
-  _fs.readdirSync(dir).forEach (filename)->
+
+  _fs.readdirSync(realPath).forEach (filename)->
+    file = _path.join(realPath, filename)
     item =
       filename: filename
-      url: path + filename
+      url: filename
 
     #只有silky项目，才会将hbs的扩展名改为html
     item.url = item.url.replace('.hbs', '.html') if _common.isSilkyProject()
 
-    fullPath = _path.join dir, filename
-    stat = _fs.statSync fullPath
+    stat = _fs.statSync file
 
     #如果是文件夹，在后台加上/
     item.url += '/?dir=true' if stat.isDirectory()
@@ -225,8 +232,8 @@ module.exports = (app)->
     file = _path.join(__dirname, 'client', req.params.file)
     res.sendfile file
 
-  #匹配所有
-  app.get "*", (req, res, next)->
+  #匹配所有，Silky不响应非GET请求，但可以交给插件实现其它功能
+  app.all "*", (req, res, next)->
     url = _url.parse(req.url)
     route = routeRewrite url.pathname
     #强制指定为目录
@@ -239,11 +246,14 @@ module.exports = (app)->
       stop: false
       route: route
       pluginData: null
+      method: req.method
 
     #路由处理前的hook
     _hookHost.triggerHook _hooks.route.didRequest, data, (err)->
       #阻止路由的响应
-      return if data.stop
+      return next() if data.stop
+      #Silky本身不响应非GET的请求
+      return next() if not /get/i.test data.method
 
       realpath = data.route.realpath
 
@@ -257,4 +267,4 @@ module.exports = (app)->
       options =
         pluginData: data.pluginData
 
-      response realpath, data.route, options, req, res, next
+      response data.route, options, req, res, next
