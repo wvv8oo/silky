@@ -23,7 +23,6 @@ module.exports = {
     ],
     //插件的配置
     plugins: {
-        "honey": {}
         /*
         //为插件指定目录，可以指定特殊目录的插件
         "specific_plugin": {

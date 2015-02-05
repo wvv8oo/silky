@@ -8,7 +8,14 @@ _moment = require 'moment'
 
 #编译partial
 compilePartial = (name, context)->
-  file = _path.join _common.getTemplateDir(), name + '.hbs'
+  filename = name + '.hbs'
+  #兼容模式，从templateDir中取数据
+  if _common.config.compatibleModel
+    file = _path.join _common.getTemplateDir(), filename
+  else
+    #从相对路径中取数据
+    file = _path.resolve _path.dirname(context._.$$.file), filename
+
   return "无法找到partial：#{name}" if not _fs.existsSync file
 
   content = _common.readFile file
@@ -65,9 +72,30 @@ xPathCommand = (path, value, options)->
 
   _common.xPathMapValue path, value
 
+#截断字符串
+substrHelper = (value, limit, options)->
+  return value if typeof value isnt 'string'
+  value.substr limit
+
+#日期的处理
+#{{date value 'yyyy-mm-dd'}}
+dateHelper = (args...)->
+  value = args[0] || new Date()
+  #用于转换原始值的的格式化字符，即_moment(value, fmtSource)
+  fmtSource = undefined
+  fmtTarget = 'YYYY-MM-DD'
+
+  fmtSource = args[3] if args.length is 4
+  fmtTarget = args[1] if args.length > 2
+
+  date = _moment value, fmtSource
+  return value if not date.isValid()
+  date.format fmtTarget
 
 #注册handlebars
 exports.init = ->
+  _handlebars.registerHelper 'substr', substrHelper
+  _handlebars.registerHelper 'date', dateHelper
   #获取xPath
   _handlebars.registerHelper 'xPath', xPathCommand
 

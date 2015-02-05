@@ -6,7 +6,6 @@ _cleanCSS = require 'clean-css'
 _cheerio = require 'cheerio'
 
 _hookHost = require '../plugin/host'
-_script = require '../processor/script'
 _common = require '../common'
 _hooks = require '../plugin/hooks'
 _buildConfig = null
@@ -87,7 +86,6 @@ compressSingleFile = (file, cb)->
     compressHTML file, relativePath, cb
   else
     return cb null
-
 
 #压缩目录
 compressDirectory = (dir, cb)->

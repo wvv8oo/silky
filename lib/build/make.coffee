@@ -5,43 +5,25 @@ _fs = require 'fs-extra'
 _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
 _common = require '../common'
-_script = require '../processor/script'
-_css = require '../processor/css'
-_template = require '../processor/template'
+_compiler = require '../compiler'
 
 _buildConfig = null
 _outputRoot = null
 
-#编译coffee
-coffeeProcessor = (source, target, cb)->
-  #读取文件
-  content = _script.compile source
-  _common.writeFile target, content
-  cb null
 
-#编译less
-lessProcessor = (source, target, cb)->
-  _css.render source, (err, css)->
-    if err
-      console.log "CSS Error: #{source}".red
-      console.log err.message.red
-      return process.exit(0)
+#根据build的规则，判断是否要忽略
+pathIsIgnore = (source, relativePath)->
+  ignore = false
+  #跳过build的目录
+  return true if _outputRoot is source
+  #跳过.silky这个目录
+  return true if _common.options.identity is relativePath
 
-    _common.writeFile target, css
-    cb null
-
-#编译handlebars
-handlebarsProcessor = (source, target, cb)->
-  #handlebars渲染
-  content = _template.render source
-  _common.writeFile target, content
-  cb null
-
-
-#复制文件
-copyFile = (source, target, cb)->
-  _fs.copySync source, target
-  cb null
+  rules = _common.config.build.ignore || []
+  for rule in rules
+    ignore = rule.test relativePath
+    break if ignore
+  ignore
 
 #根据配置，替换目标路径
 replaceTargetWithConfig = (target)->
@@ -87,42 +69,37 @@ arrangeDirectory = (source, target, cb)->
 
 #处理单个文件
 arrangeSingleFile = (source, target, cb)->
-  processor = null
-  if /\.hbs$/i.test source
-    processor = handlebarsProcessor
-  else if /\.less$/i.test source
-    processor = lessProcessor
-  else if /\.coffee$/i.test source
-    processor = coffeeProcessor
-
-  copyOnly = processor is null
   queue = []
-  #编译前
+  #编译
   queue.push(
     (done)->
       data =
         source: source
         target: target
+        type: _common.detectFileType(source)
+        pluginData: null
 
-      _hookHost.triggerHook _hooks.build.willCompile, data, (err)->
-        done null
+      _hookHost.triggerHook _hooks.build.willCompile, data, ()->
+        relativeSource = _path.relative _common.options.workbench, data.source
+        options = pluginData: data.pluginData
+
+        _compiler.execute data.type, data.source, options, (err, content)->
+          #编译时出现错误直接中断
+          if err
+            console.log err
+            return process.exit 1
+
+          #编译器没有处理，则复制文件
+          if content is false
+            console.log "Copy -> #{relativeSource}".green
+            _fs.copySync source, target
+          else
+            console.log "Compile -> #{relativeSource}".cyan
+            _common.writeFile data.target, content
+          done null
   )
 
-  #编译中
-  queue.push(
-    (done)->
-      relativeSource = _path.relative _common.options.workbench, source
-
-      if copyOnly
-        _fs.copySync source, target
-        console.log "Copy -> #{relativeSource}".green
-        return done null
-
-      #编译器处理
-      console.log "Compile -> #{relativeSource}".cyan
-      processor source, target, done
-  )
-
+  #编译完成，响应hook
   queue.push(
     (done)->
       data =
@@ -136,13 +113,17 @@ arrangeSingleFile = (source, target, cb)->
 
 #处理一个对象，可能是文件或者文件夹
 arrangeObject = (source, target, cb)->
+  #相对路径用于识别是否需要跳过或者
+  relativePath = _path.relative _common.options.workbench, source
+  ignore = pathIsIgnore(source, relativePath)
+
+  if ignore
+    console.log "Ignore -> #{relativePath || '/'}".blue if ignore
+    return cb null
+
   stat = _fs.statSync source
   #对于文件类型，要考虑需要替换为编译后的扩展名
   target = replaceTargetExt source, target if not stat.isDirectory()
-  #相对路径用于识别是否需要跳过或者
-  relativePath = _path.relative _common.options.workbench, source
-  #.silky这个目录需要强制跳过
-  return cb null if relativePath is _common.options.identity
 
   #根据规则，替换target的路径
   target = replaceTargetWithConfig target
@@ -162,15 +143,17 @@ arrangeObject = (source, target, cb)->
       _hookHost.triggerHook _hooks.build.willProcess, data, (err)->
         copyOnly = data.copy
         target = data.target
-        console.log "Ignore -> #{relativePath}".blue if data.ignore
-        done data.ignore
+        console.log "Ignore -> #{data.relativePath || '/'}".blue if data.ignore
+        done null, data.ignore
   )
 
   queue.push(
-    (done)->
+    (ignore, done)->
+      return done null if ignore
+
       if copyOnly   #复制文件
         console.log "Copy -> #{relativePath}".green
-        copyFile source, target, done
+        _common.copyFile source, target, done
       else if stat.isDirectory()  #处理目录
         arrangeDirectory source, target, done
       else    #处理单个文件

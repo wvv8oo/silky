@@ -13,6 +13,8 @@ _common = require '../lib/common'
 _update = require '../lib/update'
 _pluginPackage = require '../lib/plugin/package'
 _build = require('../lib/build')
+_hooks = require '../lib/plugin/hooks'
+_hookHost = require '../lib/plugin/host'
 _version = require(_path.join(__dirname, '../package.json')).version
 
 console.log "Silky Version -> #{_version}"
@@ -91,8 +93,6 @@ _program.command('build')
   options =
     #指定为build模式
     buildMode: true
-    #输出目录
-    output: program.output
     #如果没有设置，build的时候，默认为production模式
     env:  program.environment || 'production'
     #是否为debug模式
@@ -102,16 +102,24 @@ _program.command('build')
   options.language = program.language if program.language
   init options, true
 
+  #输出目录
+  output = program.output || _common.config.build.output || './build'
+  output = _path.resolve _common.options.workbench, output
+  _common.options.output = output
+
   if not _common.isSilkyProject()
     message = if program.force then "提示：当前构建的目录非Silky目录".cyan else ""
-    return console.log ""
+    return console.log message
 
   #保持silky一直运行，当然这并不是一个好方法
   setTimeout (-> console.log 'Timeout'), 1000 * 24 * 60 * 60
-  #执行构建
-  _build.execute ()->
-    console.log('项目构建完成')
-    process.exit 0
+
+  #触发事件再构建
+  _hookHost.triggerHook _hooks.build.initial, (err)->
+    #执行构建
+    _build.execute ()->
+      console.log('项目构建完成')
+      process.exit 0
 )
 
 _program
@@ -138,11 +146,13 @@ _program
   if not _common.isSilkyProject()
     console.log("警告：当前工作区不是一个合法的Silky项目".cyan)
 
-  #启动app
-  app = require('express')()
-  server = require('http').createServer app
-  silky = require '../lib/index'
-  silky(app, server, true)
+  #触发事件再启动服务
+  _hookHost.triggerHook _hooks.route.initial, (err)->
+    #启动app
+    app = require('express')()
+    server = require('http').createServer app
+    silky = require '../lib/index'
+    silky(app, server, true)
 
 #  #暂时放弃forever的方式
 #  if true or _os.platform() is 'win32'

@@ -17,18 +17,16 @@ _hookHost = require '../plugin/host'
 
 
 exports.execute = (cb)->
-  output = _common.options.output || _common.config.build.output || './build'
-  output = _path.resolve _common.options.workbench, output
-
   queue = []
 
+  output = _common.options.output
   #触发将要build的事件
   queue.push(
     (done)->
       data = output: output
 
       _hookHost.triggerHook _hooks.build.willBuild, data, (err)->
-        output = data.output
+        _common.options.output = output = data.output
         done null
   )
 
@@ -36,6 +34,7 @@ exports.execute = (cb)->
   queue.push(
     (done)->
       return done null if not _fs.existsSync output
+      #强制清除目录
       _fs.removeSync output
       console.log "构建目录已经存在，原目录已被删除。 [#{output}]".yellow
       done null
@@ -44,8 +43,10 @@ exports.execute = (cb)->
   #即将处理
   queue.push(
     (done)->
-      data = output: output
+      #确定文件夹存在
+      _fs.ensureDirSync output
 
+      data = output: output
       _hookHost.triggerHook _hooks.build.willMake, data, (err)->
         done null
   )

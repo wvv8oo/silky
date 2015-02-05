@@ -11,9 +11,10 @@ _mime = require 'mime'
 _hookHost = require './plugin/host'
 _hooks = require './plugin/hooks'
 _common = require './common'
-_template = require './processor/template'
-_script = require './processor/script'
-_css = require './processor/css'
+_template = require './compiler/template'
+_script = require './compiler/script'
+_css = require './compiler/css'
+_compiler = require './compiler'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
@@ -38,39 +39,39 @@ responseContent = (content, mime, req, res, next)->
     res.end data.content
 
 
+#统一处理响应
+response = (source, route, options, req, res, next)->
+  #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
+  return if /\.(html|htm|js|css)^/i.test(source) and responseFileIfExists(source, res)
+
+  #交给编译器
+  _compiler.execute route.compiler, source, options, (err, content)->
+    #编译发生错误
+    return response500 req, res, next, JSON.stringify(err) if err
+    #没有编译成功，可能是文件格式没有匹配或者其它原因
+    return responseStatic(source, req, res, next) if content is false
+    responseContent content, route.mime, req, res, next
+
+###
 #请求html文件
-responseHTML = (filename, req, res, next)->
-  #兼容旧版的template目录，新版本不需要template文件夹
-  rootDir = if _common.config.compatibleModel
-      _common.getTemplateDir()
-    else
-      _common.options.workbench
-
-  #如果html文件存在，则直接返回
-  htmlFile = _path.join rootDir, filename
-  return if responseFileIfExists htmlFile, res
-
+responseHTML = (file, pluginData, req, res, next)->
   #不存在这个文件，则读取模板
-  hbsFile = htmlFile.replace(/\.(html)|(html)$/i, '.hbs')
+  hbsFile = file.replace(/\.(html)|(html)$/i, '.hbs')
   #没有这个模板文件，返回404错误
   if not _fs.existsSync hbsFile
-    console.log "HTML或者hbs文件没找到->#{filename}".red
+    console.log "HTML或者hbs文件没找到->#{file}".red
     return next()
 
-  content = _template.render hbsFile
+  content = _template.render hbsFile, pluginData
   responseContent content, _mime.lookup('html'), req, res, next
 
 #请求css，如果是less则编译
-responseCSS = (filename, req, res, next)->
-  cssFile = _path.join _common.options.workbench, filename
-  #如果文件已经存在，则直接返回
-  return if responseFileIfExists cssFile, res
-
+responseCSS = (file, req, res, next)->
   #不存在这个css，则渲染less
-  lessFile = _common.replaceExt cssFile, '.less'
+  lessFile = _common.replaceExt file, '.less'
   #如果不存在这个文件，则交到下一个路由
   if not _fs.existsSync lessFile
-    console.log "CSS或Less无法找到->#{filename}".red
+    console.log "CSS或Less无法找到->#{file}".red
     return next()
 
   _css.render lessFile, (err, css)->
@@ -79,20 +80,17 @@ responseCSS = (filename, req, res, next)->
     responseContent css, _mime.lookup('css'), req, res, next
 
 #响应js
-responseJS = (filename, req, res, next)->
-  #如果文件已经存在，则直接返回
-  jsFile = _path.join _common.options.workbench, filename
-  return if responseFileIfExists jsFile, res
-
+responseJS = (file, req, res, next)->
   #如果没有找到，则考虑编译coffee
-  coffeeFile = _common.replaceExt jsFile, '.coffee'
+  coffeeFile = _common.replaceExt file, '.coffee'
   #如果不存在这个文件，则交到下一个路由
   if not _fs.existsSync coffeeFile
-    console.log "Coffee或JS无法找到->#{filename}".red
+    console.log "Coffee或JS无法找到->#{file}".red
     return next()
 
   content =  _script.compile coffeeFile
   responseContent content, _mime.lookup('js'), req, res, next
+###
 
 #响应文件夹列表
 responseDirectory = (path, req, res, next)->
@@ -102,7 +100,8 @@ responseDirectory = (path, req, res, next)->
   else
     dir = _path.join _common.options.workbench, path
 
-#  return next() if not _fs.existsSync dir
+  return next() if not _fs.existsSync dir
+  return next() if not _fs.statSync(dir).isDirectory()
 
   files = []
   content = null
@@ -169,11 +168,9 @@ responseDirectory = (path, req, res, next)->
 
 #请求其它静态资源，直接输入出
 responseStatic = (realpath, req, res, next)->
-  url = _url.parse(req.url)
-  file = _path.join _common.options.workbench, realpath
   #查找文件是否存在
-  return next() if not _fs.existsSync file
-  res.sendfile file
+  return next() if not _fs.existsSync realpath
+  res.sendfile realpath
 
 #找不到
 response404 = (req, res, next)->
@@ -185,11 +182,25 @@ response500 = (req, res, next, message)->
 	res.statusCode = 500
 	res.end(message || '500 Error')
 
+#获路由的物理路径
+getRouteRealPath = (route)->
+  #html且兼容旧版的template目录，则使用template的目录，新版本不需要template目录
+  rootDir = if _common.config.compatibleModel and route.type is 'html'
+    _common.getTemplateDir()
+  else
+    _common.options.workbench
+
+  #物理文件的路径
+  route.realpath = _path.join rootDir, route.url
+  route
+
+
 #处理用户自定义的路由
 routeRewrite = (origin)->
   route =
     url: origin
     rule: null
+    type: 'other'
 
   for rule in _common.config.routers
     continue if not rule.path.test(origin)
@@ -198,7 +209,15 @@ routeRewrite = (origin)->
     break if not rule.next
 
   console.log "#{origin} -> #{route.url}".green if route.url isnt origin
-  route
+
+  #根据url判断类型
+  route.type = _common.detectFileType(route.url)
+  #探测出mime的类型
+  route.mime = _mime.lookup(route.url)
+  #默认的编译器名称
+  route.compiler = _common.config.compiler[route.type] || route.type
+  #获取真实的物理路径
+  getRouteRealPath route
 
 module.exports = (app)->
   #silky的文件引用
@@ -210,6 +229,7 @@ module.exports = (app)->
   app.get "*", (req, res, next)->
     url = _url.parse(req.url)
     route = routeRewrite url.pathname
+    #强制指定为目录
     isDir = Boolean(req.query.dir)
 
     data =
@@ -218,27 +238,23 @@ module.exports = (app)->
       next: next
       stop: false
       route: route
+      pluginData: null
 
     #路由处理前的hook
-    _hookHost.triggerHook _hooks.route.initial, data, (err)->
+    _hookHost.triggerHook _hooks.route.didRequest, data, (err)->
       #阻止路由的响应
       return if data.stop
 
-      realpath = data.route.url
+      realpath = data.route.realpath
 
-      #返回目录
-      if isDir or /(^\/$)|(\/[^\.]+$)/.test(realpath) then return responseDirectory realpath, req, res, next
+      #响应目录
+      return responseDirectory(realpath, req, res, next) if isDir or data.route.type is 'dir'
 
       #非silky项目强制返回静态文件，规则要求直接返回静态文件
       if not _common.isSilkyProject() or data.route.rule?.static
         return responseStatic(realpath, req, res, next)
 
-      #匹配html
-      if /(\.(html|html))$/.test(realpath) then return responseHTML realpath, req, res, next
-      #处理css
-      if /\.css$/.test(realpath) then return responseCSS realpath, req, res, next
-      #处理js
-      if /\.js$/.test(realpath) then return responseJS realpath, req, res, next
+      options =
+        pluginData: data.pluginData
 
-      #不符合所有规则，则返回静态文件
-      responseStatic(realpath, req, res, next)
+      response realpath, data.route, options, req, res, next

@@ -51,6 +51,13 @@ readConfig = ->
   #合并本地配置到全局配置
   exports.config = _.extend globalCustom, localConfig
 
+  #合并默认的编译器
+  defaultCompiler =
+    html: 'hbs'
+    css: 'less'
+    js: 'coffee'
+  exports.config.compiler = _.extend defaultCompiler, exports.config.compiler
+
 #全局配置文件的路径
 exports.globalConfigFile = -> _path.join exports.globalSilkyIdentityDir(), 'config.js'
 #本地配置的文件路径
@@ -162,3 +169,23 @@ exports.saveObjectAsCode = (object, file)->
 exports.debug = (message)->
   return if not _options.debug
   console.log message
+
+#根据文件路径或者url，判断文件类型
+exports.detectFileType = (path)->
+  extname = _path.extname(path).toLowerCase()
+  return 'html' if extname in ['.html', '.htm']
+  #不包含.的，默认为一个文件夹
+  return 'dir' if not /\./.test extname
+  #替换掉.，返回扩展名
+  return extname.replace('.', '')
+
+#  if /(\.(html|html))$/.test(path) then 'html'
+#  else if /\.css$/.test(path) then 'css'
+#  else if /\.js$/.test(path) then 'js'
+#  else if /(^\/$)|(\/[^\.]+$)/.test(path) then 'dir'
+#  else 'other'
+
+#复制文件
+exports.copyFile = (source, target, cb)->
+  _fs.copySync source, target
+  cb? null

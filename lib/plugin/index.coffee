@@ -59,7 +59,6 @@ loadPluginsWithConfig = ()->
   #注册插件
   registerPlugin(pluginName, options) for pluginName, options of plugins
 
-
 exports.init = ()->
   loadPluginsWithConfig()
   #扫描完插件需要重新排序，不然无法实现优先级
