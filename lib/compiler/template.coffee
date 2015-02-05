@@ -31,16 +31,21 @@ getTemplateKey = exports.getTemplateKey = (file)->
 
 
 #渲染一个模板
-exports.render = (file)->
+exports.render = (file, pluginData)->
   try
     content = _common.readFile file
     template = _handlebars.compile content
     #使用json的数据进行渲染模板
     data = _data.whole.json
     data.$ = _data.whole.language
-    #附加运行时的环境
+    data.$$ = {}
+    #附加运行时的环境，兼容旧版本用silky，以后使用$$.silky
     data.silky = _.extend({}, _common.options)
     data.silky.isDevelopment = false
+    #额外的附加数据
+    data.$$.plugin = pluginData
+    data.$$.silky = data.silky
+    data.$$.file = file
     data._ = data
 
     content = template data
