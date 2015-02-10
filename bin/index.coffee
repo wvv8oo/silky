@@ -98,11 +98,12 @@ _program.command('build')
     #指定为build模式
     buildMode: true
     #如果没有设置，build的时候，默认为production模式
-    env:  _program.environment || 'production'
+    env:  program.environment || 'production'
     #是否为debug模式
     debug: Boolean(program.debug)
     config: program.config
 
+  console.log options
   options.language = program.language if program.language
   init options, true
 
@@ -139,6 +140,7 @@ _program
     #参数中提供的端口
     port: program.port || process.env.PORT || ''
     debug: Boolean(program.debug)
+    env: program.environment
 
   options.language = program.language if program.language
 

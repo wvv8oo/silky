@@ -88,7 +88,6 @@ exports.init = ()->
 
   #循环读取所有语言到数据中
   readLanguage _common.languageDirectory()
-
   #监控数据文件的变化
   watch()
 
