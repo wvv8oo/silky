@@ -12,6 +12,13 @@ exports.silkyForHook = (pluginName, pluginPriority)->
   #用于编译的处理器
   compiler: _compiler.execute
   detectFileType: _common.detectFileType
+
+  #注册一个插件数据的存储目录
+  registerPluginDirectory: (relativePath)->
+    path = _path.join _common.globalSilkyIdentityDir(), 'plugin', '.data', pluginName, relativePath
+    _fs.ensureDirSync path
+    path
+
   #注册一个handlebars的helper
   registerHandlebarsHelper: (name, factory)->
     _handlebars.registerHelper name, factory

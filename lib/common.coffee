@@ -126,9 +126,11 @@ exports.init = (options)->
     workbench: null
     buildMode: false
 
-  _.extend _options, options
+  _.merge _options, options
   _options.identity = '.silky'
   exports.options = _options
+
+  _options.globalSilkyIdentityDir = exports.globalSilkyIdentityDir()
   readConfig()
 
   #监控文件的变化，有改动重新读取配置文件

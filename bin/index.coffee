@@ -90,12 +90,15 @@ _program.command('build')
 .option('-d, --debug', '启动调试模式')
 .option('-f, --force', '强行构建当前目录，适用于编译非Silky项目')
 .option('-e, --environment [value]', '指定项目的运行环境，默认为 production')
+.option('-x, --extra [value]', '用于扩展的参数，根据不同插件要求不同')
 .action((program)->
   options =
+    #用于扩展的命令行参数，提供给插件使用
+    extra: program.extra
     #指定为build模式
     buildMode: true
     #如果没有设置，build的时候，默认为production模式
-    env:  program.environment || 'production'
+    env:  _program.environment || 'production'
     #是否为debug模式
     debug: Boolean(program.debug)
     config: program.config
