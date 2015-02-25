@@ -48,9 +48,9 @@ lessCompiler = (source, options, cb)->
   _css.render source, (err, css)->
     if err
       console.log "CSS Error: #{source}".red
-      console.log err.message.red
+      console.log err
 
-    _common.writeFile options.target, content if options.save and options.target
+    _common.writeFile options.target, css if options.save and options.target
     cb err, css
 
 #编译handlebars
