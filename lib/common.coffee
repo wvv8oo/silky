@@ -6,7 +6,6 @@ _watch = require 'watch'
 _fs = require 'fs-extra'
 _path = require 'path'
 _ = require 'lodash'
-_watch = require 'watch'
 
 _plugin = require './plugin'
 _update = require './update'
@@ -119,6 +118,25 @@ exports.getTemplateDir = -> _path.join _options.workbench, 'template'
 #替换掉slash，所有奇怪的字符
 exports.replaceSlash = (file)-> file.replace(/\W/ig, "_")
 
+#监控文件，但在监控之前会检查文件是否存在
+exports.watch = (path, cb)->
+  #文件不存在，不需要监控
+  return if not _fs.existsSync path
+  #检查文件类型
+  stat = _fs.statSync path
+  if not stat.isDirectory()
+    return _fs.watchFile path, -> cb path
+
+  #监控文件夹
+  _watch.watchTree path, (f, curr, prev)->
+    return if typeof f is "object" && prev is null && curr is null
+    type =
+      if prev is null then 'new'
+      else if curr.nlink is 0 then 'remove'
+      else 'change'
+
+    cb f, type
+
 #初始化
 exports.init = (options)->
   _options =
@@ -133,9 +151,9 @@ exports.init = (options)->
   _options.globalSilkyIdentityDir = exports.globalSilkyIdentityDir()
   readConfig()
 
-  #监控文件的变化，有改动重新读取配置文件
-  _fs.watch exports.globalConfigFile(), (event, filename)-> readConfig()
-
+  #监控配置文件的变化
+  exports.watch exports.globalConfigFile(), readConfig
+  exports.watch exports.localConfigFile(), readConfig
 
 #x.y.x这样的文本式路径，从data中找出对应的值
 exports.xPathMapValue = (xPath, data)->

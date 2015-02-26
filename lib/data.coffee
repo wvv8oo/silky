@@ -5,7 +5,6 @@ _fs = require 'fs-extra'
 _path = require 'path'
 _common = require './common'
 _ = require 'lodash'
-_watch = require 'watch'
 
 _data = {
   json: {},
@@ -95,16 +94,10 @@ exports.init = ()->
 watch = ()->
   dataDir = _path.join _common.localSilkyIdentityDir(), 'data'
   #监控数据文件的变化
-  if _fs.exists dataDir
-    _watch.watchTree dataDir, (f, curr, prev)->
-      return if typeof f is "object" && prev is null && curr is null
-      combineFile _path.basename(f)
+  _common.watch dataDir, (f)-> combineFile _path.basename(f)
 
   #监控语言文件的变化
   langDir = _common.languageDirectory()
-  if _fs.exists langDir
-    _fs.watch langDir, (event, filename)->
-      file = _path.join langDir, filename
-      readLanguageFile file
+  _common.watch langDir, (f)-> readLanguage f
 
 exports.whole = _data
