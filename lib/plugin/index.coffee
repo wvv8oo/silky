@@ -27,7 +27,7 @@ registerPlugin = (pluginName, options)->
 
   try
     if not _fs.existsSync file
-      console.log "插件#{pluginName}不存在，请使用 npm install #{pluginName} 安装".red
+      console.log "插件#{pluginName}不存在，请使用 silky install #{pluginName} 安装".red
       return
 
     plugin = require file
