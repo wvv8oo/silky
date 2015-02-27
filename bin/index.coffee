@@ -47,7 +47,6 @@ _program.command('install [names...]')
 _program.command('uninstall [names...]')
 .description('卸载插件')
 .option('-d, --debug', '启动调试模式')
-.option('-s, --save', '保存插件信息到配置文件中')
 .action((names, program)->
   init()
   return console.log("卸载插件请使用：silky uninstall [pluginName]".red) if names.length is 0
@@ -65,19 +64,28 @@ _program.command('list')
 
 #初始化项目
 _program.command('init')
-.option('-f, --force', '强制清除当前目录')
+.option('-f, --full', '复制完整示例项目')
 .option('-d, --debug', '启动调试模式')
-.description('初始化目录')
+.option('-p, --plugin', '创建插件的示例项目')
+.description('创建一个Silky项目')
 .action((program)->
   init()
-  samples = _path.join(__dirname, '..', 'samples')
+  source = _path.join(__dirname, '..', 'samples')
   current = process.cwd()
 
-  if program.force
-    _fs.copySync samples, current
+  #复制插件的示例项目
+  if program.plugin
+    source = _path.join source, 'plugin'
+    _fs.copySync source, current
+    return process.exit 0
+
+  #复制Silky的示例项目
+  source = _path.join source, 'default'
+  if program.full
+    _fs.copySync source, current
     console.log "Silky项目初始化成功，示例项目已被创建".green
   else
-    silkyDir = _path.join samples, _common.options.identity
+    silkyDir = _path.join source, _common.options.identity
     _fs.copySync silkyDir, _path.join(current, _common.options.identity)
     console.log "Silky项目初始化成功".green
   process.exit 0

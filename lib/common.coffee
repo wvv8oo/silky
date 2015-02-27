@@ -6,6 +6,7 @@ _watch = require 'watch'
 _fs = require 'fs-extra'
 _path = require 'path'
 _ = require 'lodash'
+_child = require 'child_process'
 
 _plugin = require './plugin'
 _update = require './update'
@@ -209,3 +210,18 @@ exports.detectFileType = (path)->
 exports.copyFile = (source, target, cb)->
   _fs.copySync source, target
   cb? null
+
+#执行命令，返回结果以及错误
+exports.execCommand = (command, cb)->
+  options =
+    env: process.env
+    maxBuffer: 20*1024*1024
+  message = ''
+  error = ''
+
+  exec = _child.exec command, options
+  exec.on 'close', (code)->
+    cb code, message, error
+
+  exec.stdout.on 'data',  (chunk)-> message += chunk + '\n'
+  exec.stderr.on 'data', (chunk)->  error += chunk + '\n'
