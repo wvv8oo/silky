@@ -23,7 +23,7 @@ _host = require './host'
 registerPlugin = (pluginName, options)->
   file = _path.join _common.globalPluginDirectory(), pluginName
   #插件已经指定了源，则从指定源中加载
-  file = options.source if options.source
+  file = _path.resolve _common.options.workbench, options.source if options.source
 
   try
     if not _fs.existsSync file
