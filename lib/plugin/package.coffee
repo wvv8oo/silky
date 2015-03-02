@@ -13,9 +13,9 @@ updateGitRepos = (remoteRepos, localRepos, cb)->
   console.log "正在同步git仓库..."
   #目录已经存在，则clone
   if _fs.existsSync localRepos
-    command = "cd #{localRepos} && git pull"
+    command = "cd '#{localRepos}' && git pull"
   else
-    command = "git clone #{remoteRepos} #{localRepos}"
+    command = "git clone '#{remoteRepos}' '#{localRepos}'"
 
   _childProcess.exec command, (err)->
     console.log "同步git仓库完成"
@@ -33,7 +33,7 @@ installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
   _fs.copySync sourcePluginDir, targetPluginDir
 
   #运行npm install
-  command = "cd #{targetPluginDir} && npm install"
+  command = "cd '#{targetPluginDir}' && npm install"
   _childProcess.exec command, (err)->
     if err
       console.log "#{pluginName}安装失败".red

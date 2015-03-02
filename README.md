@@ -1,3 +1,5 @@
+Silky是一个前端模块化开发与构建工具，自带HTTP服务器，支持多环境，支持多国语言，支持代理与路由转发，自动化编译构建，实时编译CoffeeScript和Less，支持插件扩展
+
 ## 依赖条件
 
 * `node.js v0.10` 以上以及`npm`，如果你还没有安装node.js，请参考：[Installing Node.js via package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
