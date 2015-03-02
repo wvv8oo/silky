@@ -40,7 +40,7 @@ _program.command('install [names...]')
 .action((names, program)->
   init()
   return console.log("安装插件请使用：silky install [pluginName]".red) if names.length is 0
-  _pluginPackage.install names, program.original, program.save
+  _pluginPackage.install names, program.original, -> process.exit 0
 )
 
 #卸载插件
@@ -50,7 +50,7 @@ _program.command('uninstall [names...]')
 .action((names, program)->
   init()
   return console.log("卸载插件请使用：silky uninstall [pluginName]".red) if names.length is 0
-  _pluginPackage.uninstall names, program.save
+  _pluginPackage.uninstall names, -> process.exit 0
 )
 
 #列出插件

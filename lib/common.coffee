@@ -223,5 +223,10 @@ exports.execCommand = (command, cb)->
   exec.on 'close', (code)->
     cb code, message, error
 
-  exec.stdout.on 'data',  (chunk)-> message += chunk + '\n'
-  exec.stderr.on 'data', (chunk)->  error += chunk + '\n'
+  exec.stdout.on 'data',  (chunk)->
+    console.log chunk
+    message += chunk + '\n'
+
+  exec.stderr.on 'data', (chunk)->
+    console.log chunk.red
+    error += chunk + '\n'

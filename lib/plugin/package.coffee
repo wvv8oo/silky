@@ -5,7 +5,6 @@ _path = require 'path'
 _common = require '../common'
 _fs = require 'fs-extra'
 _ = require 'lodash'
-_childProcess = require('child_process')
 _async = require 'async'
 
 #更新仓库，如果仓库不存在，则clone仓库
@@ -13,13 +12,13 @@ updateGitRepos = (remoteRepos, localRepos, cb)->
   console.log "正在同步git仓库..."
   #目录已经存在，则clone
   if _fs.existsSync localRepos
-    command = "cd '#{localRepos}' && git pull"
+    command = "cd \"#{localRepos}\" && git pull"
   else
-    command = "git clone '#{remoteRepos}' '#{localRepos}'"
+    command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
 
-  _childProcess.exec command, (err)->
+  _common.execCommand command, (code)->
     console.log "同步git仓库完成"
-    cb err
+    cb code
 
 #从本地目录安装插件
 installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
@@ -33,13 +32,13 @@ installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
   _fs.copySync sourcePluginDir, targetPluginDir
 
   #运行npm install
-  command = "cd '#{targetPluginDir}' && npm install"
-  _childProcess.exec command, (err)->
-    if err
-      console.log "#{pluginName}安装失败".red
-      console.log err
-    else
+  command = "cd \"#{targetPluginDir}\" && npm install"
+  _common.execCommand command, (code, message, error)->
+    if code is 0
       console.log "#{pluginName}安装成功".green
+    else
+      console.log "#{pluginName}安装失败".red
+
     cb null
 
 #在指定仓库中安装插件列表
@@ -66,16 +65,17 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
   cacheDir = _path.join _common.globalCacheDirectory(), 'cache_repos', pluginName
   _fs.removeSync cacheDir
 
-  updateGitRepos source, cacheDir, (err)->
-    if err
+  updateGitRepos source, cacheDir, (code)->
+    if code isnt 0
       console.log '安装失败'.red
-      return console.log err
+      console.log err
+      return cb null
 
     installPluginFromLocalDir pluginName, pluginRootDir, cacheDir, cb
 
 
 #从标准仓库中安装
-installFromStandardRepos = (names, pluginRootDir)->
+installFromStandardRepos = (names, pluginRootDir, cb)->
   remoteRepos = 'https://github.com/wvv8oo/silky-plugins.git'
   localRepos = _path.join _common.globalCacheDirectory(), 'plugins'
 
@@ -85,22 +85,22 @@ installFromStandardRepos = (names, pluginRootDir)->
       console.log '安装失败'.red
       return console.log err
 
-    installPluginsFromLocalDir names, pluginRootDir, localRepos, ->
+    installPluginsFromLocalDir names, pluginRootDir, localRepos, cb
 
 #安装插件
-exports.install = (names, oringal)->
+exports.install = (names, oringal, cb)->
   pluginRootDir = _common.globalPluginDirectory()
   console.log "installing..."
 
   #从指定的源安装，只安装一个
   if oringal
-    installFromSpecificSource names[0], pluginRootDir, oringal, ->
+    installFromSpecificSource names[0], pluginRootDir, oringal, cb
   else
     #从标准库中安装，可以安装多个
-    installFromStandardRepos names, pluginRootDir, ->
+    installFromStandardRepos names, pluginRootDir, cb
 
 #删除插件
-exports.uninstall = (names)->
+exports.uninstall = (names, cb)->
   pluginRootDir = _common.globalPluginDirectory()
 
   _.map names, (pluginName)->
@@ -108,6 +108,8 @@ exports.uninstall = (names)->
     return console.log "#{pluginName}不存在" if not _fs.existsSync pluginDir
     _fs.removeSync pluginDir
     console.log "插件#{pluginName}已经被卸载".green
+
+  cb null
 
 #列出所有的插件
 exports.list = ()->
