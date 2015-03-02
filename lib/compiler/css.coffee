@@ -19,6 +19,7 @@ exports.render = (file, cb)->
   #选项
   options =
     paths: [
+      '.'
       _path.join(_common.options.workbench, 'css')
 #        _path.dirname file
 #        _path.join(_common.options.workbench, 'css', 'module')

@@ -18,6 +18,7 @@ _hookHost = require '../lib/plugin/host'
 _version = require(_path.join(__dirname, '../package.json')).version
 
 console.log "Silky Version -> #{_version}"
+console.log "Silky Root -> #{_path.dirname __dirname}"
 
 init = (options, loadPlugin)->
   defaultOptions =
