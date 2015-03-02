@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>Silky的新手指南 - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>Silky的新手指南</h1>
+            <span class="post-date">2015-02-26 10:58</span>
+            <h2 id="-">依赖条件</h2>
+<ul>
+<li><p><code>node.js v0.10</code> 以上以及<code>npm</code>，如果你还没有安装node.js，请参考：<a href="https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager">Installing Node.js via package manager</a></p>
+</li>
+<li><p>如果你使用的是windows系统，建议安装<a href="http://www.git-scm.com/downloads">git-bash</a></p>
+</li>
+</ul>
+<h2 id="-">本文目标</h2>
+<ol>
+<li>学会安装并启动Silky</li>
+<li>了解Silky的基本目录结构</li>
+<li>学会使用Silky开发简单的项目</li>
+</ol>
+<h2 id="-">入门指南</h2>
+<h3 id="-">安装并创建示例项目</h3>
+<ol>
+<li><code>npm install -g silky coffee-script</code>，安装silky以及全局的coffee-script，*nix下会需要<code>sudo</code>权限</li>
+<li><code>cd ~ &amp;&amp; mkdir silky-test &amp;&amp; cd ~/silky-test</code> (Windows下可以考虑使用：<code>cd %HOMEPATH% &amp;&amp; mk silky-test &amp;&amp; cd %HOMEPATH%/silky-test</code>)</li>
+<li><code>silky init -f</code></li>
+<li><code>silky start</code></li>
+<li>用浏览器打开<code>http://localhost:14422/</code>，即可看到示例项目了</li>
+</ol>
+<h3 id="silky-">Silky的目录结构</h3>
+<h4 id="silky-">Silky目录结构图</h4>
+<p><img src="/images/silky-directory-tree.png" alt="Silky&#x76EE;&#x5F55;&#x7ED3;&#x6784;"></p>
+<h3 id="-">目录说明</h3>
+<ol>
+<li><code>.silky</code>：包含所有与Silky相关的文件，并且此目录用于标识一个项目是否为Silky项目<ol>
+<li><code>.silky/data</code>：包含不同环境的数据文件，默认数据文件放在<code>normal</code>文件夹下，数据文件的作用请参考<a href="/post/running-environment-of-silky.html">Silky多环境与数据引用</a></li>
+<li><code>.silky/language</code>：包含多国语言的数据文件，如果你的项目只有一种语言，可以忽略此目录</li>
+<li><code>.silky/config.js</code>：包含所有Silky的配置，是Silky中非常重要的一个文件。关于配置文件，请参考<a href="/post/configure-of-silky.html">Silky的配置</a></li>
+</ol>
+</li>
+<li><code>template</code>：可选，该文件夹下包含所有的模板文件与HTML文件，默认情况下，Silky的模板采用Handlebars，并要求模板的扩展名为<code>.hbs</code></li>
+<li><code>css</code>：可选，用于放置Less及css，<code>css/module</code>用于放置less的引用文件</li>
+<li><code>js</code>：可选，用于放置js和coffee文件</li>
+<li>其它文件，根据项目实际需要可以随意创建文件夹，如<code>images</code>，<code>docs</code>等等</li>
+</ol>
+<h3 id="-">模板的使用</h3>
+<p>Silky采用Handlebars作为默认模板，模板扩展名应为<code>.hbs</code>，建议将模板文件放在<code>template</code>文件夹下。使用模板的目的是为了更好的模块化开发，减少代码量，并能够实现代码重用。</p>
+<p>一般来说，你只需要掌握几个模板命令就可以流畅地使用Silky了。</p>
+<ul>
+<li><code>import</code>：导入子模块，例如有一个菜单的模块<code>template/module/menu.hbs</code>，那么我们在<code>index.hbs</code>中可以用 <code>{{import &quot;module/menu&quot;}}</code>进行引用，在引用模块时候，不需要添加扩展名<code>.hbs</code></li>
+<li><code>loop</code>：可以循环某个子模块多次，例如<code>{{loop &quot;module/cell&quot; 5}}</code>，可以将<code>cell</code>这个模块重复5次</li>
+</ul>
+<p>更多关于模板的使用，请参考： <a href="/post/template-of-silky.html">Silky的模板介绍</a></p>
+<h2 id="-">进阶使用</h2>
+<h3 id="-">兼容已有的项目</h3>
+<p>某些时候，我们可能已经有一个已经存在的前端项目需要使用Silky，那么我们可以用如下方式实现。</p>
+<ol>
+<li><code>cd your_project_directory</code></li>
+<li><code>silky init</code>可以初始化当前项目为一个Silky项目，且不删除原有的文件。<code>--force</code>或者<code>-f</code>参数会强制清除当前目录，并复制示例项目到当前项目。</li>
+</ol>
+<h3 id="-silky">任意目录启动Silky</h3>
+<p>在任意目录使用<code>silky start</code>可以启动一个http服务器，等同于<code>python -m SimpleHTTPServer</code>的功能。注意：如果目录中包含<code>.silky</code>文件夹，那么将会当成是一个Silky的项目</p>
+
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>

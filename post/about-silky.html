@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>关于Silky - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>关于Silky</h1>
+            <span class="post-date">2015-02-26 02:56</span>
+            <h2 id="silky-">Silky是什么</h2>
+<p>Silky是一个协同开发环境与构建工具，允许前端工程师完全脱离后端进行开发，使用简单，支持团队协作，支持自动化构建，支持多种工作环境。Silky从alpha版到现在，已经经过了70多个版本的迭代开发，Silky也是芒果TV前端部门目前日常必用的开发环境。</p>
+<p>使用简单一直是Silky秉承的原则，安装完成后，一线的前端工程师只需要知道<code>silky start</code>命令和<code>{{import &quot;moduleName&quot;}}</code>的模板指令就可以使用Silky的大部分功能。而对于进阶用户，Silky提供更多的配置选项，甚至你可以自己动手开发Silky的插件，别担心，这一切都非常简单。</p>
+<h2 id="silky-">Silky的特点</h2>
+<h3 id="-">模块化开发</h3>
+<p>传统的前端开发，代码重用必需依赖于后端，用户协同工作非常困难。但是大型网站的前后端开发通常是分离的，并且需要团队来共同完成一个前端项目。Silky最初就是为了解决代码重用的问题，我们可以将<code>header</code>部分独立出来，然后用<code>{{import &quot;header&quot;}}</code>导入，也可以通过<code>{{loop &quot;cell&quot; 5}}</code>来实现多次循环某个模块。</p>
+<p>Silky使用Handlebars作为默认的模板引擎，并增加很多指令的扩展，使用起来非常简单，详细模板指令介绍请参考：<a href="/post/template-of-silky.html">Silky的模板介绍</a></p>
+<h3 id="-">支持多种工作环境</h3>
+<p>前端开发遇到的大麻烦之一就是线上与线下的环境不一样，比如说我们在开发环境可能需要加上debug的配置，比如说我们在本地开发与产品环境所引用的资源路径可能不一样等等问题。Silky的多环境就很好的解决了这个问题，更多请参考：<a href="/post/running-environment-of-silky.html">如何使用Silky的多环境功能？</a></p>
+<h3 id="-">支持代理</h3>
+<p>前后端协同开发的时候，后端经常会在不同的服务器，通过代理功能，我们就可以解决AJAX跨域的问题。</p>
+<h3 id="-http-">自带http服务器</h3>
+<p>只需要一个简单的<code>silky start</code>的命令就可以启动一个http服务器，在非Silky项目中，也可以通过这种方式在本地搭建一个http服务器。</p>
+<h3 id="-">支持路由转发功能</h3>
+<p>在正式的产品环境中，url并不一定会对应到具体的文件，比如说<code>http://localhost/</code>实际上访问的文件可能是<code>http://localhost/index.html</code>。在angular项目中，我们可能会用到<code>pushState</code>来管理路由，但当你一刷新，就会出现404，因为实际文件是不存在的。</p>
+<p>在Silky中，我们只需要配置一些路由规则，就可以轻松的解决这些问题，</p>
+<h3 id="-coffee-less-handlebars">实时编译Coffee/less/handlebars</h3>
+<p>CoffeeScript和less、scss这些&quot;另类&quot;的语言现在已经在前端界大行其道了，但如果我们在预览的时候还需要编译的话，那是一个很麻烦的事情。虽然有一些工具能监控文件改动并自动编译，但使用起来并不是那么的顺手。Silky提供一种透明的工作方式，对开发者来说，预览访问的还是css/js文件，由Silky自动处理这些文件。</p>
+<p>默认情况下，Silky支持CoffeeScript，less和handlebars。例如当你访问一个<code>main.js</code>，如果你的项目中并不真实存在<code>main.js</code>，那么Silky会尝试查找<code>main.coffee</code>并编译。</p>
+<p>你也可通过插件来支持其它类型的文件，例如<code>jade</code>，<code>typescript</code>或者<code>scss</code>，未来Silky也可能会原生支持这些文件类型的编译。</p>
+<h3 id="-">一键编译</h3>
+<p>通过简单的命令<code>silky build</code>就可以完成项目编译，自动编译<code>handlebars</code>、<code>coffeescript</code>、<code>less</code>，自动压缩代码，并且支持压缩HTML中的Javascript代码。支持忽略某些文件，支持文件改名。</p>
+<p>通过第三方插件，你甚至可以编译后自动上传到服务器，实现一键部署的功能。</p>
+<h3 id="-">支持多语言</h3>
+<p>很多网站都有多语言，对于动态网站我们可以将多语言交给后端去做，但有些时候，我们可能是一个静态网页，Silky支持多国语言功能，并且能支持根据语言编译为多个网站。</p>
+<h3 id="-">支持插件扩展</h3>
+<p>插件功能是Silky的一个很重要的功能，通过插件可以让Silky满足不同项目的个性化需求，甚至可以用Silky来写静态博客。你也可以参与进来，为Silky编写不同功能的插件，比如说支持TypeScript或者jade等文件格式，更多请访问：<a href="/post/how-to-develop-a-silky-plugin.html">如何开发Silky的插件</a></p>
+
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>

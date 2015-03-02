@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>Silky的配置 - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>Silky的配置</h1>
+            <span class="post-date">2015-02-27 11:46</span>
+            <h2 id="-">简述</h2>
+<p>Silky的配置文件分为两个部分，第一个是项目配置文件，文件位置是<code>your_project/.silky/config.js</code>；另一个是全局的配置文件，在*nix下是<code>~/.silky/config.js</code>，而在Windows下则是<code>%HOMEPATH%/.silky/config.js</code>。Silky的配置文件实际上是一个JSON文件。</p>
+<h2 id="-">项目配置文件</h2>
+<h3 id="version">version</h3>
+<p>Silky配置文件的版本，通常不要去修改，除非你非常了解它的用处</p>
+<h3 id="port">port</h3>
+<p>指定当前项目的http监听端口，有三种方式可以指定监听端口，即通过命令行<code>silky start -p 14422</code>，通过配置文件的<code>port</code>指定，使用默认端口。其优先级分别为<strong>命令行指定端口&gt;配置文件指定&gt;默认端口</strong></p>
+<p>注意：在*nix环境下，指定80端口需要sudo权限</p>
+<h3 id="proxy">proxy</h3>
+<p>代理转发的配置，通过代理，我们可以很容易就解决前端的大麻烦跨域问题。Silky使用了<a href="https://github.com/steve-jansen/json-proxy">http-proxy</a>来处理代理，更多的配置可以参考http-proxy的配置要求。</p>
+<p>例如：</p>
+<pre><code>proxy:{
+    forward: {
+        &quot;/api&quot;: &quot;http://127.0.0.1:8001/api&quot;
+    }
+}
+</code></pre><p>上面这个配置，将会把所有<code>/api</code>下的请求都代理到<code>http://127.0.0.1:8001/api</code>去</p>
+<h3 id="routers">routers</h3>
+<p>前端开发的另一个大问题，就是与后端最终的目录结构可能不一致，一个非常典型的情况就是，后端可以通过<code>http://example.com</code>访问<code>index.html</code>页，而在前端开发中，必需指定明确的文件名<code>index.html</code>。通过路由的功能，我们就可以完全模拟后端的目录结构。</p>
+<p>在Angular等单页应用的项目中，我们通常会使用HTML5的pushState来模拟URL。在传统的前端开发中，我们可能一刷新页面就会出现找不到页面的情况，因为模拟的url在后端实际是并不存在的。</p>
+<p><code>routers</code>节点可以接受一个数组，如果你想把根目录转到index.html，那么你的配置应该是：</p>
+<pre><code>&#39;routers&#39;: [
+     {
+         //匹配根目录
+        path: /^\/$/, 
+        //转发到index.html
+        to: &#39;index.html&#39;, 
+        //不再响应下一个路由
+        next: false
+     }
+]
+</code></pre><p>在angular项目中，我们可能需要将所有没有扩展名的url都转到<code>main.html</code>，那么我们的配置如下：</p>
+<pre><code>&#39;routers&#39;: [
+     {
+         //匹配所有没有扩展名的url
+        &#39;path&#39;: /.*(\/[^\.]+(\/)?)$/i,
+        //全部转发到main.html
+        &#39;to&#39;: &quot;/main.html&quot;,
+        &#39;static&#39;: false,
+        &#39;next&#39;: false
+     }
+]
+</code></pre><ul>
+<li><code>path</code>：表示将要匹配路由的正则表达式</li>
+<li><code>to</code>：要替换的url，即<code>url.replace(path, to)</code>，所以你可以使用<code>$1</code>这样的正则捕获组。</li>
+<li><code>static</code>：是否为静态文件，如果是静态文件则会直接返回，将不会做任何编译处理</li>
+<li><code>next</code>：如果已经捕获成功，是否继续匹配后面的路由。如果<code>next</code>为true，那么将会捕获最后一条匹配的路由，反之则会捕获最先匹配的路由。</li>
+</ul>
+<h3 id="plugins">plugins</h3>
+<p><code>plugins</code>节点可以配置插件，如果你想使用<code>blog</code>插件，那么你的配置应该是：</p>
+<pre><code>plugins: {
+    &quot;blog&quot;: {}
+}
+</code></pre><p>默认情况下，可以使用<code>&quot;pluginName&quot;: {}</code>即可，如果插件要求要提供其它配置，可以在这里配置插件，具体的参数请参考插件的要求。</p>
+<p>某些时候，你可能会使用一些私有的插件，那么此时，你可以利用<code>source</code>来指定插件的本地路径，source允许使用绝对路径与相对(相对于当前Silky项目)路径。</p>
+<p>例如：</p>
+<pre><code>plugins: {
+    &quot;blog&quot;: {
+        &quot;source&quot;: &quot;/path/to/silky-plugins/blog&quot;
+    }
+}
+</code></pre><p>此时，<code>blog</code>插件查找的路径将是<code>/path/to/silky-plugins/blog</code>，注意：你必需保证插件所依赖的npm包已经安装。</p>
+<h3 id="build">build</h3>
+<p>构建编译项目的配置</p>
+<h4 id="output">output</h4>
+<p>配置编译时的输出目录，默认为<code>./build</code>，也可以通过命令行的<code>-o</code>参数指定，如：<code>silky build -o ~/temp/my-project</code>。优先级为：命令行指定&gt;config.js&gt;默认配置</p>
+<h4 id="copy">copy</h4>
+<p>构建时将要复制哪些文件或者目录，可接受的参数为一个数组，数组的值可以是<code>string</code>和<code>RegExp</code>，如果是<code>string</code>则要求完全匹配，否则需要正则匹配。</p>
+<p>示例：</p>
+<pre><code class="lang-js">build: {
+    //复制images-demo目录，复制所有以min.js结尾的文件
+    copy: [&quot;images-demo&quot;, /^.+min\.js$/i]
+}
+</code></pre>
+<h4 id="ignore">ignore</h4>
+<p>经常有一些辅助性的文件，我们并不想复制到最终的构建目标中去，这时候我们可以通过<code>ignore</code>配置要忽略的文件列表。<code>ignore</code>可接受的参数为一个数组，数组的值可以是<code>string</code>和<code>RegExp</code>，如果是<code>string</code>则要求完全匹配，否则需要正则匹配。</p>
+<p>示例：</p>
+<pre><code class="lang-js">build: {
+    //忽略template/module下的所有文件，忽略css/module下的所有文件，忽略所有以点开头的文件(在*nix中表示隐藏文件)
+    ignore: [/^template\/module$/i, /^css\/module$/i, /^\..+/]
+}
+</code></pre>
+<h4 id="rename">rename</h4>
+<p>编译后对文件进行重命名，例如在开发的时候，我们的文件可都是以<code>*.source.js</code>这种方式命名，在编译后，我们希望命名为<code>*.js</code>，那么我们就可以通过<code>rename</code>节点进行配置。</p>
+<p>示例：</p>
+<pre><code class="lang-js">build:{
+    rename: [
+        {
+            source: /source\.(js)$/i, target: &#39;$1&#39;, next: false
+        },
+        {
+            //将替换掉template，通常在开发的时候，我们会将所有的模板放到template下，但在产品环境中，我们会把html文件放到根目录下
+            source: /^template\/(.+)/i, target: &#39;$1&#39;, next: false
+        }
+    ]
+}
+</code></pre>
+<h4 id="compress">compress</h4>
+<p>配置将要压缩哪些类型的文件，如果你希望具体的某个文件不要压缩，请使用<code>ignore</code></p>
+<p>示例：</p>
+<pre><code>build: {
+    compress: {
+        //将要忽略压缩的文件，支持RegExp和string
+        ignore: [],
+        //压缩js，包括coffee
+        js: true,
+        //压缩css，包括less
+        css: true,
+        //压缩html
+        html: false,
+        //是否压缩internal的js
+        internal: true
+    }
+}
+</code></pre><h2 id="-">全局配置文件</h2>
+<p>全局配置的目的，是为了解决很多项目都存在同一配置的情况。全局配置的文件位置为<code>$HOME/.silky/config.js</code>。</p>
+<p>示例：</p>
+<pre><code>module.exports = {
+  &quot;lastCheckUpdate&quot;: 1423639202173,
+  &quot;custom&quot;: {
+      //强制指定插件目录
+    &quot;globalPluginDirectory&quot;: &quot;/Volumes/Files/WorkStation/silky-plugins&quot;
+  }
+}
+</code></pre><p>其中<code>custom</code>节点中的内容为全局配置，项目配置会覆盖同名的全局配置。</p>
+
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silky官方博客</title>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+</head>
+
+<body class="home-template">
+<a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+<div class="content container">
+    <div class="posts">
+        
+            <div class="post">
+                <h1><a href="post/plugins.html">Silky插件列表</a></h1>
+                <span class="post-date">[2015-02-15]</span>
+                <div class="content"><h2 id="markdown-blog">markdown-blog</h2>
+<p>根据markdown自动生成技术文档或者博客</p>
+</div>
+                <p>&hellip;</p>
+            </div>
+        
+            <div class="post">
+                <h1><a href="post/markdown-blog-for-plugin-of-silky.html">Silky插件之markdown-blog</a></h1>
+                <span class="post-date">[2015-02-13]</span>
+                <div class="content"><h2 id="-">前置条件</h2>
+<ul>
+<li>已经安装好silky</li>
+<li>安装插件<code>markdown-blog</code>，安装命令：<code>silky install markdown-blog</code> </li>
+</ul>
+<h2 id="-">功能介绍</h2>
+<p><code>markdown-blog</code>是一个根据markdown文档自动生成静态博客的插件，支持文章索引。一方面，可以将项目文档自动生成可索引的博客，另一方面，团队或者成员也可以用<code>markdown-blog</code>来写博客。现在Silky的官方博客就是用<code>markdown-blog</code>生成的。</p>
+<h2 id="-">主题</h2>
+<p><code>markdown-blog</code>支持主题功能，<code>markdown-blog</code>使用了<code>hyde</code>作为默认主题，如果你希望使用其它主题，只需要将主题复制到<code>./themes</code>就可以了。当然你也可以自己设计开发一款主题，这非常简单容易。</p>
+<h2 id="-">新手入门</h2>
+<h2 id="-">自定义文章属性</h2>
+<p><code>markdown-blog</code>允许自定义文章的一些属性，如标题、发布时间、作者等。自定义属性的方法是在文章头部加上如下代码，属性与值以键值对应的形式出现。</p>
+<pre><code>&lt;!--
+title: 关于Silky
+publish_date: 2015-01-01 10:10
+link: about.html
+type: post
+status: publish
+excerpt: 关于Silky的介绍
+--&gt;
+</code></pre><ul>
+<li><code>title</code> 文章的标题，如果没有设置，则使用文件名作为标题</li>
+<li><code>publish_date</code> 发布时间，默认的时间格式为：YYYY-MM-dd hh:mm。如果没有设置，则使用文件的最后修改时间作为发布时间</li>
+<li><code>link</code> 文章的链接，如果没有设置，则链接为文件名，例如文件名为<code>about.md</code>，那么链接就是<code>about.html</code></li>
+<li><code>type</code> 文章类型，允许为<code>post</code>和<code>page</code>两种。默认为<code>post</code>，<code>page</code>不会列入索引</li>
+<li><code>status</code> 文章状态，允许为<code>publish</code>和<code>draft</code>，<code>draft</code>状态不会被发布，默认为<code>publish</code></li>
+<li><code>excerpt</code> 文章摘要</li>
+</ul>
+<p>除了上述指定的键值之外，如果你是使用自己的主题，你还可以加入更多的自定义键值。</p>
+<h2 id="-">进阶配置</h2>
+<h3 id="datadir">dataDir</h3>
+<p>markdown文章所在的目录，默认为项目的根目录。</p>
+<h3 id="rss">rss</h3>
+<p>rss配置，示例如下：</p>
+<pre><code>rss: {
+    // 输出多少条
+    limit: 20,
+    // 是否全文输出
+    full: true
+}
+</code></pre><h3 id="theme">theme</h3>
+<p>指定博客的主题，默认为<code>hyde</code>。假如你配置了<code>theme</code>为<code>custom-theme</code>，那么首先会在项目目录下查找，即检查<code>themes/custom-theme</code>是否存在。如果没有找到，则会检查<code>markdown-blog</code>自带的主题中是否有<code>themes/custom-theme</code>，如果还是没有，则会使用默认主题<code>hyde</code>。</p>
+<h3 id="blog">blog</h3>
+<p>配置blog相关的信息</p>
+<pre><code>blog: {
+    //博客标题，默认为My Blog
+    title: &quot;Silky官方博客&quot;,
+    //副标题
+    description: &quot;前端模块化开发与构建工具&quot;,
+    //主机地址，如果不设置，则为当前主机地址
+    host: &#39;http://silky.wvv8oo.com/&#39;,
+    //rss地址
+    feed: &#39;http://silky.wvv8oo.com/rss.xml&#39;,
+    //作者
+    author: &#39;wvv8o&#39;
+}
+</code></pre><p>此处需要注意了，有时候你可能想使用<code>http://feed.silky.wvv8oo.com</code>这样的feed地址，这时候你可能需要在<code>nginx</code>或者<code>apache</code>下做一些处理，因为<code>markdown-blog</code>最终生成的是静态网页，无法处理url重写。</p>
+<h2 id="-">自定义主题</h2>
+<p>暂略</p>
+</div>
+                <p>&hellip;</p>
+            </div>
+        
+            <div class="post">
+                <h1><a href="post/how-to-use-plugins-of-silky.html">在Silky中如何使用插件</a></h1>
+                <span class="post-date">[2015-02-13]</span>
+                <div class="content"></div>
+                <p>&hellip;</p>
+            </div>
+        
+            <div class="post">
+                <h1><a href="post/how-to-use-mutil-language-with-silky.html">在Silky中如何使用多国语言</a></h1>
+                <span class="post-date">[2015-02-13]</span>
+                <div class="content"><h2 id="-">前言</h2>
+<h2 id="silky-">Silky的解决方案</h2>
+</div>
+                <p>&hellip;</p>
+            </div>
+        
+    </div>
+
+    <!-- Pagination links -->
+    <div class="pagination">
+        <a class="item previous show" href="1.html">
+            &larr; 上一页
+        </a>
+        <a class="item next" href=".html">
+            下一页 &rarr;
+        </a>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</body>
+</html>

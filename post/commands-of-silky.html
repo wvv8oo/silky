@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>Silky的命令 - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>Silky的命令</h1>
+            <span class="post-date">2015-02-27 04:28</span>
+            <h2 id="-">本文目标</h2>
+<ul>
+<li>全面介绍Silky的命令</li>
+</ul>
+<h2 id="-">如何使用</h2>
+<ul>
+<li>Windows系统中，推荐使用<code>git bash</code>或者<code>power shell</code></li>
+<li>*nix系统中，打开终端(Terminal)即可输入命令</li>
+</ul>
+<h2 id="-">命令介绍</h2>
+<h3 id="silky-start">silky start</h3>
+<p>用于启动Silky，如果当前项目不是一个Silky项目，那么启动一个简易的http服务器。 </p>
+<ul>
+<li><code>-e</code>或者<code>--environment</code> 用于指定运行环境，默认环境为<code>development</code>。例如<code>silky start -e production</code>的运行环境为<code>production</code>，关于Silky的运行环境，请参考：<a href="running-environment-of-silky.html">Silky的运行环境介绍</a></li>
+<li><code>-p</code>或者<code>--port</code> 用于指定http服务器的端口，默认端口为<code>14422</code>，例如<code>silky start -p 8000</code>可以指定silky的端口为<code>8000</code>，之后就可以用<code>http://localhost:8000</code>访问你的项目了</li>
+<li><code>-l</code>或者<code>--language</code>，指定语言，默认为<code>en</code>，例如<code>silky start -l cn</code>可以指定运行语言为中文。关于多语言，请参考：<a href="how-to-use-mutil-language-with-silky.html">在项目中使用多国语言</a></li>
+<li><code>-s</code>或者<code>--sample</code>，启动示例项目</li>
+</ul>
+<h3 id="silky-build">silky build</h3>
+<p>编译Silky项目，也可以用于编译非Silky项目。</p>
+<ul>
+<li><code>-o</code>或者<code>--output</code>，指定输出目录，默认情况下会输出到<code>./build</code></li>
+<li><code>-e</code>或者<code>--environment</code>，指定运行环境，build的默认环境为<code>production</code></li>
+<li><code>-f</code>或者<code>--force</code>，在非Silky项目中强行编译，如果你要编译的目录是一个非Silky项目，那么需要指定<code>-f</code>参数</li>
+<li><code>-x</code>或者<code>--extra</code>，扩展参数，此参数提供给插件用，根据具体的插件而定</li>
+<li><code>-c</code>或者<code>--config</code>，指定配置文件，默认情况下，配置文件文件为<code>.silky/config.js</code>，如果你想单独指定一个配置文件，可以使用此参数</li>
+</ul>
+<h3 id="silky-init">silky init</h3>
+<p>在当前目录初始化silky项目，这将会在当前目录创建一个<code>.silky</code>的文件夹，并且会复制默认的配置文件到此目录，但不会删除当前目录的任何文件。</p>
+<ul>
+<li><code>-f</code>或者<code>--full</code>，复制全部的示例项目</li>
+<li><code>-p</code>或者<code>--plugin</code>，创建一个插件的示例项目</li>
+</ul>
+<h3 id="silky-install-plugin-">silky install [plugin...]</h3>
+<p>安装Silky插件，可以指定一个插件名，也可以指定多个插件，插件名之间用空格隔开。如<code>silky install sample</code>，或者<code>silky install sample blog</code>
+注意此功能需要访问<code>github.com</code>，由于众所周知的原因，github.com在某些时候可能会无法访问，所以，你需要保持github.com的畅通。</p>
+<h3 id="silky-uninstall-plugin-">silky uninstall [plugin...]</h3>
+<p>删除Silky插件，可以指定一个插件名，也可以指定多个插件，插件名之间用空格隔开。如<code>silky uninstall sample</code>，或者<code>silky uninstall sample blog</code></p>
+<h3 id="silky-list">silky list</h3>
+<p>列出已经安装的silky插件</p>
+
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>

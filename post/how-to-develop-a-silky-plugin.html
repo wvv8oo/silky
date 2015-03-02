@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>如何开发一个Silky插件 - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>如何开发一个Silky插件</h1>
+            <span class="post-date">2015-02-28 05:05</span>
+            <h2 id="silky-">Silky的插件机制</h2>
+<p>Silky在启动的时候，会根据项目中的配置文件加载插件列表（注意：这些插件必需已经被安装）。Silky提供了很多hook，而插件就是通过这些hook注入到Silky中。
+Silky在运行的过程中，会调用对应的Hook，待插件处理完毕后，控制权才会转交到Silky。</p>
+<h2 id="-">手把手教你一步一步开发插件</h2>
+<p>下面让我们来开发一个简单的插件，目标是在所有的HTML文件的最后面加上一个时间戳。首先我们约定你的工作目录为<code>~/silky-learn</code>，如果你的操作系统是Windows，则约定你的工作目录在<code>%HOMEPATH%/silky-learn</code>，下面以*nix为例，Windows请更改对应的命令。</p>
+<ul>
+<li><code>mkdir ~/silky-learn &amp;&amp; cd ~/silky-learn &amp;&amp; mkdir my-plugin</code>，创建一个名为<code>my-plugin</code>的插件</li>
+<li><code>cd ~/silky-learn/my-plugin &amp;&amp; silky init --plugin</code>，创建一个示例插件项目</li>
+<li><code>cd ~/silky-learn &amp;&amp; mkdir silky-test &amp;&amp; cd silky-test &amp;&amp; silky init -f</code>，创建一个Silky工作目录</li>
+<li><p>用编辑器打开<code>.silky/config.js</code>，找到<code>plugins</code>键，增加<code>my-plugin</code>插件，这时候你的<code>config.js</code>文件plugins的配置看起来像这样：</p>
+<p>  plugins: {</p>
+<pre><code>  &quot;my-plugin&quot;: {
+      source: &#39;../my-plugin&#39;
+  }
+</code></pre><p>  }</p>
+</li>
+<li><p><code>cd ~/silky-learn/silky-test &amp;&amp; silky start</code>，切换到Silky测试项目，并启动Silky</p>
+</li>
+<li>用浏览器打开<code>http://localhost:14422</code>，然后查看源码的最后面，是否已经看到了时间戳</li>
+</ul>
+<p>如果过程不顺利，请检查：</p>
+<ol>
+<li>你的操作系统是否为windows，如果是，请将<code>~</code>改成<code>%HOMEPATH%</code>，<code>mkdir</code>改成<code>md</code></li>
+<li>是否已经安装了Silky的最新版本，你需要安装<code>0.7.4</code>或以上的版本</li>
+</ol>
+<h2 id="-">插件的构成</h2>
+<p>打开我们刚刚使用<code>silky init --plugin</code>所创建的示例插件，发现只有两个文件，这是一个插件的基本文件。package.json描述插件的名称与依赖等信息，与npm的package.json完全是一致的。更多与package.json相关请参考<a href="https://docs.npmjs.com/files/package.json">NPM官方文档</a></p>
+<p><code>index.js</code>则是插件的入口文件，如果你习惯用<code>CoffeeScript</code>，那么入口文件应该是<code>index.coffee</code>。特别提醒的是，不要忘记在<code>package.json</code>加上依赖。</p>
+<h3 id="-index-js">入口文件index.js</h3>
+<h4 id="exports-silkyplugin">exports.silkyPlugin</h4>
+<p>用于标识这是一个Silky插件，必需强制为<code>true</code>，即<code>exports.silkyPlugin = true</code></p>
+<h4 id="exports-registerplugin">exports.registerPlugin</h4>
+<p>注册插件的方法，Silky在加载插件的时候，会调用这个方法。<code>registerPlugin</code>提供<code>silky</code>和<code>options</code>两个参数。<code>options</code>即是用户在<code>config.js</code>文件中<code>plugins</code>键的配置信息。</p>
+<p>假定你的插件名称为<code>my-first-plugin</code>，用户在<code>config.js</code>中配置为：</p>
+<pre><code>&quot;plugins&quot;: {
+    &quot;my-first-plugin&quot;: {
+        &quot;title&quot;: &quot;My Title&quot; 
+    }
+}
+</code></pre><p>此时，<code>options</code>所得到的对象应该是这样：</p>
+<pre><code>    {
+        &quot;title&quot;: &quot;My Title&quot; 
+    }
+</code></pre><p>在你的插件<code>registerPlugin</code>方法中，使用<code>options.title</code>所得到的值为<code>My Title</code></p>
+<p>示例：</p>
+<pre><code>//注册silky插件
+exports.registerPlugin = function(silky, options) {
+    //注册handlebars的helper，关于handlebars，请参考：http://handlebarsjs.com/
+    silky.registerHandlebarsHelper(&#39;plugin_custom_command&#39;, function(value, done) {
+        //直接返回value，什么也不做，你可以根据需要返回具体的数据
+        return value
+    });
+
+    //将要响应路由时hook
+    silky.registerHook(&#39;route:willResponse&#39;, function(data) {
+        //如果是html文件，则在最后面加上一个时间戳
+        if (/\.html$/.test(data.request.url)) {
+            var extendText = &quot;&lt;!--&quot; + new Date() + &quot;--&gt;&quot;;
+            data.content += extendText;
+        }
+    });
+
+    //编译完成后的的hook
+    silky.registerHook(&#39;build:didCompile&#39;, {
+        //这里声明使用异步，如果async:true，那么必需显式调用done()
+        async: true
+    }, function(data, done) {
+        //这里可以做任何你想做的事，比如说合并文件等
+        return done(null);
+    });
+};
+</code></pre><h2 id="silky-">silky对象</h2>
+<p>此处介绍注册插件<code>exports.registerPlugin(silky, options)</code>所返回的<code>silky</code>对象，silky对象提供很多方法或配置，详细如下：</p>
+<h3 id="silky-registerhook-hookname-options-factory-">silky.registerHook(hookName, options, factory)</h3>
+<p>注册一个hook，<code>options</code>为可选参数，你也可以这样<code>registerHook(hookName, factory)</code>使用。这是一个很重要的方法，在插件中，你可以将你的代码注入到Silky中，并影响到Silky的运行。</p>
+<ul>
+<li><code>hookName</code> 将要注册的hook名称，更多hook请参考文档中的hooks一节</li>
+<li><code>options</code> 可选，如果你希望异步的话，需要设置<code>options.async</code>为<code>true</code></li>
+<li><code>factory</code> 工厂函数，Silky触发hook时，会调用此工厂函数，插件的代码也在此工厂函数中实现。</li>
+</ul>
+<p>示例一：</p>
+<pre><code>//同步运行的hook
+silky.registerHook(&#39;route:willResponse&#39;, function(data) {
+    //如果是html文件，则在最后面加上一个时间戳
+    if (/\.html$/.test(data.request.url)) {
+        var extendText = &quot;&lt;!--&quot; + new Date() + &quot;--&gt;&quot;;
+        data.content += extendText;
+    }
+});
+</code></pre><h4 id="factory-data-done-">factory(data, done)</h4>
+<p><code>silky.registerHook</code>的工厂函数，<code>data</code>根据不同的hook会提供不同的数据，如果你希望异步运行，那么在运行结束后需要调用<code>done(err)</code>，否则silky会被阻塞。</p>
+<h3 id="silky-registerhandlebarshelper-name-factory-">silky.registerHandlebarsHelper(name, factory)</h3>
+<p>注册一个handlebars的指令，适用于<code>hbs</code>的模板，建议指令名称以<code>plugin_</code>为前缀，避免与silky本身的指令冲突，例如：</p>
+<pre><code>silky.registerHandlebarsHelper(&#39;plugin_custom&#39;, function(value, done) {
+    //直接返回value，什么也不做，你可以根据需要返回具体的数据
+    return value
+});
+</code></pre><p>然后在hbs模板中就可以使用了，<code>{{plugin_custom &#39;test&#39;}}</code>，这将会输入<code>test</code>。更多Handlebars Helper的信息请参考<a href="http://handlebarsjs.com/reference.html">官方文档</a>。</p>
+<h3 id="silky-registercompiler-type-factory-">silky.registerCompiler(type, factory)</h3>
+<p>注册一个编译器，如果你希望支持silky目前还不支持的文件类型，则需要在此注册一个编译器。</p>
+<ul>
+<li><code>type</code> 文件类型</li>
+<li><code>factory</code> 处理的工厂函数，调用方式为<code>factory(source, options, cb)</code>，参数具体含义可以参考<code>silky.compiler.execute</code></li>
+</ul>
+<h3 id="silky-config">silky.config</h3>
+<p>项目的配置文件，其实本质是<code>your_project/.silky/config.js</code>与<code>~/.silky/config.js</code>合并之后的结果。</p>
+<h3 id="silky-options">silky.options</h3>
+<p>silky的选项，特别注意，<code>silky.options</code>并不是插件的<code>options</code>。<code>silky.options</code>包含的信息如下：</p>
+<pre><code>{ 
+    //当前运行环境
+    env: &#39;development&#39;,
+    //当前工作目录
+    workbench: &#39;/Volumes/Files/WorkStation/silky-blog&#39;,
+    //是否为构建模式
+    buildMode: false,
+    //silky的版本
+    version: &#39;0.7.4&#39;,
+    //当前指定的语言
+    language: &#39;en&#39;,
+    //当前指定的端口
+    port: &#39;&#39;,
+    //是否指定了debug模式
+    debug: false,
+    //标识目录名
+    identity: &#39;.silky&#39;,
+    //全局的.silky目录
+    globalSilkyIdentityDir: &#39;/Users/wvv8oo/.silky&#39;
+}
+</code></pre><h3 id="silky-compiler">silky.compiler</h3>
+<p>处理编译相关的对象，包含三个方法。</p>
+<h4 id="silky-compiler-detectcompiler-type-">silky.compiler.detectCompiler(type)</h4>
+<p>根据文件类型，返回编译器的类型，例如：</p>
+<pre><code>//默认情况下，返回hbs，即html的默认编译器是hbs
+compiler.detectCompiler(&#39;html&#39;)
+</code></pre><h4 id="silky-compiler-sourcefile-type-source-">silky.compiler.sourceFile(type, source)</h4>
+<p>根据编译类型<code>type</code>与文件路径，返回真实的文件，例如：</p>
+<pre><code class="lang-js">//返回结果为：/path/to/main.less
+compiler.sourceFile(&#39;less&#39;, &#39;/path/to/main.css&#39;)
+</code></pre>
+<h4 id="silky-compiler-execute-type-source-options-cb-">silky.compiler.execute(type, source, options, cb)</h4>
+<p>执行编译，其中<code>options</code>为可选参数，也可以这样<code>execute(type, source, cb)</code>使用</p>
+<ul>
+<li><code>type</code> 编译器的类型，例如<code>less</code>、<code>hbs</code>、<code>coffee</code>等</li>
+<li><code>source</code> 要编译的文件绝对路径</li>
+<li><code>options</code> 选项，此参数可选。比如说在build的时候，你可能想编译后直接保存文件，那么<code>options</code>可以这样设置：</li>
+</ul>
+<pre><code>    {
+        save: true,
+        //文件保存的位置 
+        target: &#39;/path/to/file.html&#39;            
+    }
+</code></pre><ul>
+<li><code>cb</code> 处理完成后的回调函数，此回调函数会返回处理的结果。<code>cb(err, content)</code>，<code>err</code>：错误信息，<code>content</code>：编译后的内容</li>
+</ul>
+<h3 id="silky-detectfiletype-path-">silky.detectFileType(path)</h3>
+<p>根据路径或者url，判断文件的类型，例如</p>
+<ul>
+<li><code>silky.detectFileType(&#39;http://localhost:14422/&#39;)</code>，返回<code>dir</code></li>
+<li><code>silky.detectFileType(&#39;http://localhost:14422/index.html&#39;)</code>，返回<code>html</code></li>
+<li><code>silky.detectFileType(&#39;http://localhost:14422/index.htm&#39;)</code>，返回<code>html</code></li>
+<li><code>silky.detectFileType(&#39;http://localhost:14422/css/main.css&#39;)</code>，返回<code>css</code></li>
+</ul>
+<h3 id="silky-registerplugindirectory-relativepath-">silky.registerPluginDirectory(relativePath)</h3>
+<p>注册一个插件的数据目录</p>
+<h2 id="hooks">Hooks</h2>
+<p>Silky提供了一系列hook，通过这些hook，插件可以注入到Silky。</p>
+<h3 id="route-hook">route相关的hook</h3>
+<p>当使用<code>silky start</code>时可能触发的hook，以<code>route:</code>为前缀</p>
+<h4 id="route-initial">route:initial</h4>
+<p>此hook在silky的http服务启动前触发，<code>silky start</code>后最先触发此hook。<code>data</code>为一个空对象</p>
+<p>示例：</p>
+<pre><code>silky.registerHook(&#39;route:initial&#39;, function(){
+    //do something
+})
+</code></pre><h4 id="route-didrequest">route:didRequest</h4>
+<p>此hook在silky收到http请求，且处理完routers后触发。此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.request</code> http请求的request对象</li>
+<li><code>data.response</code> http请求的response对象</li>
+<li><code>data.next</code> express中的<code>next</code>，可以跳到下一个路由</li>
+<li><code>data.stop</code> 阻止Silky的处理流程。默认为false，一般在插件直接接管路由的时候，会将<code>data.stop</code>置为<code>true</code></li>
+<li><code>route</code> 路由对象<ul>
+<li><code>url</code> 请求的原始url</li>
+<li><code>rule</code> 匹配到配置文件中的转发规则</li>
+<li><code>type</code> 当前请求对应的文件类型，如<code>css</code>、<code>html</code>、<code>dir</code>、<code>js</code>等</li>
+<li><code>mime</code> 当前请求的mime类型</li>
+<li><code>compiler</code> 使用的编译器名称    </li>
+</ul>
+</li>
+<li><code>data.pluginData</code> 提供给<code>hbs</code>模板的数据，默认为<code>null</code>，在模板中获取<code>pluginData</code>的数据可以使用<code>$$.plugin.key</code>。例如：<code>data.pluginData = {username: &#39;wvv8oo&#39;}</code>，那么在模板中应该这样获取数据：<code>{{$$.plugin.username}}</code></li>
+<li><code>data.method</code>: 当前http请求的类型，一般是<code>post</code>、<code>get</code>、<code>delete</code>、<code>put</code>之一</li>
+</ul>
+<p>下面我们以一个例子来说明，我们要截获<code>test.html</code>这个url，并且向浏览器返回一个字符。</p>
+<pre><code>//将要响应路由时hook
+silky.registerHook(&#39;route:willResponse&#39;, function(data) {
+    //匹配到test.html这个url
+    if (/^\/test\.html$/i.test(data.route.url)) {
+        //阻止Silky继续执行
+        data.stop = true
+        //直接向浏览器输出自定义字符
+        data.response.end(&#39;my first plugin&#39;)
+    }
+});
+</code></pre><h4 id="route-willpreparedirectory">route:willPrepareDirectory</h4>
+<p>此hook在将要准备目录输出的时候触发，用于展示目录列表给浏览器的时候。一般在此时，我们可以过滤掉不想呈现给浏览器的文件，即过滤<code>data.files</code>的文件。
+此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.request</code> http请求的request对象</li>
+<li><code>data.response</code> http请求的response对象</li>
+<li><code>data.next</code> express中的<code>next</code>，可以跳到下一个路由</li>
+<li><code>data.stop</code> 阻止Silky的处理流程</li>
+<li><code>data.files</code> 此目录下的所有文件列表<ul>
+<li><code>filename</code> 文件名</li>
+<li><code>url</code> 链接地址</li>
+</ul>
+</li>
+<li><code>data.directory</code> 目录的完整路径</li>
+</ul>
+<h4 id="route-didpreparedirectory">route:didPrepareDirectory</h4>
+<p>此hook在目录列表已经准备好，且经过模板渲染为最终页面后触发。此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.request</code> http请求的request对象</li>
+<li><code>data.response</code> http请求的response对象</li>
+<li><code>data.next</code> express中的<code>next</code>，可以跳到下一个路由</li>
+<li><code>data.content</code> 将要输出的页面内容</li>
+<li><code>data.directory</code> 目录的完整路径</li>
+</ul>
+<h4 id="route-willresponse">route:willResponse</h4>
+<p>此hook在数据已经处理好(如果是coffee或者less，则已经编译好)，将要向浏览器响应数据的时候触发。此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.request</code> http请求的request对象</li>
+<li><code>data.response</code> http请求的response对象</li>
+<li><code>data.next</code> express中的<code>next</code>，可以跳到下一个路由</li>
+<li><code>data.content</code> 将要输出的页面内容</li>
+<li><code>data.mime</code> 当前请求的mime类型</li>
+<li><code>data.stop</code> 阻止Silky的处理流程</li>
+</ul>
+<h3 id="build-hook">build相关的hook</h3>
+<p>这些hook在构建的过程中会被触发，即当用户运行<code>silky build</code>后可能会被触发，以<code>build:</code>为前缀</p>
+<h4 id="build-initial">build:initial</h4>
+<p>此hook在构建开始的时候触发，此时data为一个空对象</p>
+<p>示例：</p>
+<pre><code>silky.registerHook(&#39;route:initial&#39;, function(data){
+    //do something
+})
+</code></pre><h4 id="build-willbuild">build:willBuild</h4>
+<p>此hook在将要构建的时候触发，一般可以通过这个hook更改输出目录。此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.output</code> 构建将要输出的绝对路径</li>
+</ul>
+<h4 id="build-didbuild">build:didBuild</h4>
+<p>此hook在整个项目构建完成后会被触发，如果你希望运行完<code>silky build</code>后，将构建后的项目打包并上传到服务器，可以考虑截获这个hook。</p>
+<h4 id="build-willmake">build:willMake</h4>
+<p>此hook在将要编译复制整个项目时被触发</p>
+<p><em>警告：此hook可能会被抛弃</em></p>
+<h4 id="build-didmake">build:didMake</h4>
+<p>此hook在编译复制整个项目后将被触发</p>
+<p><em>警告：此hook可能会被抛弃</em></p>
+<h4 id="build-willprocess">build:willProcess</h4>
+<p>此hook在将要处理文件或者文件夹的时候被触发，此时要处理的可能是文件也可能是文件夹，可能是复制文件，也可能是要编译文件。此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.stat</code> 文件或者对象的<code>fs.Stats</code>对象，更多关于<code>fs.Stats</code>请参考<a href="http://www.nodejs.org/api/fs.html#fs_class_fs_stats">Node.js官方API</a></li>
+<li><code>data.source</code> 将要处理的绝对路径</li>
+<li><code>data.ignore</code> 是否忽略此路径的处理，如果一个文件夹被忽略，那么该文件夹内所有的内容都将被忽略</li>
+<li><code>data.copy</code> 是否仅复制</li>
+<li><code>data.relativePath</code> 相对(于当前工作目录而言)路径</li>
+<li><code>data.target</code> 处理后将要保存的目录</li>
+</ul>
+<h4 id="build-didprocess">build:didProcess</h4>
+<p>此hook在完成对文件或者文件夹的处理后会被触发</p>
+<p><em>警告：此hook可能会被抛弃</em></p>
+<h4 id="build-willcompile">build:willCompile</h4>
+<p>此hook在将要编译某个具体文件的时候被触发，与<code>build:willProcess</code>不同的是，此时已经到具体的文件编译，文件夹以及复制文件不会触发这个hook。</p>
+<p>此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.source</code> 将要编译的源文件绝对路径</li>
+<li><code>data.target</code> 编译后保存的绝对路径</li>
+<li><code>data.type</code> 文件类型</li>
+<li><code>data.pluginData</code> 插件提供的附加数据，更多请参考<code>route:didRequest</code>对<code>data.pluginData</code>的描述</li>
+</ul>
+<h4 id="build-didcompile">build:didCompile</h4>
+<p>此hook在完成编译后会被触发，此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.source</code> 将要编译的源文件绝对路径</li>
+<li><code>data.target</code> 编译后保存的绝对路径</li>
+</ul>
+<p><em>警告：此hook可能会被抛弃</em></p>
+<h4 id="build-willcompress">build:willCompress</h4>
+<p>此hook在将要压缩的时候会被触发，此时<code>factory(data, done)</code>的<code>data</code>会提供如下数据：</p>
+<ul>
+<li><code>data.stat</code> 将要压缩文件的<code>fs.Stats</code>对象，更多关于<code>fs.Stats</code>请参考<a href="http://www.nodejs.org/api/fs.html#fs_class_fs_stats">Node.js官方API</a></li>
+<li><code>data.path</code> 将要压缩文件的绝对路径</li>
+<li><code>data.relativePath</code> 文件的相对路径</li>
+<li><code>data.ignore</code> 是否忽略此文件</li>
+</ul>
+<p>示例：</p>
+<pre><code>silky.registerHook(&#39;build:willCompress&#39;, function(data){
+    //不压缩文件名带有min.js的文件
+    data.ignore = /.+min\.js$/i.test(data.relativePath)
+})
+</code></pre><h4 id="build-didcompress">build:didCompress</h4>
+<p>此hook在压缩完成后会被触发。</p>
+<p><em>警告：此hook可能会被抛弃</em></p>
+<h2 id="-">如何发布我的插件</h2>
+<p>一般情况下，如果是自用插件，只需要在配置插件的时候设置<code>source</code>为本地目录即可，但如果你希望将插件共享给其他使用，那么你可以按如下步骤进行操作：</p>
+<ol>
+<li>fork官方插件项目 <code>https://github.com/wvv8oo/silky-plugins</code></li>
+<li>添加你的插件</li>
+<li>向官方插件库提交pull request</li>
+</ol>
+<p>注意：官方插件仅收录通用且优秀的插件</p>
+
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>

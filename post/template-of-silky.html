@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>Silky的模板 - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>Silky的模板</h1>
+            <span class="post-date">2015-02-26 11:00</span>
+            <h2 id="-">本文目标</h2>
+<p>指导用户如何如何使用模板功能</p>
+<h2 id="-">综述</h2>
+<p>模板最主要的目的就是为了代码重用，模块化开发的好处不言而喻。Silky使用Handlebars作为默认的模板引擎，更多的Handlebars相关的文档与介绍，请点击<a href="http://handlebarsjs.com/">英文官网</a> 或者 <a href="http://www.cnblogs.com/iyangyuan/p/3471227.html">中文教程</a></p>
+<h2 id="-">新手用户</h2>
+<p>默认情况下，Silky会创建一个template的文件夹，所以的模板和html文件都应该放在template文件夹中。模板文件应该以<code>.hbs</code>为扩展名，需要被引用的模板文件建议放在<code>template/module</code>文件夹下。</p>
+<p>例如我们现在有一个首页<code>index.hbs</code>，一个页头文件<code>header.hbs</code>，一个页脚文件<code>footer.hbs</code>，那么我们应该将<code>header.hbs</code>和<code>footer.hbs</code>文件放到<code>template/module</code>文件夹下。</p>
+<p>在Silky的示例项目中，目录结构如下：</p>
+<pre><code>├── css
+│   ├── main.less
+│   ├── module
+│   │   └── global.less
+│   └── normalize.css
+├── images
+│   └── logo.png
+├── images-demo
+│   └── logo.png
+├── js
+│   ├── main.coffee
+│   └── vendor
+└── template
+    ├── index.hbs
+    └── module
+        ├── cell.hbs
+        ├── footer.hbs
+        ├── head.hbs
+        └── header.hbs
+</code></pre><p><code>index.hbs</code>文件我们可以这样写：</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    {{import &quot;module/head&quot;}}
+    &lt;body&gt;
+        {{import &quot;module/header&quot;}}
+        &lt;!--其它内容--&gt;
+        {{import &quot;module/footer&quot;}}
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p><code>{{import &quot;module/header&quot;}}</code>可以引入module文件夹下的header.hbs，当然Silky也支持相对路径，比如说像这样：<code>{{import &quot;./module/header&quot;}}</code></p>
+<h3 id="-">模板指令</h3>
+<p>模板指令也称之为模板表达式，你可以通过调用一些命令来实现某些特殊的功能，例如循环<code>each</code>，引用子模板<code>import</code>，我们把这些命令称之为指令。一个典型的指令通常是这样的：<code>{{command 参数1 参数二}}</code>，其中command为要执行的指令，后面为具体的参数，指令与参数以及参数之前用空格分隔。参数可以是字符，也可能是<code>.silky/data</code>下的数据文件。</p>
+<p>如果你希望输出HTML内容，那么你需要这样使用：<code>{{{command &#39;&lt;div&gt;HTML内容&lt;/div&gt;&#39;}}}</code></p>
+<h3 id="-">引用数据</h3>
+<p>在Silky中，数据和模板是可以分开的，数据被放在<code>.silky/data</code>目录下。通常我们将数据放在<code>.silky/data/normal</code>文件夹下。假如文件<code>.silky/data/normal/global.js</code>的内容如下：</p>
+<pre><code>module.exports = {
+    &quot;title&quot;: &quot;Silky&quot;,
+    &quot;footer&quot;: {
+        &quot;copyright&quot;: &quot;Copyright(at)Silky&quot;
+    }
+}
+</code></pre><p>那么在<code>index.hbs</code>中，我们可以这样引用：</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;title&gt;{{global.title}}&lt;/title&gt;
+    &lt;body&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;    
+</code></pre><p>最终生成的代码为：</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;title&gt;Silky&lt;/title&gt;
+    &lt;body&gt;
+
+    &lt;/body&gt;
+&lt;/html&gt;    
+</code></pre><p>当你在模板中使用<code>{{global.title}}</code>进行数据引用的时候，Silky会找到<code>.silky/data/normal/global.js</code>这个文件，然后将该文件中的<code>title</code>节点插入到模板中。</p>
+<p>换句话说，如果你再创建一个数据文件<code>.silky/data/normal/custom.js</code>，然后在模板中你的引用方式应该是<code>{{custom.something}}</code>，如果你不确定引用是否正确，可以使用<code>{{print custom}}</code>来打印这个数据。</p>
+<p>当然我们还可能会使用到多环境的数据引用，更多请参考：<a href="/post/running-environment-of-silky.html">Silky中的多环境与数据文件的引用</a></p>
+<h3 id="js-css-">js与css文件引用</h3>
+<p>在Silky中，我们像平时一样引用js/css文件即可，但如果你在项目中使用了coffee或less，引用的文件名同样是<code>.js</code>或<code>.css</code>，因为Silky会自动处理，如果没有找到<code>.css</code>文件，就会查找<code>.less</code>文件，对于js的规则也是同样的。</p>
+<p>例如有如下引用：</p>
+<p><code>&lt;link rel=&quot;stylesheet&quot; href=&quot;/css/main.css&quot; type=&quot;text/css&quot; charset=&quot;utf-8&quot; /&gt;</code></p>
+<p>Silky会先查找<code>/css/main.css</code>文件，如果没有找到此文件，那么Silky会再尝试查找<code>/css/main.less</code>并编译输出。</p>
+<h2 id="-">进阶用户</h2>
+<h3 id="-handlebars-">常用的Handlebars指令</h3>
+<h4 id="-each">#each</h4>
+<p>循环指令，例如：</p>
+<p>数据文件<code>.silky/data/normal/global.js</code></p>
+<pre><code>module.exports = {
+    &quot;projects&quot;: [
+        {project: &#39;Silky&#39;},
+        {project: &#39;charm.js&#39;}
+    ]
+}
+</code></pre><p>模板文件：</p>
+<pre><code>&lt;ul&gt;
+    &lt;li class=&quot;title&quot;&gt;项目列表&lt;/li&gt;
+    {{#each global.projects}}
+        &lt;li&gt;{{project}}&lt;/li&gt;
+    {{/each}}
+&lt;/ul&gt;
+</code></pre><p>输出：</p>
+<pre><code>&lt;ul&gt;
+    &lt;li class=&quot;title&quot;&gt;项目列表&lt;/li&gt;
+    &lt;li&gt;Silky&lt;/li&gt;
+    &lt;li&gt;charm.js&lt;/li&gt;
+&lt;/ul&gt;
+</code></pre><h4 id="-if">#if</h4>
+<p>条件判断语句，例如</p>
+<pre><code>{{#if true}}
+    条件为真
+{{/else}}
+    条件为假
+{{/if}}
+</code></pre><h4 id="unless">unless</h4>
+<p>只有在条件为false的时候才输出，等同于else，下面两例</p>
+<p>使用<code>if/else</code></p>
+<pre><code>{{#if condition}}
+
+{{/else}}
+    条件为假
+{{/if}}
+</code></pre><p>使用<code>unless</code></p>
+<pre><code>{{unless condition}}
+    条件为假
+{{/unless}}
+</code></pre><h4 id="-index">@index</h4>
+<p>在使用<code>#each</code>进行循环输出的时候，你可以使用<code>@index</code>来获取索引</p>
+<h3 id="silky-">Silky扩展指令</h3>
+<h4 id="import">import</h4>
+<p>导入其它模板，支持相对路径和绝对路径，支持指定数据源，不需要指定<code>.hbs</code>扩展名。早前版本的Silky使用了<code>partial</code>指令，现在应当使用<code>import</code>，<code>partial</code>未来将会被抛弃。</p>
+<p>使用示例：</p>
+<ul>
+<li><code>{{import “module/header”}}</code>，导入模板，使用绝对路径</li>
+<li><code>{{import “../header”}}</code>，导入模板，使用相对路径</li>
+<li><code>{{import “module/header” data}}</code>，导入模板，第二个参数允许指定数据。</li>
+</ul>
+<p>例如我们现在在数据库<code>globa.js</code>的文件格式如下：</p>
+<pre><code>module.exports = {
+    &quot;title&quot;: &quot;Silky&quot;,
+    &quot;footer&quot;: {
+        &quot;copyright&quot;: &quot;Copyright(at)Silky&quot;
+    }
+}
+</code></pre><p><code>index.bhs</code>文件：</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    {{import &quot;module/head&quot;}}
+    &lt;body&gt;
+        {{import &quot;module/header&quot;}}
+        &lt;!--其它内容，第二个参数中，我们指定数据源为global.footer--&gt;
+        {{import &quot;module/footer&quot; global.footer}}
+    &lt;/body&gt;
+&lt;/html&gt;        
+</code></pre><p><code>module/footer.hbs</code>文件：</p>
+<pre><code>&lt;footer&gt;
+    Copyright &amp;copy; &lt;a href=&quot;http://example.com/&quot; target=&quot;_blank&quot;&gt;{{copyright}}&lt;/a&gt;
+&lt;/footer&gt;
+</code></pre><p>这样在<code>footer.hbs</code>文件中，我们就可以用<code>{{copyright}}</code>来引用<code>global.footer.copyright</code>了。这样做的目的就是为了代码更简洁。否则当嵌套引用模块的时候，我们有会需要写很冗长的代码才能引用到数据。</p>
+<p><strong> 注意，这里会有陷阱！</strong></p>
+<p>如果指定了数据源，那么作用域将被改变，你在子模板中(上例的<code>footer.hbs</code>)所引用的数据源都是你所指定的数据源下（上例的数据源是<code>global.footer</code>）。在上面的示例中，如果你想在<code>header.hbs</code>中引用<code>global.title</code>这个数据，你无法使用<code>{{global.title}}</code>进行引用。但Silky提供另一种方法来引用全局数据，使用<code>_</code>可以在任何模块引用全局数据，如：<code>{{import _.global.title}}</code>。</p>
+<h4 id="css">css</h4>
+<p>引入 css文件，可以实现批量引入，有如下的用法：</p>
+<ul>
+<li><code>{{css &quot;main.css&quot;}}</code> 直接引入css文件，此处引用<code>main.css</code>，你也可以在路径参数中添加变量。例如：<code>{{css &quot;&lt;global.root&gt;/main.css&quot;}}</code>，此时<code>&lt;global.root&gt;</code>表示<code>.silky/data/normal/global.js</code>文件<code>root</code>节点的值</li>
+<li><code>{{css &quot;/css&quot; &quot;file1.css,file2.css&quot;}}</code> 引用同一个文件夹下的多个css文件，第一个参数同也可以添加<code>&lt;global.root&gt;</code>这种方式的变量</li>
+<li><code>{{css data}}</code> 根据配置引入css，这种方式可以扫描某个文件夹下所有的文件并引用，是一种很方便实用的功能</li>
+</ul>
+<p>在示例项目中，我们可以看到从数据文件的配置引入css的例子。</p>
+<p><code>global.js</code>文件：</p>
+<pre><code>module.exports = {
+    &quot;title&quot;: &quot;Silky&quot;,
+    &quot;linkCSS&quot;: {
+        &quot;baseUrl&quot;: &quot;&lt;global.root&gt;/css/&quot;,
+        &quot;dir&quot;: &quot;/css&quot;,
+        &quot;match&quot;: /\.css|less$/,
+        path: /(less)$/,
+        to: &#39;css&#39;
+    }
+}
+</code></pre><p>然后我们在<code>index.hbs</code>中用<code>{{css global.linkCSS}}</code>引用，它会自动扫描<code>/css</code>文件夹下所有的less和css并引用。</p>
+<p>我们有必要解释一下上述例子中各参数，在上述例子中</p>
+<ul>
+<li><code>baseUrl</code> 根路径</li>
+<li><code>dir</code>    要扫描的文件夹</li>
+<li><code>match</code> 匹配规则，可选。如上述例子中会匹配所有的css和less文件</li>
+<li><code>path</code> 替换规则，可选。如上述例子中会替换less为css</li>
+<li><code>to</code> 将要替换的文字</li>
+</ul>
+<p>即：path + to = url.replace(path, to)</p>
+<h4 id="script">script</h4>
+<p><code>script</code>指令与<code>css</code>指令的功能参数都是一样的，只不过script指令将会引用<code>js</code>文件而非<code>css</code></p>
+<h4 id="loop">loop</h4>
+<p>循环一个模板N次，或者根据数据源进行循环模板。</p>
+<p>使用示例：</p>
+<ul>
+<li><code>{{loop &quot;module/cell&quot; 5}}</code> 循环cell这个子模板5次</li>
+<li><code>{{loop &quot;module/cell&quot; data}}</code> 根据data来循环cell这个子模板，此时data的数据类型应该是<code>array</code>。<strong>注意：此时cell的数据作用域会被改变</strong></li>
+</ul>
+<h4 id="print">print</h4>
+<p>print指令可以打印数据，一般用于调试使用，例如你可以使用<code>{{print global}}</code>来打印出整个global文件的数据。</p>
+<h4 id="markdown">markdown</h4>
+<p>转换为markdown，注意此时我们需要用三个花括号来显示HTML内容</p>
+<p>使用示例：</p>
+<ul>
+<li><code>{{{markdown content}}}</code> 将markdown转换为html，此时content的内容应该是markdown格式</li>
+</ul>
+<h4 id="date">date</h4>
+<p>输出日期，与<code>now</code>指令不同的时，<code>date</code>允许指定日期。允许指定三个参数：<code>{{date 数据源 输出的日期格式(可选) 数据源的日期格式(可选)}}</code></p>
+<p>使用示例：</p>
+<ul>
+<li><code>{{date 1423735598048}}</code> 将输出<code>2015-02-12</code>，默认的日期格式为：<code>YYYY-MM-DD</code></li>
+<li><code>{{date 1423735598048 &quot;MM-DD&quot;}}</code> 指定输出的日期格式，将输出<code>02-12</code></li>
+<li><code>{{date &quot;2015-02-12&quot; &quot;MM-DD&quot; &quot;YYYY-MM-DD&quot;}}</code> 指定输出的日期格式，且指定源日期格式，将输出<code>02-12</code>。这种情况一般适用于数据源为字符串，且不是规范的日期格式这种情况</li>
+</ul>
+<h4 id="now">now</h4>
+<p>打印出当前时间，如果没有指定日期格式，则会输出当前的时间戳。一般来说，可以用<code>{{now}}</code>来给文件引用加入时间戳，例如<code>&lt;script src=&quot;js/main.js?timestamp={{now}}&quot;&gt;&lt;/script&gt;</code></p>
+<p>使用示例：</p>
+<ul>
+<li><code>{{now}}</code> 输出时间戳</li>
+<li><code>{{now &quot;YYYY-MM-DD hh:mm:ss&quot;}}</code> 根据指定的格式输出时间，更多时间格式的规则请参数<a href="http://momentjs.com/docs/#/parsing/string-format/">momentjs</a>的<strong>String + Format</strong>部分</li>
+</ul>
+<h4 id="substr">substr</h4>
+<p>截取字符串，例如<code>{{substr &quot;这是一个长的字符&quot; 2}}</code>，输出结果为：<code>这是</code></p>
+<h4 id="ifequal">ifEqual</h4>
+<p>逻辑与的判断，例如：</p>
+<pre><code>{{#ifEqual 0 1}}
+    两者相等    
+{{/ifEqual}}
+</code></pre><h4 id="or">or</h4>
+<p>等同于javascript中的<code>a || b</code>, 在模板中可以实现同样的功能<code>{{or a b}}</code></p>
+
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>

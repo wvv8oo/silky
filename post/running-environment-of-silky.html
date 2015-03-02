@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"><link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/css/justified-nav.css" rel="stylesheet">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<meta name="generator" content="Silky">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="http://silky.wvv8oo.com/rss.xml">
+    <title>Silky的多环境与数据引用 - Silky官方博客</title>
+</head>
+
+<body>
+
+<div class="container">
+    <a href="https://github.com/wvv8oo/silky" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+
+<div class="masthead">
+    <div class="custom-logo">
+        <img src="/images/logo.png" width="120">
+    </div>
+    <nav>
+        <ul class="nav nav-justified">
+            <li><a href="/">主页</a></li>
+            <li><a href="/post/getting-started-with-silky.html">快速入门</a></li>
+            <li><a href="/post/all-in-one.html">文档索引</a></li>
+            <li><a href="/post/plugins.html">插件</a></li>
+            <li><a href="/post/faqs.html">FAQs</a></li>
+            <li><a href="http://github.com/wvv8oo/silky" target="_blank">获取源码</a></li>
+            <li><a href="https://github.com/wvv8oo/silky/issues" target="_blank">问题与建议</a></li>
+            <li><a href="/post/about-silky.html">关于Silky</a></li>
+        </ul>
+    </nav>
+</div>
+
+    <div class="content container">
+        <div class="post">
+            <h1>Silky的多环境与数据引用</h1>
+            <span class="post-date">2015-02-26 05:38</span>
+            <h2 id="-">摘要</h2>
+<p>Silky支持数据与实现分离，从而实现对多环境的支持，在Silky中，你可以轻松实现在开发环境与产品环境引用不同的数据。例如在开发环境中使用相对链接，在产品环境使用绝对链接。</p>
+<h2 id="-">数据文件</h2>
+<p>Silky的数据文件放在<code>your_project/.silky/data</code>文件夹中，一般来说，数据文件会有四个文件夹，分别是<code>normal</code>、<code>development</code>、<code>language</code>、<code>production</code>。其中<code>language</code>用于存放多国语言的数据文件，关于多国语言请参考<a href="/post/how-to-use-mutil-language-with-silky.html">在Silky中如何使用多国语言</a></p>
+<p>数据文件默认的数据类型为json，扩展名应该为.json。但因为<code>json</code>文件支持的数据格式过于简单，Silky支持引入<code>js</code>文件，在js中可以使用<code>module.exports={}</code>返回一个对象，这就意味你甚至可以在这里自己写函数。</p>
+<h2 id="-">多环境下的数据覆盖</h2>
+<p>我们以一个典型的Silky项目数据文件结构为例：</p>
+<pre><code>├── config.js
+└── data
+    ├── development
+    │   └── global.js
+    ├── normal
+    │   └── global.js
+    │   └── override.less
+    │   └── product.json
+    ├── production
+    │   └── global.js
+    └── language
+        ├── cn
+        │   └── default.json
+        └── en
+            └── default.json
+</code></pre><p>多数情况下，数据文件应该放在<code>normal</code>文件夹中，假如你只有一种工作环境，那么你就不需要<code>development</code>和<code>production</code>文件夹。当前工作环境所对应文件夹中的数据文件会覆盖掉<code>normal</code>中的同名文件中的内容，理解这一点非常重要。在上面目录结构的数据文件中，如果当前的工作环境是<code>development</code>，那么<code>development/global.js</code>会合并覆盖掉<code>normal/global.js</code>中的内容。也就是说，用哪个文件合并覆盖，取决于当前的工作环境。</p>
+<h2 id="-">使用例子</h2>
+<p>假定我们现在除了默认环境<code>normal</code>外，还有<code>production</code>和<code>development</code>两种环境，对应的数据环境分别如下：</p>
+<p>默认环境<code>your_project/.silky/data/normal/global.js</code></p>
+<pre><code>module.exports = {
+    &quot;title&quot;: &quot;Silky&quot;,
+    &quot;root&quot;: &quot;/&quot;
+}
+</code></pre><p>产品环境<code>your_project/.silky/data/production/global.js</code></p>
+<pre><code>module.exports = {
+    &quot;root&quot;: &quot;http://silky.wvv8oo.com/&quot;
+}
+</code></pre><p>开发环境<code>your_project/.silky/data/development/global.js</code></p>
+<pre><code>module.exports = {
+    &quot;root&quot;: &quot;http://localhost:14422/&quot;
+}
+</code></pre><p>在<code>index.hbs</code>中我们进行引用</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;utf-8&quot; /&gt;
+        &lt;title&gt;Silky Example&lt;/title&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;{{global.root}css/main.css&quot; type=&quot;text/css&quot; charset=&quot;utf-8&quot; /&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>上述例子中，<code>{{global.root}}</code>中的<code>global</code>表示读取数据文件中的<code>global.js</code>文件的<code>root</code>键值。而当前工作环境的数据文件会对<code>normal</code>中的数据文件进行合并覆盖。如果你当前的工作环境是<code>development</code>，那么<code>{{globa.root}}</code>得到的值会是<code>http://localhost:14422/</code>。如果当前的工作环境是<code>production</code>，那么<code>{{globa.root}}</code>得到的值会是<code>http://silky.wvv8oo.com/</code></p>
+<h2 id="-">在数据文件中使用函数</h2>
+<p>Handlebars并不支持复杂的表达式，如果你想实现复杂的功能，你可能需要在数据文件中自己写函数了。下面我们看在示例项目中是如果通过函数实现返回一个随机数的：</p>
+<p><code>examples/.silky/data/normal/global.js</code></p>
+<pre><code>module.exports = {
+    random: function(){
+        return Math.random();
+    }
+}
+</code></pre><p><code>index.hbs</code></p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;utf-8&quot; /&gt;
+        &lt;title&gt;Silky Example&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        通过函数实现随机数：{{global.random}}
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+        </div>
+    </div>
+    <footer class="footer">
+    <div class="custom-social">
+        <ul>
+            <li>&copy; Silky 2014</li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=watch&amp;count=true" width="100" height="20" title="Star on GitHub"></iframe>
+            </li>
+            <li>
+                <iframe class="github-btn" src="http://ghbtns.com/github-btn.html?user=wvv8oo&amp;repo=silky&amp;type=fork&amp;count=true" width="102" height="20" title="Fork on GitHub"></iframe>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+<link href="/highlight/github.css" rel="stylesheet">
+<script src="/highlight/highlight.js"></script>
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script>var _hmt=_hmt||[];!function(){var e=document.createElement("script");e.src="//hm.baidu.com/hm.js?1c81e52d58e119fdce756e7bd7c52e15";var t=document.getElementsByTagName("script")[0];t.parentNode.insertBefore(e,t)}();</script>
+
+</div>
+</body>
+</html>
