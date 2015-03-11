@@ -228,5 +228,5 @@ exports.execCommand = (command, cb)->
     message += chunk + '\n'
 
   exec.stderr.on 'data', (chunk)->
-    console.log chunk.red
+    console.log chunk
     error += chunk + '\n'

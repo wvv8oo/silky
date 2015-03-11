@@ -112,7 +112,6 @@ _program.command('build')
     debug: Boolean(program.debug)
     config: program.config
 
-  console.log options
   options.language = program.language if program.language
   init options, true
 
