@@ -21,9 +21,15 @@ _host = require './host'
 
 #根据插件名称，从全局插件目录中注册插件
 registerPlugin = (pluginName, options)->
+  options = options || {}
   file = _path.join _common.globalPluginDirectory(), pluginName
   #插件已经指定了源，则从指定源中加载
   file = _path.resolve _common.options.workbench, options.source if options.source
+
+  #强制禁止了插件
+  if options.enable is false
+    console.log "插件#{pluginName}已经被强制禁用".red
+    return
 
   try
     if not _fs.existsSync file
