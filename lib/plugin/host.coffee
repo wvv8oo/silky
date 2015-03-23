@@ -9,6 +9,16 @@ COMPILER = {}
 
 #注册一个插件
 exports.silkyForHook = (pluginName, pluginPriority)->
+  utils:
+    writeFile: _common.writeFile
+    readFile: _common.readFile
+    homeDirectory: _common.homeDirectory
+    replaceExt: _common.replaceExt
+    replaceSlash: _common.replaceSlash
+    watch: _common.watch
+    saveObjectAsCode: _common.saveObjectAsCode
+    execCommand: _common.execCommand
+
   #用于编译的处理器
   compiler: _compiler
   detectFileType: _common.detectFileType

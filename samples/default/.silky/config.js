@@ -14,10 +14,11 @@ module.exports = {
     },
     //路由
     routers: [
-         {
+        //如果希望访问目录直接访问index.html，则可以启用下面的路由
+        //{
             //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换，static：是否为静态文件，静态文件直接返回
-            path: /^\/$/, to: 'index.html', next: true, static: true
-         }
+            //path: /^\/$/, to: 'index.html', next: true, static: false
+        //}
     ],
     //插件的配置
     plugins: {
