@@ -90,8 +90,9 @@ exports.homeDirectory = ->
 
 
 #判断是否为产品环境
-exports.isProduction = ->
-  _options.env is 'production'
+exports.isProduction = -> _options.env is 'production'
+
+exports.isDevelopment = -> _options.env is 'development'
 
 #如果是产品环境，则报错，否则返回字符
 exports.combError = (error)->

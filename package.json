@@ -8,6 +8,7 @@
     "coffee-script": "*",
     "colors": "*",
     "commander": "*",
+    "convert-source-map": "^0.7.1",
     "express": "4.2.0",
     "forever-monitor": "*",
     "fs-extra": "^0.13.0",
@@ -27,8 +28,8 @@
   "homepage": "http://silky.wvv8oo.com",
   "repository": "https://github.com/wvv8oo/silky",
   "bugs": {
-    "url" : "https://github.com/wvv8oo/silky/issues"
-  , "email" : "d3Z2OG9vQGdtYWlsLmNvbQ=="
+    "url": "https://github.com/wvv8oo/silky/issues",
+    "email": "d3Z2OG9vQGdtYWlsLmNvbQ=="
   },
   "main": "./lib/index.coffee",
   "bin": {

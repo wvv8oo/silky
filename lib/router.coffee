@@ -42,7 +42,7 @@ responseContent = (content, mime, req, res, next)->
 #统一处理响应
 response = (route, options, req, res, next)->
   #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
-  return if /\.(html|htm|js|css)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
+  return if /\.(html|htm|js|css|coffee)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
 
   #查找真实的未编译源文件路径
   sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
