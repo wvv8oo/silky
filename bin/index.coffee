@@ -94,7 +94,7 @@ _program.command('init')
 
 _program.command('build')
 .description('构建项目')
-.option('-c, --config [value]', '指定配置文件目录')
+.option('-c, --config [value]', '指定配置文件')
 .option('-o, --output [value]', '指定输出目录')
 .option('-d, --debug', '启动调试模式')
 .option('-f, --force', '强行构建当前目录，适用于编译非Silky项目')
@@ -110,6 +110,7 @@ _program.command('build')
     env:  program.environment || 'production'
     #是否为debug模式
     debug: Boolean(program.debug)
+    #特殊指定的配置文件
     config: program.config
 
   options.language = program.language if program.language

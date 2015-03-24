@@ -30,19 +30,13 @@ readConfig = ->
   globalConfig = require(globalConfigFile) if _fs.existsSync globalConfigFile
   exports.globalConfig = globalConfig
 
-  #工作文件夹的配置文件
-  #指定了配置文件的路径
-  if _options.config
-    localConfigFile = _path.resolve __dirname, _options.config
-  else
-    localConfigFile = exports.localConfigFile()
-
+  localConfigFile = exports.localConfigFile()
   console.log "配置文件路径 -> #{localConfigFile}"
 
   #如果当前项目文件夹没有配置，则加载默认的配置
   if not _fs.existsSync localConfigFile
     console.log "没有找到配置文件，加载配置默认的配置文件"
-    localConfigFile = _path.join(__dirname, 'default_config')
+    localConfigFile = _path.join(__dirname, 'default_config.coffee')
 
   localConfig = require(localConfigFile)
 
@@ -61,7 +55,8 @@ readConfig = ->
 #全局配置文件的路径
 exports.globalConfigFile = -> _path.join exports.globalSilkyIdentityDir(), 'config.js'
 #本地配置的文件路径
-exports.localConfigFile = -> _path.join exports.localSilkyIdentityDir(), 'config.js'
+exports.localConfigFile = ()->
+  _path.resolve exports.localSilkyIdentityDir(), _options.config || 'config.js'
 
 #保存全局配置
 exports.saveGlobalConfig = ()->
