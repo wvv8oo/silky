@@ -7,16 +7,24 @@ _linkHelper = require './linkHelper'
 _moment = require 'moment'
 
 #编译partial
-compilePartial = (name, context)->
-  filename = name + '.hbs'
+compilePartial = (hbsPath, context, options)->
+  relativePath = hbsPath + '.hbs'
+  #替换其中的路径
+  relativePath = relativePath.replace /<(.+)>/, (match, xPath)->
+    ##查找xPath
+    _common.xPathMapValue xPath, options.data.root
+
+  #如果使用了绝对路径，则从当前项目的根目录开始查找
+  if relativePath.indexOf('/') is 0
+    file = _path.join _common.options.workbench, relativePath
   #兼容模式，从templateDir中取数据
-  if _common.config.compatibleModel
-    file = _path.join _common.getTemplateDir(), filename
+  else if _common.config.compatibleModel
+    file = _path.join _common.getTemplateDir(), relativePath
   else
     #从相对路径中取数据
-    file = _path.resolve _path.dirname(context._.$$.file), filename
+    file = _path.resolve _path.dirname(context._.$$.file), relativePath
 
-  return "无法找到partial：#{name}" if not _fs.existsSync file
+  return "无法找到partial：#{hbsPath}" if not _fs.existsSync file
 
   content = _common.readFile file
   #查找对应的节点数据
@@ -35,7 +43,7 @@ importCommand = (name, context, options)->
   context._ = options.data.root
   #合并silky到context
   context.silky = _.extend {}, _common.options if not context.silky
-  html = compilePartial(name, context || {})
+  html = compilePartial(name, context || {}, options)
   new _handlebars.SafeString(html)
 
 ifEqualCommand = (left, right, options)->
