@@ -73,14 +73,14 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
 
     installPluginFromLocalDir pluginName, pluginRootDir, cacheDir, cb
 
-
 #从标准仓库中安装
-installFromStandardRepos = (names, pluginRootDir, cb)->
-  remoteRepos = 'https://github.com/wvv8oo/silky-plugins.git'
+installFromStandardRepos = (names, pluginRootDir, repository, cb)->
+  repository = repository || _common.xPathMapValue('custom.plugin-repository', _common.globalConfig)
+  repository = repository || 'https://github.com/wvv8oo/silky-plugins.git'
   localRepos = _path.join _common.globalCacheDirectory(), 'plugins'
 
   #更新仓库
-  updateGitRepos remoteRepos, localRepos, (err)->
+  updateGitRepos repository, localRepos, (err)->
     if err
       console.log '安装失败'.red
       return console.log err
@@ -88,7 +88,7 @@ installFromStandardRepos = (names, pluginRootDir, cb)->
     installPluginsFromLocalDir names, pluginRootDir, localRepos, cb
 
 #安装插件
-exports.install = (names, oringal, cb)->
+exports.install = (names, oringal, repository, cb)->
   pluginRootDir = _common.globalPluginDirectory()
   console.log "installing..."
 
@@ -97,7 +97,7 @@ exports.install = (names, oringal, cb)->
     installFromSpecificSource names[0], pluginRootDir, oringal, cb
   else
     #从标准库中安装，可以安装多个
-    installFromStandardRepos names, pluginRootDir, cb
+    installFromStandardRepos names, pluginRootDir, repository, cb
 
 #删除插件
 exports.uninstall = (names, cb)->

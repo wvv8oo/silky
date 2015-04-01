@@ -39,11 +39,12 @@ init = (options, loadPlugin)->
 #安装插件的命令
 _program.command('install [names...]')
 .option('-d, --debug', '启动调试模式')
+.option('-r, --repository', '强制指定安装源的git地址，请确保是否有clone的权限')
 .description('安装插件')
 .action((names, program)->
   init()
   return console.log("安装插件请使用：silky install [pluginName]".red) if names.length is 0
-  _pluginPackage.install names, program.original, -> process.exit 0
+  _pluginPackage.install names, program.original, program.repository, -> process.exit 0
 )
 
 #卸载插件
