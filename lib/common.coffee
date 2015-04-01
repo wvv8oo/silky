@@ -155,8 +155,9 @@ exports.init = (options)->
 #x.y.x这样的文本式路径，从data中找出对应的值
 exports.xPathMapValue = (xPath, root)->
   value = root
-  xPath.split('.').forEach (key)->
-    return if not (value = value[key])
+  _.forEach xPath.split('.'), (key)->
+    return false if not (value = value[key])
+
   value
 
 ##设置xPath，不支持数组

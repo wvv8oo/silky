@@ -29,3 +29,10 @@ exports.set = (xPath, value, isGlobal)->
   config = require file
   _common.xPathSetValue xPath, config, value
   _common.saveObjectAsCode config, file
+
+#读取
+exports.get = (xPath, isGlobal)->
+  return if not file = readConfig isGlobal
+  config = require file
+  value = _common.xPathMapValue xPath, config
+  console.log "#{xPath.green} -> #{value}"

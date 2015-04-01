@@ -68,9 +68,9 @@ _program.command('list')
 #修改配置
 _program.command('config')
 .command('set [value]', '设置键值，如果没有设置值，则会删除该键')
-.option('-g, --global', '配置全局')
 .option('remove', '删除某个键')
-.description('修改配置文件')
+.option('-g, --global', '配置全局')
+.description('修改或者查看配置文件')
 .action((args..., program)->
   init()
 
@@ -90,6 +90,7 @@ _program.command('config')
   xPath = "custom.#{xPath}" if program.global
   switch action
     when 'set' then _configure.set xPath, value, program.global
+    when 'get' then _configure.get xPath, program.global
     when 'remove' then _configure.set xPath, undefined, program.global
 
   process.exit 0
