@@ -153,11 +153,27 @@ exports.init = (options)->
   exports.watch exports.localConfigFile(), readConfig
 
 #x.y.x这样的文本式路径，从data中找出对应的值
-exports.xPathMapValue = (xPath, data)->
-  value = data
+exports.xPathMapValue = (xPath, root)->
+  value = root
   xPath.split('.').forEach (key)->
     return if not (value = value[key])
   value
+
+##设置xPath，不支持数组
+exports.xPathSetValue = (xPath, root, value)->
+  node = root
+
+  paths = xPath.split('.')
+  last = paths.pop()
+
+  _.forEach paths, (path)->
+    return false if not(node[path])
+    node = node[path]
+
+  #最后一级的父节点，必需存在，且为hash
+  return false if not (node and _.isPlainObject(node))
+  if value is undefined  then delete node[last] else node[last] = value
+
 
 #简单的匹配，支持绝对匹配，正则匹配，以及匿名函数匹配
 exports.simpleMatch = (rules, value)->

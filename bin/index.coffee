@@ -15,6 +15,8 @@ _pluginPackage = require '../lib/plugin/package'
 _build = require('../lib/build')
 _hooks = require '../lib/plugin/hooks'
 _hookHost = require '../lib/plugin/host'
+_configure = require '../lib/configure'
+
 _version = require(_path.join(__dirname, '../package.json')).version
 
 console.log "Silky Version -> #{_version}"
@@ -60,6 +62,36 @@ _program.command('list')
 .action((program)->
   init()
   _pluginPackage.list()
+  process.exit 0
+)
+
+#修改配置
+_program.command('config')
+.command('set [value]', '设置键值，如果没有设置值，则会删除该键')
+.option('-g, --global', '配置全局')
+.option('remove', '删除某个键')
+.description('修改配置文件')
+.action((args..., program)->
+  init()
+
+  action = args[0]
+  xPath = args[1]
+  value = args[2]
+
+  #用户没有写xPath
+  if not xPath
+    console.log "要配置的键不能为空".red
+    return process.exit 1
+
+  if action is 'set' and not value
+    console.log "要配置的值不能为空".red
+    return process.exit 1
+
+  xPath = "custom.#{xPath}" if program.global
+  switch action
+    when 'set' then _configure.set xPath, value, program.global
+    when 'remove' then _configure.set xPath, undefined, program.global
+
   process.exit 0
 )
 
@@ -207,7 +239,7 @@ versionDesc = "Version: #{_version}; Silky: #{_path.join __dirname, '..'}"
 _program.version(versionDesc).parse(process.argv)
 
 (->
-  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list']
+  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list', 'config']
   if _.difference(_program.rawArgs, mustIncludeCommand).length is _program.rawArgs.length
     console.log "提示：新版本的silky请使用silky start启动".cyan
 )()
