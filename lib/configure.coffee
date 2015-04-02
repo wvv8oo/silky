@@ -36,3 +36,14 @@ exports.get = (xPath, isGlobal)->
   config = require file
   value = _common.xPathMapValue xPath, config
   console.log "#{xPath.green} -> #{value}"
+
+#设置honey
+exports.setAsHoney = ()->
+  return if not file = readConfig true
+  config = require file
+
+  for key, value of _common.honeyConfig
+    _common.xPathSetValue "custom.#{key}", config, value
+
+  _common.saveObjectAsCode config, file
+  console.log "Silky自定义配置成功"

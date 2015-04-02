@@ -80,6 +80,11 @@ _program.command('config')
   xPath = args[1]
   value = args[2]
 
+  #设置honey的全局配置
+  if action is 'team' and xPath is 'honey'
+    _configure.setAsHoney()
+    return process.exit 0
+
   #用户没有写xPath
   if not xPath
     console.log "要配置的键不能为空".red

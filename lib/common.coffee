@@ -260,3 +260,8 @@ exports.updateGitRepos = (remoteRepos, localRepos, cb)->
   exports.execCommand command, (code)->
     console.log "同步git仓库完成"
     cb code
+
+#honey的配置
+exports.honeyConfig =
+  'boilerplateRepository': 'git@git.hunantv.com:honey-lab/silky-boilerplate.git'
+  'pluginRepository': 'git@git.hunantv.com:honey-lab/silky-plugins.git'
