@@ -7,18 +7,18 @@ _fs = require 'fs-extra'
 _ = require 'lodash'
 _async = require 'async'
 
-#更新仓库，如果仓库不存在，则clone仓库
-updateGitRepos = (remoteRepos, localRepos, cb)->
-  console.log "正在同步git仓库..."
-  #目录已经存在，则clone
-  if _fs.existsSync localRepos
-    command = "cd \"#{localRepos}\" && git pull"
-  else
-    command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
-
-  _common.execCommand command, (code)->
-    console.log "同步git仓库完成"
-    cb code
+##更新仓库，如果仓库不存在，则clone仓库
+#updateGitRepos = (remoteRepos, localRepos, cb)->
+#  console.log "正在同步git仓库..."
+#  #目录已经存在，则clone
+#  if _fs.existsSync localRepos
+#    command = "cd \"#{localRepos}\" && git pull"
+#  else
+#    command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
+#
+#  _common.execCommand command, (code)->
+#    console.log "同步git仓库完成"
+#    cb code
 
 #从本地目录安装插件
 installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
@@ -65,7 +65,7 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
   cacheDir = _path.join _common.globalCacheDirectory(), 'cache_repos', pluginName
   _fs.removeSync cacheDir
 
-  updateGitRepos source, cacheDir, (code)->
+  _common.updateGitRepos source, cacheDir, (code)->
     if code isnt 0
       console.log '安装失败'.red
       console.log err
@@ -75,12 +75,12 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
 
 #从标准仓库中安装
 installFromStandardRepos = (names, pluginRootDir, repository, cb)->
-  repository = repository || _common.xPathMapValue('custom.plugin-repository', _common.globalConfig)
+  repository = repository || _common.xPathMapValue('custom.pluginRepository', _common.globalConfig)
   repository = repository || 'https://github.com/wvv8oo/silky-plugins.git'
   localRepos = _path.join _common.globalCacheDirectory(), 'plugins'
 
   #更新仓库
-  updateGitRepos repository, localRepos, (err)->
+  _common.updateGitRepos repository, localRepos, (err)->
     if err
       console.log '安装失败'.red
       return console.log err

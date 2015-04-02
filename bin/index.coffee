@@ -16,6 +16,7 @@ _build = require('../lib/build')
 _hooks = require '../lib/plugin/hooks'
 _hookHost = require '../lib/plugin/host'
 _configure = require '../lib/configure'
+_boilerplate = require '../lib/boilerplate'
 
 _version = require(_path.join(__dirname, '../package.json')).version
 
@@ -100,30 +101,23 @@ _program.command('config')
 #初始化项目
 _program.command('init')
 .option('-f, --full', '复制完整示例项目')
-.option('-d, --debug', '启动调试模式')
+#.option('-d, --debug', '启动调试模式')
 .option('-p, --plugin', '创建插件的示例项目')
 .description('创建一个Silky项目')
-.action((program)->
+.action((name, program)->
   init()
-  source = _path.join(__dirname, '..', 'samples')
-  current = process.cwd()
 
-  #复制插件的示例项目
-  if program.plugin
-    source = _path.join source, 'plugin'
-    _fs.copySync source, current
-    return process.exit 0
+  #当用户使用 silky init的时候
+  if typeof name isnt 'string'
+    program = name
+    name = undefined
 
-  #复制Silky的示例项目
-  source = _path.join source, 'default'
-  if program.full
-    _fs.copySync source, current
-    console.log "Silky项目初始化成功，示例项目已被创建".green
-  else
-    silkyDir = _path.join source, _common.options.identity
-    _fs.copySync silkyDir, _path.join(current, _common.options.identity)
-    console.log "Silky项目初始化成功".green
-  process.exit 0
+  return _boilerplate.initPlugin() if program.plugin
+
+  #初始化示例项目
+  _boilerplate.initSample name, program.full, (err)->
+    console.log err.message.red if err
+    process.exit ~~!!err
 )
 
 _program.command('build')

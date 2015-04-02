@@ -65,7 +65,8 @@ exports.saveGlobalConfig = ()->
 #全局的siky目录
 exports.globalSilkyIdentityDir = -> _path.join exports.homeDirectory(), exports.options.identity
 #仓库的缓存目录
-exports.globalCacheDirectory = -> _path.join exports.globalSilkyIdentityDir(), '.cache'
+exports.globalCacheDirectory = (dir = '')->
+  _path.join exports.globalSilkyIdentityDir(), '.cache', dir
 
 #检查工作目录是否为合法的silky目录
 exports.isSilkyProject = ->
@@ -88,6 +89,9 @@ exports.globalPluginDirectory = ->
 exports.homeDirectory = ->
   process.env[if process.platform is 'win32' then 'USERPROFILE' else 'HOME']
 
+#示例项目的目录
+exports.samplesDirectory = (dir = '')->
+  _path.join(__dirname, '..', 'samples', dir)
 
 #判断是否为产品环境
 exports.isProduction = -> _options.env is 'production'
@@ -243,3 +247,16 @@ exports.execCommand = (command, cb)->
   exec.stderr.on 'data', (chunk)->
     console.log chunk
     error += chunk + '\n'
+
+#更新仓库，如果仓库不存在，则clone仓库
+exports.updateGitRepos = (remoteRepos, localRepos, cb)->
+  console.log "正在同步git仓库..."
+  #目录已经存在，则clone
+  if _fs.existsSync localRepos
+    command = "cd \"#{localRepos}\" && git pull"
+  else
+    command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
+
+  exports.execCommand command, (code)->
+    console.log "同步git仓库完成"
+    cb code
