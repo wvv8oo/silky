@@ -5,7 +5,6 @@
 _common = require '../lib/common'
 _fs = require 'fs-extra'
 _jsonl = require 'json-literal'
-_jp = require 'JSONPath'
 _ = require 'lodash'
 
 #读取配置文件

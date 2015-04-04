@@ -25,7 +25,7 @@ compressCSS = (file, relativePath, cb)->
   return cb null if not _buildConfig.compress.css
   console.log "Compress CSS-> #{relativePath}".green
   content = _common.readFile file
-  content = new _cleanCSS().minify content
+  content = new _cleanCSS(compatibility: 'ie7').minify content
   _common.writeFile file, content
   cb null
 
