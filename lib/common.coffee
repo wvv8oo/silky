@@ -171,9 +171,11 @@ exports.xPathSetValue = (xPath, root, value)->
   paths = xPath.split('.')
   last = paths.pop()
 
-  _.forEach paths, (path)->
-    return false if not(node[path])
-    node = node[path]
+  _.forEach paths, (key)->
+    if not node.hasOwnProperty(key)
+      node = node[key] = {}
+    else
+      node = node[key]
 
   #最后一级的父节点，必需存在，且为hash
   return false if not (node and _.isPlainObject(node))
