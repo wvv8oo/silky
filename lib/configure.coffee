@@ -5,7 +5,6 @@
 _common = require '../lib/common'
 _fs = require 'fs-extra'
 _jsonl = require 'json-literal'
-_jp = require 'JSONPath'
 _ = require 'lodash'
 
 #读取配置文件
@@ -34,8 +33,8 @@ exports.set = (xPath, value, isGlobal)->
 exports.get = (xPath, isGlobal)->
   return if not file = readConfig isGlobal
   config = require file
-  value = _common.xPathMapValue xPath, config
   console.log "#{xPath.green} -> #{value}"
+  value = _common.xPathMapValue xPath, config
 
 #设置honey
 exports.setAsHoney = ()->

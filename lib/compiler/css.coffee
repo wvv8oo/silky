@@ -5,7 +5,27 @@ _common = require '../common'
 _fs = require 'fs'
 _path = require 'path'
 _less = require 'less'
+_ = require 'lodash'
+
 _data = require '../data'
+
+#合并用户自定义的path
+mergeLessPath = ()->
+  workbench = _common.options.workbench
+  #默认路径
+  paths = [
+    '.'
+    _path.join(workbench, 'css')
+  ]
+
+  #用户在config.js中的自定义路径
+  customPaths = _common.xPathMapValue('compiler.less.paths', _common.config)
+  return paths if not customPaths
+
+  _.map customPaths, (segment)->
+    paths.push _path.resolve workbench, segment
+
+  paths
 
 #渲染指定的less
 exports.render = (file, cb)->
@@ -17,13 +37,7 @@ exports.render = (file, cb)->
   #读取并转换less
   content = _fs.readFileSync file, 'utf-8'
   #选项
-  options =
-    paths: [
-      '.'
-      _path.join(_common.options.workbench, 'css')
-#        _path.dirname file
-#        _path.join(_common.options.workbench, 'css', 'module')
-    ]
+  options =  paths: mergeLessPath()
 
   parser = new _less.Parser options
   #将全局配置中的less加入到content后面
