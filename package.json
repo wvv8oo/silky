@@ -1,21 +1,21 @@
 {
   "name": "silky",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "dependencies": {
     "async": "0.8.0",
     "cheerio": "0.15.0",
     "clean-css": "^2.2.20",
-    "coffee-script": "*",
-    "colors": "*",
-    "commander": "*",
+    "coffee-script": "^1.9.1",
+    "colors": "^1.0.3",
+    "commander": "^2.7.1",
     "convert-source-map": "^0.7.1",
     "express": "4.2.0",
     "forever-monitor": "*",
     "fs-extra": "^0.13.0",
-    "grunt": "*",
     "handlebars": "2.0.0-alpha.2",
     "js-beautify": "*",
     "json-literal": "^1.1.0",
+    "json-proxy": "^0.3.1",
     "less": "1.7.3",
     "lodash": "^2.4.1",
     "marked": "^0.3.3",
@@ -23,8 +23,7 @@
     "mkdirp": "*",
     "moment": "^2.8.4",
     "uglify-js": "*",
-    "watch": "0.10.0",
-    "json-proxy": "^0.3.1"
+    "watch": "0.10.0"
   },
   "homepage": "http://silky.wvv8oo.com",
   "repository": {

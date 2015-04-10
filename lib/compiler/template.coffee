@@ -52,7 +52,7 @@ exports.render = (file, pluginData)->
 #    html = injectScript content
     #暂时不注入script，以后用livereload的时候再考虑
     html = content
-    return if _common.config.beautify then _htmlpretty(html) else html;
+    if _common.xPathMapValue('beautify.html', _common.config) then _htmlpretty(html) else html;
 
   catch e
   #调用目的是为了产品环境throw

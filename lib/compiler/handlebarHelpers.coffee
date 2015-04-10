@@ -12,7 +12,7 @@ compilePartial = (hbsPath, context, options)->
   #替换其中的路径
   relativePath = relativePath.replace /<(.+)>/, (match, xPath)->
     ##查找xPath
-    _common.xPathMapValue xPath, options.data.root
+    _common.xPathMapValue xPath, context
 
   #如果使用了绝对路径，则从当前项目的根目录开始查找
   if relativePath.indexOf('/') is 0
@@ -64,7 +64,7 @@ loopCommand = (name, count, options)->
   for value in count
     #如果循环次数量，则将上级数据传递下去
     context = if isNumber then _.extend({'$index': value}, options.data.root) else value
-    results.push compilePartial(name, context)
+    results.push compilePartial(name, context, options)
 
   new _handlebars.SafeString(results.join(''))
 
