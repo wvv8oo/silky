@@ -12,7 +12,7 @@ compilePartial = (hbsPath, context, options)->
   #替换其中的路径
   relativePath = relativePath.replace /<(.+)>/, (match, xPath)->
     ##查找xPath
-    _common.xPathMapValue xPath, context
+    _common.xPathMapValue xPath, options.data.root
 
   #如果使用了绝对路径，则从当前项目的根目录开始查找
   if relativePath.indexOf('/') is 0
@@ -24,7 +24,7 @@ compilePartial = (hbsPath, context, options)->
     #从相对路径中取数据
     file = _path.resolve _path.dirname(context._.$$.file), relativePath
 
-  return "无法找到partial：#{hbsPath}" if not _fs.existsSync file
+  return "无法找到partial：#{file}" if not _fs.existsSync file
 
   content = _common.readFile file
   #查找对应的节点数据
