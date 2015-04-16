@@ -86,15 +86,19 @@ _program.command('config')
     return process.exit 0
 
   #用户没有写xPath
-  if not xPath
+  if action is 'set' and not xPath
     console.log "要配置的键不能为空".red
     return process.exit 1
 
-  if action is 'set' and not value
-    console.log "要配置的值不能为空".red
-    return process.exit 1
+#  if action is 'set' and not value
+#    console.log "要配置的值不能为空".red
+#    return process.exit 1
 
-  xPath = "custom.#{xPath}" if program.global
+  if program.global
+    globalPath = 'custom'
+    globalPath += ".#{xPath}" if xPath
+    xPath = globalPath
+
   switch action
     when 'set' then _configure.set xPath, value, program.global
     when 'get' then _configure.get xPath, program.global
@@ -170,6 +174,18 @@ _program.command('build')
 )
 
 _program
+.command('cache')
+.option('clean', '清除所有的缓存')
+#.option('-v, --view', '查看缓存的目录')
+.action((arg1)->
+  init()
+  #清除缓存
+  _common.cleanCache() if arg1 is 'clean'
+
+  process.exit 0
+)
+
+_program
 .command('start')
 .description('启动Silky服务')
 .option('-l, --language', '指定输出的语言，默认为en')
@@ -240,7 +256,7 @@ versionDesc = "Version: #{_version}; Silky: #{_path.join __dirname, '..'}"
 _program.version(versionDesc).parse(process.argv)
 
 (->
-  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list', 'config']
+  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list', 'config', 'cache']
   if _.difference(_program.rawArgs, mustIncludeCommand).length is _program.rawArgs.length
     console.log "提示：新版本的silky请使用silky start启动".cyan
 )()

@@ -24,12 +24,15 @@ _async = require 'async'
 installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
   console.log "准备安装#{pluginName}"
   return console.log "#插件{pluginName}不存在，安装失败".red if not _fs.existsSync sourcePluginDir
+
   #如果没有给插件名称，则取源的文件名（这里其实应该读package.json，再取名称好一点）
   pluginName = pluginName || _path.basename(sourcePluginDir)
   targetPluginDir = _path.join pluginRootDir, pluginName
+
   #删除目录，如果已经存在
   _fs.removeSync targetPluginDir if _fs.existsSync targetPluginDir
   _fs.copySync sourcePluginDir, targetPluginDir
+
 
   #运行npm install
   command = "cd \"#{targetPluginDir}\" && npm install"

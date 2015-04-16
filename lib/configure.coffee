@@ -22,19 +22,25 @@ readConfig = (isGlobal)->
 #设置配置
 exports.set = (xPath, value, isGlobal)->
   return console.log "要配置的键不能为空".red if not xPath
-  return console.log "要配置的值不能为空".red if not value
+#  return console.log "要配置的值不能为空".red if not value
 
   return if not file = readConfig isGlobal
   config = require file
   _common.xPathSetValue xPath, config, value
   _common.saveObjectAsCode config, file
 
+  if value
+    console.log "#配置成功 -> #{xPath}: #{value}".green
+  else
+    console.log "删除配置成功 -> #{xPath}".green
+
 #读取
 exports.get = (xPath, isGlobal)->
   return if not file = readConfig isGlobal
   config = require file
-  console.log "#{xPath.green} -> #{value}"
   value = _common.xPathMapValue xPath, config
+  value = JSON.stringify value if typeof(value) is 'object'
+  console.log "#{xPath.green} -> #{value}"
 
 #设置honey
 exports.setAsHoney = ()->

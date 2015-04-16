@@ -238,6 +238,7 @@ exports.execCommand = (command, cb)->
   message = ''
   error = ''
 
+  console.log "执行命令 -> #{command}"
   exec = _child.exec command, options
   exec.on 'close', (code)->
     cb code, message, error
@@ -263,7 +264,13 @@ exports.updateGitRepos = (remoteRepos, localRepos, cb)->
     console.log "同步git仓库完成"
     cb code
 
+#清除缓存
+exports.cleanCache = ()->
+  dir = exports.globalCacheDirectory()
+  _fs.removeSync dir
+  console.log "缓存清除完毕 -> #{dir}".green
+
 #honey的配置
 exports.honeyConfig =
-  'boilerplateRepository': 'git@git.hunantv.com:honey-lab/silky-boilerplate.git'
-  'pluginRepository': 'git@git.hunantv.com:honey-lab/silky-plugins.git'
+  'boilerplateRepository': 'http://git.hunantv.com/honey-lab/silky-boilerplate.git'
+  'pluginRepository': 'http://git.hunantv.com/honey-lab/silky-plugins.git'
