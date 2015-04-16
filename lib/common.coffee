@@ -54,6 +54,7 @@ readConfig = ->
 
 #全局配置文件的路径
 exports.globalConfigFile = -> _path.join exports.globalSilkyIdentityDir(), 'config.js'
+
 #本地配置的文件路径
 exports.localConfigFile = ()->
   _path.resolve exports.localSilkyIdentityDir(), _options.config || 'config.js'

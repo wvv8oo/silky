@@ -21,9 +21,10 @@ _async = require 'async'
 #    cb code
 
 #从本地目录安装插件
-installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
+installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, registry, cb)->
   console.log "准备安装#{pluginName}"
-  return console.log "#插件{pluginName}不存在，安装失败".red if not _fs.existsSync sourcePluginDir
+  console.log sourcePluginDir
+  return console.log "#插件#{pluginName}不存在，安装失败".red if not _fs.existsSync sourcePluginDir
 
   #如果没有给插件名称，则取源的文件名（这里其实应该读package.json，再取名称好一点）
   pluginName = pluginName || _path.basename(sourcePluginDir)
@@ -35,7 +36,7 @@ installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
 
 
   #运行npm install
-  command = "cd \"#{targetPluginDir}\" && npm install"
+  command = "cd \"#{targetPluginDir}\" && npm install --verbose --registry #{registry}"
   _common.execCommand command, (code, message, error)->
     if code is 0
       console.log "#{pluginName}安装成功".green
@@ -45,7 +46,7 @@ installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, cb)->
     cb null
 
 #在指定仓库中安装插件列表
-installPluginsFromLocalDir = (names, pluginRootDir, localRepos, cb)->
+installPluginsFromLocalDir = (names, pluginRootDir, localRepos, registry, cb)->
   index = 0
   _async.whilst(
     -> index < names.length
@@ -53,16 +54,16 @@ installPluginsFromLocalDir = (names, pluginRootDir, localRepos, cb)->
       pluginName = names[index++]
       #在仓库中的插件目录
       sourcePluginDir = _path.join localRepos, pluginName
-      installPluginFromLocalDir pluginName, pluginRootDir, sourcePluginDir, (err)-> done null
+      installPluginFromLocalDir pluginName, pluginRootDir, sourcePluginDir, registry, (err)-> done null
     ), cb
   )
 
 #从指定源中安装
-installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
+installFromSpecificSource = (pluginName, pluginRootDir, source, registry, cb)->
   #没有以git结尾，直接从本地安装
   if not /\.git$/i.test source
     #直接从本地安装
-    return installPluginFromLocalDir pluginName, pluginRootDir, source, cb
+    return installPluginFromLocalDir pluginName, pluginRootDir, source, registry, cb
 
   #从git仓库安装
   cacheDir = _path.join _common.globalCacheDirectory(), 'cache_repos', pluginName
@@ -74,10 +75,10 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, cb)->
       console.log err
       return cb null
 
-    installPluginFromLocalDir pluginName, pluginRootDir, cacheDir, cb
+    installPluginFromLocalDir pluginName, pluginRootDir, cacheDir, registry, cb
 
 #从标准仓库中安装
-installFromStandardRepos = (names, pluginRootDir, repository, cb)->
+installFromStandardRepos = (names, pluginRootDir, repository, registry, cb)->
   repository = repository || _common.xPathMapValue('custom.pluginRepository', _common.globalConfig)
   repository = repository || 'https://github.com/wvv8oo/silky-plugins.git'
   localRepos = _path.join _common.globalCacheDirectory(), 'plugins'
@@ -88,19 +89,26 @@ installFromStandardRepos = (names, pluginRootDir, repository, cb)->
       console.log '安装失败'.red
       return console.log err
 
-    installPluginsFromLocalDir names, pluginRootDir, localRepos, cb
+    installPluginsFromLocalDir names, pluginRootDir, localRepos, registry, cb
 
 #安装插件
-exports.install = (names, oringal, repository, cb)->
+exports.install = (names, oringal, repository, registry, cb)->
   pluginRootDir = _common.globalPluginDirectory()
   console.log "installing..."
 
+  registry = switch registry
+    when 'taobao' then 'https://registry.npm.taobao.org'
+    when 'cnpmjs' then 'http://registry.cnpmjs.org'
+    when 'au' then 'http://registry.npmjs.org.au'
+    when 'nodejitsu' then 'https://registry.nodejitsu.com'
+    else registry || 'https://registry.npmjs.org'
+
   #从指定的源安装，只安装一个
   if oringal
-    installFromSpecificSource names[0], pluginRootDir, oringal, cb
+    installFromSpecificSource names[0], pluginRootDir, oringal, registry, cb
   else
     #从标准库中安装，可以安装多个
-    installFromStandardRepos names, pluginRootDir, repository, cb
+    installFromStandardRepos names, pluginRootDir, repository, registry, cb
 
 #删除插件
 exports.uninstall = (names, cb)->

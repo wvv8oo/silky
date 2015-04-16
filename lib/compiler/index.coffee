@@ -10,8 +10,8 @@ _template = require './template'
 _host = require '../plugin/host'
 _fs = require 'fs-extra'
 
-#根据文件类型，探测compiler的类型
-exports.detectCompiler = (type)->
+#根据文件类型，及路径，探测compiler的类型
+exports.detectCompiler = (type, path)->
   #检测编译器的类型
   _common.config.compiler[type]
 
@@ -19,6 +19,13 @@ exports.detectCompiler = (type)->
 exports.sourceFile = (type, source)->
   realpath = _common.replaceExt source, ".#{type}"
   if _fs.existsSync(realpath) then realpath else false
+#
+#getDefaultCompiler = (type)->
+#  #合并默认的编译器
+#  defaultCompiler =
+#    html: 'hbs'
+#    css: 'less'
+#    js: 'coffee'
 
 #统一的处理器
 exports.execute = (type, source, options, cb)->
