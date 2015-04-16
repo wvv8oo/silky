@@ -1,6 +1,6 @@
 {
   "name": "silky",
-  "version": "0.7.21",
+  "version": "0.7.22",
   "dependencies": {
     "async": "0.8.0",
     "cheerio": "0.15.0",
