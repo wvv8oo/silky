@@ -69,9 +69,14 @@ loopCommand = (name, count, options)->
   new _handlebars.SafeString(results.join(''))
 
 #仅循环block内html
-justLoopCommand = (count, options)->
+repeatCommand = (count, options)->
   count = ~~count
-  new Array(count + 1).join options.fn(this)
+  self = this
+  html = ''
+  for index in [0..count]
+    self.__index__ = index
+    html += options.fn(self)
+  html
 
 xPathCommand = (path, value, options)->
   if not options
@@ -123,7 +128,8 @@ exports.init = ->
   
   #循环
   _handlebars.registerHelper "loop", loopCommand
-  _handlebars.registerHelper "justloop", justLoopCommand
+  _handlebars.registerHelper "justloop", repeatCommand
+  _handlebars.registerHelper "repeat", repeatCommand
 
   #partial与import
   _handlebars.registerHelper "partial", importCommand

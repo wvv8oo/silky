@@ -3,6 +3,7 @@ _ = require 'lodash'
 _common = require '../common'
 _handlebars = require 'handlebars'
 _compiler = require '../compiler'
+_data = require '../data'
 
 HOOKS = {}
 COMPILER = {}
@@ -19,6 +20,7 @@ exports.silkyForHook = (pluginName, pluginPriority)->
     saveObjectAsCode: _common.saveObjectAsCode
     execCommand: _common.execCommand
 
+  data: _data.whole
   #用于编译的处理器
   compiler: _compiler
   detectFileType: _common.detectFileType
