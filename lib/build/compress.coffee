@@ -22,10 +22,16 @@ compressJS = (file, relativePath, cb)->
 
 #压缩css
 compressCSS = (file, relativePath, cb)->
-  return cb null if not _buildConfig.compress.css
+  userOptions = _buildConfig.compress.css
+  return cb null if not userOptions
+
+  #默认的选项
+  options = compatibility: 'ie6'
+  options = userOptions if typeof userOptions is 'object'
+
   console.log "Compress CSS-> #{relativePath}".green
   content = _common.readFile file
-  content = new _cleanCSS(compatibility: 'ie7').minify content
+  content = new _cleanCSS(options).minify content
   _common.writeFile file, content
   cb null
 
