@@ -84,7 +84,8 @@ exports.languageDirectory = -> _path.join(exports.localSilkyIdentityDir(), 'lang
 
 #获取全局的插件目录
 exports.globalPluginDirectory = ->
-  exports.config.globalPluginDirectory || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
+  dir = exports.xPathMapValue("custom.globalPluginDirectory", exports.globalConfig)
+  dir || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
 
 #用户的home目录
 exports.homeDirectory = ->

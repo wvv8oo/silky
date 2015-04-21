@@ -25,3 +25,4 @@ projectFilesBackup
 *.swo
 samples/build
 samples/.silky/plugin
+samples/default/build

@@ -4,7 +4,7 @@ _fs = require 'fs-extra'
 
 _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
-_common = require '../common'
+_utils = require '../utils'
 _compiler = require '../compiler'
 
 _buildConfig = null
@@ -17,9 +17,9 @@ pathIsIgnore = (source, relativePath)->
   #跳过build的目录
   return true if _outputRoot is source
   #跳过.silky这个目录
-  return true if _common.options.identity is relativePath
+  return true if _utils.options.identity is relativePath
 
-  rules = _common.config.build.ignore || []
+  rules = _utils.config.build.ignore || []
   for rule in rules
     ignore = if typeof rule is 'string'
         rule is relativePath
@@ -52,7 +52,7 @@ replaceTargetExt = (relativePath)->
 #    targetExt = '.js'
 #
 #  return target if not targetExt
-#  _common.replaceExt target, targetExt
+#  _utils.replaceExt target, targetExt
 
 #处理文件夹
 arrangeDirectory = (source, target, cb)->
@@ -77,11 +77,11 @@ arrangeSingleFile = (source, target, cb)->
       data =
         source: source
         target: target
-        type: _common.detectFileType(source)
+        type: _utils.detectFileType(source)
         pluginData: null
 
       _hookHost.triggerHook _hooks.build.willCompile, data, ()->
-        relativeSource = _path.relative _common.options.workbench, data.source
+        relativeSource = _path.relative _utils.options.workbench, data.source
         options = pluginData: data.pluginData
 
         _compiler.execute data.type, data.source, options, (err, content)->
@@ -96,7 +96,7 @@ arrangeSingleFile = (source, target, cb)->
             _fs.copySync source, target
           else
             console.log "Compile -> #{relativeSource}".cyan
-            _common.writeFile data.target, content
+            _utils.writeFile data.target, content
           done null
   )
 
@@ -115,7 +115,7 @@ arrangeSingleFile = (source, target, cb)->
 #处理一个对象，可能是文件或者文件夹
 arrangeObject = (source, cb)->
   #相对路径用于识别是否需要跳过或者
-  relativePath = _path.relative _common.options.workbench, source
+  relativePath = _path.relative _utils.options.workbench, source
   ignore = pathIsIgnore(source, relativePath)
 
   if ignore
@@ -136,8 +136,8 @@ arrangeObject = (source, cb)->
       data =
         stat: stat
         source: source
-        ignore: _common.simpleMatch _buildConfig.ignore, relativePath
-        copy: _common.simpleMatch _buildConfig.copy, relativePath
+        ignore: _utils.simpleMatch _buildConfig.ignore, relativePath
+        copy: _utils.simpleMatch _buildConfig.copy, relativePath
         relativePath: relativePath
         target: target
 
@@ -154,7 +154,7 @@ arrangeObject = (source, cb)->
 
       if copyOnly   #复制文件
         console.log "Copy -> #{relativePath}".green
-        _common.copyFile source, target, done
+        _utils.copyFile source, target, done
       else if stat.isDirectory()  #处理目录
         arrangeDirectory source, target, done
       else    #处理单个文件
@@ -171,6 +171,6 @@ arrangeObject = (source, cb)->
 
 #对外的入口
 exports.execute = (output, cb)->
-  _buildConfig = _common.config?.build
+  _buildConfig = _utils.config?.build
   _outputRoot = output
-  arrangeObject _common.options.workbench, cb
+  arrangeObject _utils.options.workbench, cb

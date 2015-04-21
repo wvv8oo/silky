@@ -6,29 +6,29 @@ _async = require 'async'
 _path = require 'path'
 _fs = require 'fs-extra'
 
-_common = require './common'
+_utils = require './utils'
 
 #从远程仓库中更新
 updateFromRepos = (cb)->
   #远程仓库地址
-  remoteRepos = _common.xPathMapValue('custom.boilerplateRepository', _common.globalConfig)
+  remoteRepos = _utils.xPathMapValue('custom.boilerplateRepository', _utils.globalConfig)
   remoteRepos = remoteRepos || 'https://github.com/wvv8oo/silky-boilerplate.git'
 
-  localRepos = _common.globalCacheDirectory('boilerplate')
-  _common.updateGitRepos remoteRepos, localRepos, (code)-> cb code, localRepos
+  localRepos = _utils.globalCacheDirectory('boilerplate')
+  _utils.updateGitRepos remoteRepos, localRepos, (code)-> cb code, localRepos
 
 #初始化插件项目
 exports.initPlugin = ()->
-  source = _path.join _common.samplesDirectory 'plugin'
-  _fs.copySync source, _common.options.workbench
+  source = _path.join _utils.samplesDirectory 'plugin'
+  _fs.copySync source, _utils.options.workbench
 
 #如果有指定名称，则从远程仓库复制，如果没有指定，则从默认项目中复制
 exports.initSample = (name, full, cb)->
   #默认的sample
-  sampleSource = _common.samplesDirectory('default')
-  currentDirectory = _common.options.workbench
+  sampleSource = _utils.samplesDirectory('default')
+  currentDirectory = _utils.options.workbench
 
-  identityDir = _path.join currentDirectory, _common.options.identity
+  identityDir = _path.join currentDirectory, _utils.options.identity
   return cb new Error("当前文件夹已经是一个Silky项目") if _fs.existsSync identityDir
 
   queue = []
@@ -57,12 +57,12 @@ exports.initSample = (name, full, cb)->
         return done null
 
       #只是复制.silky文件夹
-      silkyDir = _path.join sampleSource, _common.options.identity
+      silkyDir = _path.join sampleSource, _utils.options.identity
       if not _fs.existsSync silkyDir
         err = new Error("[#{name}]不是一个合法的Silky项目")
         return done err
 
-      _fs.copySync silkyDir, _path.join(currentDirectory, _common.options.identity)
+      _fs.copySync silkyDir, _path.join(currentDirectory, _utils.options.identity)
       console.log "Silky项目初始化成功".green
       done null
   )

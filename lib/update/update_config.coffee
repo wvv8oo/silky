@@ -3,18 +3,18 @@
 ###
 _fs = require 'fs-extra'
 _path = require 'path'
-_common = require '../common'
+_utils = require '../utils'
 
 #升级到1.0版本，即升级到支持插件的版本
 updateTo10 = ()->
   #检查配置文件的版本
-  config = require _common.localConfigFile()
+  config = require _utils.localConfigFile()
   return if config.version >= 0.2
 
 #  复制development和normal、product到data目录
   ['development', 'production', 'normal'].forEach (folder)->
-    source = _path.join _common.localSilkyIdentityDir(), folder
-    target = _path.join(_common.localSilkyIdentityDir(), 'data', folder)
+    source = _path.join _utils.localSilkyIdentityDir(), folder
+    target = _path.join(_utils.localSilkyIdentityDir(), 'data', folder)
 
     return if not _fs.existsSync source
     #确保目录存在
@@ -46,11 +46,11 @@ updateTo10 = ()->
   #默认忽略掉带min的文件名
   config.build.compress.ignore = [/\.(min|pack)\.js$/]
 
-  _common.saveObjectAsCode config, _common.localConfigFile()
+  _utils.saveObjectAsCode config, _utils.localConfigFile()
   console.log '升级silky配置文件成功，请重新启动silky'.green
   process.exit(0)
 
 exports.execute = ()->
   #非silky project不用升级
-  return if not _common.isSilkyProject()
+  return if not _utils.isSilkyProject()
   updateTo10()

@@ -9,7 +9,7 @@ _path = require 'path'
 _async = require 'async'
 require 'colors'
 
-_common = require '../common'
+_utils = require '../utils'
 _make = require './make'
 _compress = require './compress'
 _hooks = require '../plugin/hooks'
@@ -19,14 +19,14 @@ _hookHost = require '../plugin/host'
 exports.execute = (cb)->
   queue = []
 
-  output = _common.options.output
+  output = _utils.options.output
   #触发将要build的事件
   queue.push(
     (done)->
       data = output: output
 
       _hookHost.triggerHook _hooks.build.willBuild, data, (err)->
-        _common.options.output = output = data.output
+        _utils.options.output = output = data.output
         done null
   )
 

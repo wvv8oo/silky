@@ -14,7 +14,7 @@ options =
 _initialize(options)
 _silky(_app, _server)
 
-#_app.set 'port', _common.options.port || _common.config.port || 14422
+#_app.set 'port', _utils.options.port || _utils.config.port || 14422
 #
 #_server.on 'error', (err) ->
 #  if err.code is 'EADDRINUSE'
@@ -27,6 +27,6 @@ _silky(_app, _server)
 #_server.listen _app.get('port')
 #
 #console.log "Port -> #{_app.get('port')}"
-#console.log "Workbench -> #{_common.options.workbench}"
-#console.log "Environment -> #{_common.options.env}"
+#console.log "Workbench -> #{_utils.options.workbench}"
+#console.log "Environment -> #{_utils.options.env}"
 #console.log "Please visit http://localhost:#{_app.get('port')}"
