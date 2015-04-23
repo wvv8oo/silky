@@ -25,7 +25,7 @@ compressCSS = (file, relativePath, cb)->
   userOptions = _buildConfig.compress.css
   return cb null if not userOptions
 
-  #默认的选项
+  #默认的选项，不支持ie6
   options = compatibility: 'ie7'
   options = userOptions if typeof userOptions is 'object'
 

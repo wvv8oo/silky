@@ -15,7 +15,6 @@ _compress = require './compress'
 _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
 
-
 exports.execute = (cb)->
   queue = []
 

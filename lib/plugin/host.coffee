@@ -36,10 +36,13 @@ exports.silkyForHook = (pluginName, pluginPriority)->
     _handlebars.registerHelper name, factory
 
   #注册一个编译器，不同插件后面的会覆盖前面的
-  registerCompiler: (compilerName, factory)->
+  registerCompiler: (compilerName, options, compiler)->
     console.log "警告：编译器#{compilerName}将被覆盖".red if COMPILER[compilerName]
     #保存编译器
-    COMPILER[compilerName] = factory
+    COMPILER[compilerName] =
+      compiler: compiler
+      name: compilerName
+      options: options
 
   #注册一个cli命令
   registerCommand: ()->
@@ -67,8 +70,23 @@ exports.sort = ()->
   for name, list of HOOKS
     list.sort (left, right)-> if left.options.priority > right.options.priority then 1 else -1
 
-#根据文件类型，获取匹配的编译器类型
-exports.getCompiler = (type)-> COMPILER[type]
+#根据编译器名称，获取匹配的编译器
+exports.getCompilerWithName = (compilerName)->
+  COMPILER[compilerName]?.compiler
+
+#根据文件扩展名，匹配编译器，如果匹配失败，则返回false
+#用于编译的时候，根据文件扩展名查找对应的编译器
+exports.getCompilerWithExt = (ext)->
+  return false if not ext
+  ext = ext.toString()
+
+  for name, current of COMPILER
+    #将要捕获的扩展名列表
+    capture = current.options.capture
+    captures = [capture] if typeof capture is 'string'
+    #匹配到合适的编译器
+    return name if _.indexOf(captures, ext) >= 0
+  false
 
 #解发hook
 exports.triggerHook = (hookName, data, cb)->

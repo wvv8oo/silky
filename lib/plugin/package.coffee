@@ -136,9 +136,15 @@ exports.uninstall = (names, cb)->
   _.map names, (pluginName)->
     pluginDir = _path.join pluginRootDir, pluginName
     return console.log "#{pluginName}不存在" if not _fs.existsSync pluginDir
+
+    #如果是一个插件，需要在config.js中删除
+    plugin = require pluginDir
+    _utils.xPathSetValue "compiler.#{pluginName}", _utils.globalConfig, null if plugin.compiler
+
     _fs.removeSync pluginDir
     console.log "插件#{pluginName}已经被卸载".green
 
+  _utils.saveGlobalConfig()
   cb null
 
 #列出所有的插件

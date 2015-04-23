@@ -54,8 +54,10 @@ exports.execute = (compilerName, source, options, cb)->
     options = {}
 
   #如果在插件中有指定了编译器，那么采用插件中指定的编译器
-  compiler = _host.getCompiler compilerName
+  compiler = _host.getCompilerWithName compilerName
+
   return compiler source, options, cb if compiler
+
 
   switch compilerName
     when 'less' then return _lessCompiler.compile source, options, cb

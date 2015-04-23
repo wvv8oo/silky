@@ -6,6 +6,7 @@ _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
 _utils = require '../utils'
 _compiler = require '../compiler'
+_host = require '../plugin/host'
 
 _buildConfig = null
 _outputRoot = null
@@ -31,7 +32,7 @@ pathIsIgnore = (source, relativePath)->
 
 #根据配置，替换目标路径
 replaceTargetWithConfig = (relativePath)->
-  for item in _buildConfig.rename
+  for item in _buildConfig.rename || []
     if item.source.test relativePath
       relativePath = relativePath.replace item.source, item.target
       break if not item.next
@@ -82,9 +83,14 @@ arrangeSingleFile = (source, target, cb)->
 
       _hookHost.triggerHook _hooks.build.willCompile, data, ()->
         relativeSource = _path.relative _utils.options.workbench, data.source
-        options = pluginData: data.pluginData
+        options =
+          pluginData: data.pluginData
+          save: true
+          target: target
 
-        _compiler.execute data.type, data.source, options, (err, content)->
+        #从插件中查找编译器
+        compilerName = _host.getCompilerWithExt(data.type) || data.type
+        _compiler.execute compilerName, data.source, options, (err, content)->
           #编译时出现错误直接中断
           if err
             console.log err
@@ -94,9 +100,7 @@ arrangeSingleFile = (source, target, cb)->
           if content is false
             console.log "Copy -> #{relativeSource}".green
             _fs.copySync source, target
-          else
-            console.log "Compile -> #{relativeSource}".cyan
-            _utils.writeFile data.target, content
+
           done null
   )
 
@@ -126,7 +130,8 @@ arrangeObject = (source, cb)->
   #根据规则，替换target的路径
   relativePath = replaceTargetWithConfig relativePath
   #对于文件类型，要考虑需要替换为编译后的扩展名
-  relativePath = replaceTargetExt relativePath if not stat.isDirectory()
+  #替换扩展名的事，交给编译器自己做
+  #relativePath = replaceTargetExt relativePath if not stat.isDirectory()
   target = _path.join _outputRoot, relativePath
 
   copyOnly = false

@@ -111,7 +111,10 @@ exports.combError = (error)->
   error
 
 #替换扩展名为指定的扩展名
-exports.replaceExt = (file, ext)-> file.replace _path.extname(file), ext
+exports.replaceExt = (file, ext)->
+  ext = ".#{ext}" if not /^\./.test ext
+  file.replace _path.extname(file), ext
+
 #读取文件
 exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 #保存文件

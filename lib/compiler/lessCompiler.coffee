@@ -29,9 +29,9 @@ mergeLessPath = ()->
 
 #编译less
 exports.compile = (source, options, cb)->
-  #css文件不处理
-  if _path.extname(source) isnt '.less'
-    return cb null, _utils.readFile(source)
+#  #css文件不处理
+#  if _path.extname(source) isnt '.less'
+#    return cb null, _utils.readFile(source)
 
   #读取并转换less
   content = _fs.readFileSync source, 'utf-8'
@@ -49,7 +49,9 @@ exports.compile = (source, options, cb)->
     try
       cssContent = tree.toCSS(cleancss: false)
       #需要直接保存到文件中
-      _utils.writeFile options.target, css if options.save and options.target
+      if options.save and options.target
+        target = _utils.replaceExt options.target, 'css'
+        _utils.writeFile target, cssContent
 
       cb err, cssContent
     catch e

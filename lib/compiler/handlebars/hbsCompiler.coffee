@@ -15,7 +15,7 @@ _data = require '../../data'
 exports.compile = (source, options, cb)->
   try
     content = _utils.readFile source
-    template = _handlebars.compile content
+    hbsTemplate = _handlebars.compile content
 
     #使用json的数据进行渲染模板
     data = _data.whole.json
@@ -30,14 +30,17 @@ exports.compile = (source, options, cb)->
     data.$$.file = source
     data._ = data
 
-    content = template data
+    content = hbsTemplate data
 #    html = injectScript content
     #暂时不注入script，以后用livereload的时候再考虑
     isBeautify =  _utils.xPathMapValue('beautify.html', _utils.config)
     html = if isBeautify then _htmlpretty(content) else content
 
     #需要写入文件
-    _utils.writeFile options.target, content if options.save and options.target
+    if options.save and options.target
+      target = _utils.replaceExt options.target, 'html'
+      _utils.writeFile target, content
+
     cb null, html
   catch e
     #调用目的是为了产品环境throw
