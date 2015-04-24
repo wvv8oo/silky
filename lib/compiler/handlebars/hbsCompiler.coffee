@@ -14,6 +14,7 @@ _data = require '../../data'
 #渲染一个模板
 exports.compile = (source, options, cb)->
   try
+    source = _utils.replaceExt source, 'hbs'
     content = _utils.readFile source
     hbsTemplate = _handlebars.compile content
 
