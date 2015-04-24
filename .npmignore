@@ -6,4 +6,4 @@ node_modules
 *~
 *.swp
 *.swo
-samples/build
+samples/default/build
