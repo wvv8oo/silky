@@ -125,10 +125,10 @@ importCommand = (name, context, options)->
 
   context = context || options.data.root
   context = context() if _.isFunction context
-  context._ = options.data.root
+  context._ = options.data.root._ || options.data.root
   #合并silky到context
   context.silky = _.extend {}, _utils.options if not context.silky
-  html = compilePartial(name, context || {}, options)
+  html = compilePartial(name, context, options)
   new _handlebars.SafeString(html)
 
 #如果两者等于，则输出
