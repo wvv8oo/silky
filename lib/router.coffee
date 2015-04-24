@@ -42,13 +42,13 @@ response = (route, options, req, res, next)->
   #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
   return if /\.(html|htm|js|css|coffee)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
 
-  #查找真实的未编译源文件路径
-  sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
-  #没有找到对应的源文件，这是一个404错误
-  return next()  if not sourceFile
+#  #查找真实的未编译源文件路径
+#  sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
+#  #没有找到对应的源文件，这是一个404错误
+#  return next()  if not sourceFile
 
   #交给编译器
-  _compiler.execute route.compiler, sourceFile, options, (err, content)->
+  _compiler.execute route.compiler, route.realpath, options, (err, content)->
     #编译发生错误
     return response500 req, res, next, JSON.stringify(err) if err
     #没有编译成功，可能是文件格式没有匹配或者其它原因

@@ -42,10 +42,10 @@ getCompilerWithType = (type)->
 exports.detectCompiler = (type, path)->
   getCompilerWithPath(path) || getCompilerWithType(type)
 
-#根据编译类型，获取可能的要编译的文件名，并检查文件是否存在
-exports.sourceFile = (type, source)->
-  realpath = _utils.replaceExt source, ".#{type}"
-  if _fs.existsSync(realpath) then realpath else false
+##根据编译类型，获取可能的要编译的文件名，并检查文件是否存在
+#exports.sourceFile = (type, source)->
+#  realpath = _utils.replaceExt source, ".#{type}"
+#  if _fs.existsSync(realpath) then realpath else false
 
 #统一的处理器
 exports.execute = (compilerName, source, options, cb)->
@@ -57,7 +57,6 @@ exports.execute = (compilerName, source, options, cb)->
   compiler = _host.getCompilerWithName compilerName
 
   return compiler source, options, cb if compiler
-
 
   switch compilerName
     when 'less' then return _lessCompiler.compile source, options, cb
