@@ -9,13 +9,11 @@ _convertSourceMap = require 'convert-source-map'
 
 #编译coffee
 exports.compiler = (source, options, cb)->
-    #如果是js文件，则直接返回
-    return _utils.readFile source if _path.extname(source) is '.js'
-
     #编译coffee
     file = _path.join _utils.replaceExt source, '.coffee'
+
     #文件不存在
-    return null if not _fs.existsSync source
+    return cb null, false if not _fs.existsSync file
 
     compilerOptions =
         filename: _path.basename(file)
