@@ -33,8 +33,11 @@ exports.compile = (source, options, cb)->
 #  if _path.extname(source) isnt '.less'
 #    return cb null, _utils.readFile(source)
 
+  file = _utils.replaceExt source, 'less'
+  return cb null, false if not _fs.existsSync file
+
   #读取并转换less
-  content = _fs.readFileSync source, 'utf-8'
+  content = _fs.readFileSync file, 'utf-8'
   #选项
   lessOptions =  paths: mergeLessPath()
 
@@ -55,6 +58,6 @@ exports.compile = (source, options, cb)->
 
       cb err, cssContent
     catch e
-      console.log "CSS Error: #{source}".red
+      console.log "CSS Error: #{file}".red
       console.log err
       cb e
