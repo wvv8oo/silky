@@ -44,6 +44,7 @@ exports.compile = (source, options, cb)->
 
     cb null, html
   catch e
+    console.log e
     #调用目的是为了产品环境throw
     _utils.combError(e)
-    cb e
+    cb e, false
