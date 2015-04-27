@@ -1,6 +1,10 @@
 {
   "name": "silky",
+<<<<<<< HEAD
   "version": "0.7.24",
+=======
+  "version": "0.7.25",
+>>>>>>> compiler
   "dependencies": {
     "async": "0.8.0",
     "cheerio": "0.15.0",
@@ -18,11 +22,12 @@
     "json-proxy": "^0.3.1",
     "less": "1.7.3",
     "lodash": "^2.4.1",
-    "marked": "^0.3.3",
     "mime": "^1.2.11",
     "mkdirp": "*",
     "moment": "^2.8.4",
+    "request": "^2.55.0",
     "uglify-js": "*",
+    "uuid": "^2.0.1",
     "watch": "0.10.0"
   },
   "homepage": "http://silky.wvv8oo.com",

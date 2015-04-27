@@ -24,3 +24,5 @@ projectFilesBackup
 *.swp
 *.swo
 samples/default/build
+samples/build
+samples/.silky/plugin

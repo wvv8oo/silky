@@ -3,66 +3,64 @@
 #    Date: 2/3/15 11:07 AM
 #    Description:
 
-_common = require '../common'
-_script = require './script'
-_css = require './css'
-_template = require './template'
-_host = require '../plugin/host'
 _fs = require 'fs-extra'
+_ = require 'lodash'
+
+_utils = require '../utils'
+_host = require '../plugin/host'
+
+#编译器列表
+_coffeeCompiler = require './coffeeScriptCompiler'
+_lessCompiler = require './lessCompiler'
+_hbsCompiler = require './handlebars/hbsCompiler'
+
+#根据path判断对应的编译器，优先匹配插件
+getCompilerWithPath = (path)->
+  compiler = false
+  rules = _utils.xPathMapValue 'compiler.rules', _utils.config
+  return compiler if not (rules  and rules instanceof Array)
+
+  for rule in rules
+    return rule.compiler if rule.path.test(path)
+  compiler
+
+#根据文件类型判断编译器，优先匹配插件
+getCompilerWithType = (type)->
+  #默认的编译器
+  compilerMatches =
+    html: 'hbs'
+    css: 'less'
+    js: 'coffee'
+
+  #根据配置中扩展名来匹配编译器
+  extension = _utils.xPathMapValue 'compiler.extension', _utils.config
+  #合并编译器到默认的编译器
+  _.extend compilerMatches, extension if extension
+  compilerMatches[type]
 
 #根据文件类型，及路径，探测compiler的类型
 exports.detectCompiler = (type, path)->
-  #检测编译器的类型
-  _common.config.compiler[type]
+  getCompilerWithPath(path) || getCompilerWithType(type)
 
-#根据编译类型，获取可能的要编译的文件名，并检查文件是否存在
-exports.sourceFile = (type, source)->
-  realpath = _common.replaceExt source, ".#{type}"
-  if _fs.existsSync(realpath) then realpath else false
-#
-#getDefaultCompiler = (type)->
-#  #合并默认的编译器
-#  defaultCompiler =
-#    html: 'hbs'
-#    css: 'less'
-#    js: 'coffee'
+##根据编译类型，获取可能的要编译的文件名，并检查文件是否存在
+#exports.sourceFile = (type, source)->
+#  realpath = _utils.replaceExt source, ".#{type}"
+#  if _fs.existsSync(realpath) then realpath else false
 
 #统一的处理器
-exports.execute = (type, source, options, cb)->
+exports.execute = (compilerName, source, options, cb)->
   if typeof options is 'function'
     cb = options
     options = {}
 
   #如果在插件中有指定了编译器，那么采用插件中指定的编译器
-  compiler = _host.getCompilerWith type
+  compiler = _host.getCompilerWithName compilerName
+
   return compiler source, options, cb if compiler
 
-  switch type
-    when 'less' then return lessCompiler source, options, cb
-    when 'coffee' then return coffeeCompiler source, options, cb
-    when 'hbs' then return handlebarsCompiler source, options, cb
-    else return cb null, false
+  switch compilerName
+    when 'less' then return _lessCompiler.compile source, options, cb
+    when 'coffee' then return _coffeeCompiler.compiler source, options, cb
+    when 'hbs' then return _hbsCompiler.compile source, options, cb
 
-#编译coffee
-coffeeCompiler = (source, options, cb)->
-  #读取文件
-  content = _script.compile source
-  _common.writeFile options.target, content if options.save and options.target
-  cb null, content
-
-#编译less
-lessCompiler = (source, options, cb)->
-  _css.render source, (err, css)->
-    if err
-      console.log "CSS Error: #{source}".red
-      console.log err
-
-    _common.writeFile options.target, css if options.save and options.target
-    cb err, css
-
-#编译handlebars
-handlebarsCompiler = (source, options, cb)->
-  #handlebars渲染
-  content = _template.render source, options.pluginData
-  _common.writeFile options.target, content if options.save and options.target
-  cb null, content
+  cb null, false

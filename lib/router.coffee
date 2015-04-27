@@ -7,13 +7,11 @@ _url = require 'url'
 _handlebars = require 'handlebars'
 _async = require 'async'
 _mime = require 'mime'
+_qs = require 'querystring'
 
 _hookHost = require './plugin/host'
 _hooks = require './plugin/hooks'
-_common = require './common'
-_template = require './compiler/template'
-_script = require './compiler/script'
-_css = require './compiler/css'
+_utils = require './utils'
 _compiler = require './compiler'
 
 #如果文件存在，则直接响应这个文件
@@ -44,13 +42,13 @@ response = (route, options, req, res, next)->
   #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
   return if /\.(html|htm|js|css|coffee)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
 
-  #查找真实的未编译源文件路径
-  sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
-  #没有找到对应的源文件，这是一个404错误
-  return next()  if not sourceFile
+#  #查找真实的未编译源文件路径
+#  sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
+#  #没有找到对应的源文件，这是一个404错误
+#  return next()  if not sourceFile
 
   #交给编译器
-  _compiler.execute route.compiler, sourceFile, options, (err, content)->
+  _compiler.execute route.compiler, route.realpath, options, (err, content)->
     #编译发生错误
     return response500 req, res, next, JSON.stringify(err) if err
     #没有编译成功，可能是文件格式没有匹配或者其它原因
@@ -74,7 +72,7 @@ responseHTML = (file, pluginData, req, res, next)->
 #请求css，如果是less则编译
 responseCSS = (file, req, res, next)->
   #不存在这个css，则渲染less
-  lessFile = _common.replaceExt file, '.less'
+  lessFile = _utils.replaceExt file, '.less'
   #如果不存在这个文件，则交到下一个路由
   if not _fs.existsSync lessFile
     console.log "CSS或Less无法找到->#{file}".red
@@ -88,7 +86,7 @@ responseCSS = (file, req, res, next)->
 #响应js
 responseJS = (file, req, res, next)->
   #如果没有找到，则考虑编译coffee
-  coffeeFile = _common.replaceExt file, '.coffee'
+  coffeeFile = _utils.replaceExt file, '.coffee'
   #如果不存在这个文件，则交到下一个路由
   if not _fs.existsSync coffeeFile
     console.log "Coffee或JS无法找到->#{file}".red
@@ -100,12 +98,12 @@ responseJS = (file, req, res, next)->
 
 #响应文件夹列表
 responseDirectory = (dir, req, res, next)->
-  basePath = _common.options.workbench
+  basePath = _utils.options.workbench
   #兼容旧版的template目录
-  if _common.config.compatibleModel
+  if _utils.config.compatibleModel
     basePath = _path.join basePath, 'template'
 
-  relativePath = _path.relative _common.options.workbench, dir
+  relativePath = _path.relative _utils.options.workbench, dir
 
   realPath = _path.join basePath, relativePath
   return next() if not _fs.existsSync realPath
@@ -121,7 +119,7 @@ responseDirectory = (dir, req, res, next)->
       url: filename
 
     #只有silky项目，才会将hbs的扩展名改为html
-    item.url = item.url.replace('.hbs', '.html') if _common.isSilkyProject()
+    item.url = item.url.replace('.hbs', '.html') if _utils.isSilkyProject()
 
     stat = _fs.statSync file
 
@@ -150,7 +148,7 @@ responseDirectory = (dir, req, res, next)->
   queue.push(
     (done)->
       tempfile = _path.join __dirname, './client/file_viewer.hbs'
-      templateFn = _handlebars.compile _common.readFile(tempfile)
+      templateFn = _handlebars.compile _utils.readFile(tempfile)
       data = files: files
       content = templateFn data
       done null
@@ -194,10 +192,10 @@ response500 = (req, res, next, message)->
 #获路由的物理路径
 getRouteRealPath = (route)->
   #html且兼容旧版的template目录，则使用template的目录，新版本不需要template目录
-  rootDir = if _common.config.compatibleModel and route.type is 'html'
-    _common.getTemplateDir()
+  rootDir = if _utils.config.compatibleModel and route.type is 'html'
+    _utils.getTemplateDir()
   else
-    _common.options.workbench
+    _utils.options.workbench
 
   #物理文件的路径
   route.realpath = _path.join rootDir, route.url
@@ -211,7 +209,9 @@ routeRewrite = (origin)->
     rule: null
     type: 'other'
 
-  for rule in _common.config.routers
+  routers = _utils.config.routers
+  routers = routers || []
+  for rule in routers
     continue if not rule.path.test(origin)
     route.url = origin.replace rule.path, rule.to
     route.rule = rule
@@ -220,11 +220,11 @@ routeRewrite = (origin)->
   console.log "#{origin} -> #{route.url}".green if route.url isnt origin
 
   #根据url判断类型
-  route.type = _common.detectFileType(route.url)
+  route.type = _utils.detectFileType(route.url)
   #探测出mime的类型
   route.mime = _mime.lookup(route.url)
   #默认的编译器名称
-  route.compiler = _compiler.detectCompiler(route.type) || route.type
+  route.compiler = _compiler.detectCompiler(route.type, route.url) || route.type
   #获取真实的物理路径
   getRouteRealPath route
 
@@ -237,7 +237,11 @@ module.exports = (app)->
   #匹配所有，Silky不响应非GET请求，但可以交给插件实现其它功能
   app.all "*", (req, res, next)->
     url = _url.parse(req.url)
+    qs = _qs.parse url.query
     route = routeRewrite url.pathname
+    #如果querystring中已经指定编译器，则使用指定的编译器
+    route.compiler = qs.compiler || route.compiler
+
     #强制指定为目录
     isDir = Boolean(req.query.dir)
 
@@ -263,7 +267,7 @@ module.exports = (app)->
       return responseDirectory(realpath, req, res, next) if isDir or data.route.type is 'dir'
 
       #非silky项目强制返回静态文件，规则要求直接返回静态文件
-      if not _common.isSilkyProject() or data.route.rule?.static
+      if not _utils.isSilkyProject() or data.route.rule?.static
         return responseStatic(realpath, req, res, next)
 
       options =

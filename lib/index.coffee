@@ -2,13 +2,13 @@ require 'colors'
 _proxy = require('json-proxy')
 _ = require 'lodash'
 _router = require './router'
-_common = require './common'
+_utils = require './utils'
 _initialize = require './initialize'
 
 #作为一个中间件提供服务
 module.exports = (app, server, startServer)->
   #集成代理
-  cfgProxy = _common.config.proxy || {}
+  cfgProxy = _utils.config.proxy || {}
   cfgProxy.headers = _.extend cfgProxy.headers || {}, headers: 'X-Forwarded-User': 'Silky'
   app.use _proxy.initialize(proxy: cfgProxy)
 
@@ -17,7 +17,7 @@ module.exports = (app, server, startServer)->
 
   #启动服务，如果是第三方调用，则可能不需要启动服务器
   return if not startServer
-  app.set 'port', _common.options.port || _common.config.port || 14422
+  app.set 'port', _utils.options.port || _utils.config.port || 14422
   server.on 'error', (err) ->
     if err.code is 'EADDRINUSE'
       console.log "端口冲突，请使用其它端口".red
@@ -28,8 +28,8 @@ module.exports = (app, server, startServer)->
 
   server.listen app.get('port')
   console.log "Port -> #{app.get('port')}"
-  console.log "Workbench -> #{_common.options.workbench}"
-  console.log "Environment -> #{_common.options.env}"
+  console.log "Workbench -> #{_utils.options.workbench}"
+  console.log "Environment -> #{_utils.options.env}"
   console.log "Please visit http://localhost:#{app.get('port')}"
 
   ###
@@ -39,7 +39,7 @@ module.exports = (app, server, startServer)->
     event = 'page:change'
     listener = ()-> socket.emit event, null
     #收到页面变更的事件后，通知客户端
-    _common.addListener event, listener
+    _utils.addListener event, listener
 
-    socket.on 'disconnect', (socket)-> _common.removeListener event, listener
+    socket.on 'disconnect', (socket)-> _utils.removeListener event, listener
   ###

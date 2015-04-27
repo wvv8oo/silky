@@ -6,7 +6,7 @@ _cleanCSS = require 'clean-css'
 _cheerio = require 'cheerio'
 
 _hookHost = require '../plugin/host'
-_common = require '../common'
+_utils = require '../utils'
 _hooks = require '../plugin/hooks'
 _buildConfig = null
 _outputRoot = null
@@ -17,7 +17,7 @@ compressJS = (file, relativePath, cb)->
   return cb null if not _buildConfig.compress.js
   console.log "Compress JS -> #{relativePath}".green
   result = _uglify.minify file
-  _common.writeFile file, result.code
+  _utils.writeFile file, result.code
   cb null
 
 #压缩css
@@ -30,16 +30,16 @@ compressCSS = (file, relativePath, cb)->
   options = userOptions if typeof userOptions is 'object'
 
   console.log "Compress CSS-> #{relativePath}".green
-  content = _common.readFile file
+  content = _utils.readFile file
   content = new _cleanCSS(options).minify content
-  _common.writeFile file, content
+  _utils.writeFile file, content
   cb null
 
 #压缩html以及internal script
 compressHTML = (file, relativePath, cb)->
   return cb null if not _buildConfig.compress.html and not _buildConfig.compress.internal
 
-  content = _common.readFile file
+  content = _utils.readFile file
   console.log "Compress HTML-> #{relativePath}".green
   compressInternal = _buildConfig.compress.internal and /<script.+<\/script>/i.test(content)
   rewrite = compressInternal or _buildConfig.compress.html
@@ -53,7 +53,7 @@ compressHTML = (file, relativePath, cb)->
     #暂时不压缩html，以后考虑压缩html
     content = content
 
-  _common.writeFile file, content if rewrite
+  _utils.writeFile file, content if rewrite
   cb null
 
 #调用cheerio，提取并压缩内联的js
@@ -120,7 +120,7 @@ compress = (path, cb)->
         stat: stat
         path: path
         relativePath: relativePath
-        ignore: _common.simpleMatch _buildConfig.compress.ignore, relativePath
+        ignore: _utils.simpleMatch _buildConfig.compress.ignore, relativePath
 
       _hookHost.triggerHook _hooks.build.willCompress, data, (err)->
         done data.ignore
@@ -146,6 +146,6 @@ compress = (path, cb)->
 
 #执行压缩
 exports.execute = (output, cb)->
-  _buildConfig = _common.config?.build
+  _buildConfig = _utils.config?.build
   _outputRoot = output
   compress output, (err)-> cb null

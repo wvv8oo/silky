@@ -84,7 +84,8 @@ exports.languageDirectory = -> _path.join(exports.localSilkyIdentityDir(), 'lang
 
 #获取全局的插件目录
 exports.globalPluginDirectory = ->
-  exports.config.globalPluginDirectory || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
+  dir = exports.xPathMapValue("custom.globalPluginDirectory", exports.globalConfig)
+  dir || _path.join(exports.globalSilkyIdentityDir(), 'plugin')
 
 #用户的home目录
 exports.homeDirectory = ->
@@ -110,7 +111,10 @@ exports.combError = (error)->
   error
 
 #替换扩展名为指定的扩展名
-exports.replaceExt = (file, ext)-> file.replace _path.extname(file), ext
+exports.replaceExt = (file, ext)->
+  ext = ".#{ext}" if not /^\./.test ext
+  file.replace _path.extname(file), ext
+
 #读取文件
 exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 #保存文件

@@ -3,7 +3,7 @@
 ###
 _fs = require 'fs-extra'
 _path = require 'path'
-_common = require './common'
+_utils = require './utils'
 _ = require 'lodash'
 
 _data = {
@@ -48,21 +48,23 @@ readScript = (normalFile, overrideFile)->
 combineFile = (filename)->
   #只处理json和less的文件
   extname = _path.extname(filename).replace('.', '')
+  #提示用户，将不支持json格式的数据文件
+  console.log "警告：json格式的数据文件将不被新版本支持 - > #{filename}" if /^json$/.test extname
   return false if extname not in ['json', 'less', 'js']
 
   key = getDataKey filename
-  normaFile = _path.join _common.localSilkyIdentityDir(), 'data', 'normal', filename
-  overrideFile = _path.join _common.localSilkyIdentityDir(), 'data', _common.options.env, filename
+  normaFile = _path.join _utils.localSilkyIdentityDir(), 'data', 'normal', filename
+  overrideFile = _path.join _utils.localSilkyIdentityDir(), 'data', _utils.options.env, filename
 
   #如果是js文件，直接引入
   if extname is 'js'
     content = readScript(normaFile, overrideFile)
     return _data.json[key] = content
 
-  normalData = _common.readFile normaFile
+  normalData = _utils.readFile normaFile
   #取特殊环境将要覆盖的数据
   if _fs.existsSync overrideFile
-    overrideData = _common.readFile overrideFile
+    overrideData = _utils.readFile overrideFile
 
   #将数据存入
   if extname is 'json'
@@ -77,7 +79,7 @@ combineFile = (filename)->
 #入口
 exports.init = ()->
   #读取normal的数据
-  normalDir = _path.join _common.localSilkyIdentityDir(), 'data', 'normal'
+  normalDir = _path.join _utils.localSilkyIdentityDir(), 'data', 'normal'
   #目录不存在，不查读取数据
   return if not _fs.existsSync normalDir
 
@@ -86,18 +88,18 @@ exports.init = ()->
     combineFile filename
 
   #循环读取所有语言到数据中
-  readLanguage _common.languageDirectory()
+  readLanguage _utils.languageDirectory()
   #监控数据文件的变化
   watch()
 
 #监控文件的改变
 watch = ()->
-  dataDir = _path.join _common.localSilkyIdentityDir(), 'data'
+  dataDir = _path.join _utils.localSilkyIdentityDir(), 'data'
   #监控数据文件的变化
-  _common.watch dataDir, (f)-> combineFile _path.basename(f)
+  _utils.watch dataDir, (f)-> combineFile _path.basename(f)
 
   #监控语言文件的变化
-  langDir = _common.languageDirectory()
-  _common.watch langDir, (f)-> readLanguage f
+  langDir = _utils.languageDirectory()
+  _utils.watch langDir, (f)-> readLanguage f
 
 exports.whole = _data

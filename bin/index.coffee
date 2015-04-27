@@ -9,7 +9,7 @@ _ = require 'lodash'
 require 'colors'
 
 _initialize = require '../lib/initialize'
-_common = require '../lib/common'
+_common = require '../lib/utils'
 _update = require '../lib/update'
 _pluginPackage = require '../lib/plugin/package'
 _build = require('../lib/build')
@@ -257,6 +257,7 @@ _program
 versionDesc = "Version: #{_version}; Silky: #{_path.join __dirname, '..'}"
 _program.version(versionDesc).parse(process.argv)
 
+#提示用户需要使用start进行启动
 (->
   mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list', 'config', 'cache']
   if _.difference(_program.rawArgs, mustIncludeCommand).length is _program.rawArgs.length

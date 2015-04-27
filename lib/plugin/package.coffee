@@ -2,7 +2,7 @@
   安装卸载插件
 ###
 _path = require 'path'
-_common = require '../common'
+_utils = require '../utils'
 _fs = require 'fs-extra'
 _ = require 'lodash'
 _async = require 'async'
@@ -16,15 +16,24 @@ _async = require 'async'
 #  else
 #    command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
 #
-#  _common.execCommand command, (code)->
+#  _utils.execCommand command, (code)->
 #    console.log "同步git仓库完成"
 #    cb code
+
+#注册为一个编译器，将编译器的插件写入到全局，启动的时候会调用
+registerAsCompiler = (pluginName)->
+  allCompiler = _utils.globalConfig?.compiler || {}
+  #存在，则不处理
+  return if allCompiler[pluginName]
+  _utils.xPathSetValue "compiler.#{pluginName}", _utils.globalConfig, {}
+  #保存全局配置
+  _utils.saveGlobalConfig()
 
 #从本地目录安装插件
 installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, registry, cb)->
   console.log "准备安装#{pluginName}"
   console.log sourcePluginDir
-  return console.log "#插件#{pluginName}不存在，安装失败".red if not _fs.existsSync sourcePluginDir
+  return console.log "#插件#{pluginName}不存 在，安装失败".red if not _fs.existsSync sourcePluginDir
 
   #如果没有给插件名称，则取源的文件名（这里其实应该读package.json，再取名称好一点）
   pluginName = pluginName || _path.basename(sourcePluginDir)
@@ -37,11 +46,21 @@ installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, registr
 
   #运行npm install
   command = "cd \"#{targetPluginDir}\" && npm install --verbose --registry #{registry}"
-  _common.execCommand command, (code, message, error)->
-    if code is 0
+  _utils.execCommand command, (code, message, error)->
+    errMsg = "#{pluginName}安装失败"
+    if code isnt 0
+      console.log errMsg.red
+      return cb null
+
+    #安装插件成功，检查是否为编译器
+    try
+      plugin = require targetPluginDir
+      #注册为编译器
+      registerAsCompiler pluginName if plugin.compiler
       console.log "#{pluginName}安装成功".green
-    else
-      console.log "#{pluginName}安装失败".red
+    catch e
+      console.log errMsg.red
+      console.log e
 
     cb null
 
@@ -66,10 +85,10 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, registry, cb)->
     return installPluginFromLocalDir pluginName, pluginRootDir, source, registry, cb
 
   #从git仓库安装
-  cacheDir = _path.join _common.globalCacheDirectory(), 'cache_repos', pluginName
+  cacheDir = _path.join _utils.globalCacheDirectory(), 'cache_repos', pluginName
   _fs.removeSync cacheDir
 
-  _common.updateGitRepos source, cacheDir, (code)->
+  _utils.updateGitRepos source, cacheDir, (code)->
     if code isnt 0
       console.log '安装失败'.red
       console.log err
@@ -79,12 +98,12 @@ installFromSpecificSource = (pluginName, pluginRootDir, source, registry, cb)->
 
 #从标准仓库中安装
 installFromStandardRepos = (names, pluginRootDir, repository, registry, cb)->
-  repository = repository || _common.xPathMapValue('custom.pluginRepository', _common.globalConfig)
+  repository = repository || _utils.xPathMapValue('custom.pluginRepository', _utils.globalConfig)
   repository = repository || 'https://github.com/wvv8oo/silky-plugins.git'
-  localRepos = _path.join _common.globalCacheDirectory(), 'plugins'
+  localRepos = _path.join _utils.globalCacheDirectory(), 'plugins'
 
   #更新仓库
-  _common.updateGitRepos repository, localRepos, (err)->
+  _utils.updateGitRepos repository, localRepos, (err)->
     if err
       console.log '安装失败'.red
       return console.log err
@@ -93,7 +112,7 @@ installFromStandardRepos = (names, pluginRootDir, repository, registry, cb)->
 
 #安装插件
 exports.install = (names, oringal, repository, registry, cb)->
-  pluginRootDir = _common.globalPluginDirectory()
+  pluginRootDir = _utils.globalPluginDirectory()
   console.log "installing..."
 
   registry = switch registry
@@ -112,19 +131,25 @@ exports.install = (names, oringal, repository, registry, cb)->
 
 #删除插件
 exports.uninstall = (names, cb)->
-  pluginRootDir = _common.globalPluginDirectory()
+  pluginRootDir = _utils.globalPluginDirectory()
 
   _.map names, (pluginName)->
     pluginDir = _path.join pluginRootDir, pluginName
     return console.log "#{pluginName}不存在" if not _fs.existsSync pluginDir
+
+    #如果是一个插件，需要在config.js中删除
+    plugin = require pluginDir
+    _utils.xPathSetValue "compiler.#{pluginName}", _utils.globalConfig, null if plugin.compiler
+
     _fs.removeSync pluginDir
     console.log "插件#{pluginName}已经被卸载".green
 
+  _utils.saveGlobalConfig()
   cb null
 
 #列出所有的插件
 exports.list = ()->
-  pluginRootDir = _common.globalPluginDirectory()
+  pluginRootDir = _utils.globalPluginDirectory()
   return console.log "没有安装任何插件".green if not _fs.existsSync pluginRootDir
 
   total = 0

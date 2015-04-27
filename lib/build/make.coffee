@@ -4,8 +4,9 @@ _fs = require 'fs-extra'
 
 _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
-_common = require '../common'
+_utils = require '../utils'
 _compiler = require '../compiler'
+_host = require '../plugin/host'
 
 _buildConfig = null
 _outputRoot = null
@@ -17,9 +18,9 @@ pathIsIgnore = (source, relativePath)->
   #跳过build的目录
   return true if _outputRoot is source
   #跳过.silky这个目录
-  return true if _common.options.identity is relativePath
+  return true if _utils.options.identity is relativePath
 
-  rules = _common.config.build.ignore || []
+  rules = _utils.config.build.ignore || []
   for rule in rules
     ignore = if typeof rule is 'string'
         rule is relativePath
@@ -31,7 +32,7 @@ pathIsIgnore = (source, relativePath)->
 
 #根据配置，替换目标路径
 replaceTargetWithConfig = (relativePath)->
-  for item in _buildConfig.rename
+  for item in _buildConfig.rename || []
     if item.source.test relativePath
       relativePath = relativePath.replace item.source, item.target
       break if not item.next
@@ -52,7 +53,7 @@ replaceTargetExt = (relativePath)->
 #    targetExt = '.js'
 #
 #  return target if not targetExt
-#  _common.replaceExt target, targetExt
+#  _utils.replaceExt target, targetExt
 
 #处理文件夹
 arrangeDirectory = (source, target, cb)->
@@ -77,14 +78,19 @@ arrangeSingleFile = (source, target, cb)->
       data =
         source: source
         target: target
-        type: _common.detectFileType(source)
+        type: _utils.detectFileType(source)
         pluginData: null
 
       _hookHost.triggerHook _hooks.build.willCompile, data, ()->
-        relativeSource = _path.relative _common.options.workbench, data.source
-        options = pluginData: data.pluginData
+        relativeSource = _path.relative _utils.options.workbench, data.source
+        options =
+          pluginData: data.pluginData
+          save: true
+          target: target
 
-        _compiler.execute data.type, data.source, options, (err, content)->
+        #从插件中查找编译器
+        compilerName = _host.getCompilerWithExt(data.type) || data.type
+        _compiler.execute compilerName, data.source, options, (err, content)->
           #编译时出现错误直接中断
           if err
             console.log err
@@ -94,9 +100,7 @@ arrangeSingleFile = (source, target, cb)->
           if content is false
             console.log "Copy -> #{relativeSource}".green
             _fs.copySync source, target
-          else
-            console.log "Compile -> #{relativeSource}".cyan
-            _common.writeFile data.target, content
+
           done null
   )
 
@@ -115,7 +119,7 @@ arrangeSingleFile = (source, target, cb)->
 #处理一个对象，可能是文件或者文件夹
 arrangeObject = (source, cb)->
   #相对路径用于识别是否需要跳过或者
-  relativePath = _path.relative _common.options.workbench, source
+  relativePath = _path.relative _utils.options.workbench, source
   ignore = pathIsIgnore(source, relativePath)
 
   if ignore
@@ -126,7 +130,8 @@ arrangeObject = (source, cb)->
   #根据规则，替换target的路径
   relativePath = replaceTargetWithConfig relativePath
   #对于文件类型，要考虑需要替换为编译后的扩展名
-  relativePath = replaceTargetExt relativePath if not stat.isDirectory()
+  #替换扩展名的事，交给编译器自己做
+  #relativePath = replaceTargetExt relativePath if not stat.isDirectory()
   target = _path.join _outputRoot, relativePath
 
   copyOnly = false
@@ -136,8 +141,8 @@ arrangeObject = (source, cb)->
       data =
         stat: stat
         source: source
-        ignore: _common.simpleMatch _buildConfig.ignore, relativePath
-        copy: _common.simpleMatch _buildConfig.copy, relativePath
+        ignore: _utils.simpleMatch _buildConfig.ignore, relativePath
+        copy: _utils.simpleMatch _buildConfig.copy, relativePath
         relativePath: relativePath
         target: target
 
@@ -154,7 +159,7 @@ arrangeObject = (source, cb)->
 
       if copyOnly   #复制文件
         console.log "Copy -> #{relativePath}".green
-        _common.copyFile source, target, done
+        _utils.copyFile source, target, done
       else if stat.isDirectory()  #处理目录
         arrangeDirectory source, target, done
       else    #处理单个文件
@@ -171,6 +176,6 @@ arrangeObject = (source, cb)->
 
 #对外的入口
 exports.execute = (output, cb)->
-  _buildConfig = _common.config?.build
+  _buildConfig = _utils.config?.build
   _outputRoot = output
-  arrangeObject _common.options.workbench, cb
+  arrangeObject _utils.options.workbench, cb
