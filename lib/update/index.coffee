@@ -22,7 +22,7 @@ exports.checkSilky = (currentVersion)->
   #每天只检查一次即可
   lastCheckUpdate = _utils.globalConfig.lastCheckUpdate
   oneDay = 1000 * 60 * 60 * 24
-  #return if lastCheckUpdate and new Date().valueOf() - lastCheckUpdate < oneDay
+  return if lastCheckUpdate and new Date().valueOf() - lastCheckUpdate < oneDay
 
   try
     _updateSilky.execute(currentVersion)

@@ -1,10 +1,6 @@
 {
   "name": "silky",
-<<<<<<< HEAD
-  "version": "0.7.24",
-=======
-  "version": "0.7.25",
->>>>>>> compiler
+  "version": "0.8.1",
   "dependencies": {
     "async": "0.8.0",
     "cheerio": "0.15.0",

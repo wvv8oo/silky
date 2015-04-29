@@ -8,13 +8,12 @@ _cheerio = require 'cheerio'
 _hookHost = require '../plugin/host'
 _utils = require '../utils'
 _hooks = require '../plugin/hooks'
-_buildConfig = null
 _outputRoot = null
 
 #压缩js
 compressJS = (file, relativePath, cb)->
   #不需要压缩
-  return cb null if not _buildConfig.compress.js
+  return cb null if not _utils.xPathMapValue('build.compress.js', _utils.config)
   console.log "Compress JS -> #{relativePath}".green
   result = _uglify.minify file
   _utils.writeFile file, result.code
@@ -22,7 +21,7 @@ compressJS = (file, relativePath, cb)->
 
 #压缩css
 compressCSS = (file, relativePath, cb)->
-  userOptions = _buildConfig.compress.css
+  userOptions = _utils.xPathMapValue('build.compress.css', _utils.config)
   return cb null if not userOptions
 
   #默认的选项，不支持ie6
@@ -37,19 +36,21 @@ compressCSS = (file, relativePath, cb)->
 
 #压缩html以及internal script
 compressHTML = (file, relativePath, cb)->
-  return cb null if not _buildConfig.compress.html and not _buildConfig.compress.internal
+  compressHtml = _utils.xPathMapValue('build.compress.html', _utils.config)
+  compressInternal = _utils.xPathMapValue('build.compress.internal', _utils.config)
+  return cb null if not compressHtml and not compressInternal
 
   content = _utils.readFile file
   console.log "Compress HTML-> #{relativePath}".green
-  compressInternal = _buildConfig.compress.internal and /<script.+<\/script>/i.test(content)
-  rewrite = compressInternal or _buildConfig.compress.html
+  compressInternal = compressInternal and /<script.+<\/script>/i.test(content)
+  rewrite = compressInternal or compressHtml
 
   #如果不包含script在页面中，则不需要压缩
   if compressInternal
     #压缩internal的script
     content = compressInternalJavascript file, content
 
-  if _buildConfig.compress.html
+  if compressHtml
     #暂时不压缩html，以后考虑压缩html
     content = content
 
@@ -120,7 +121,7 @@ compress = (path, cb)->
         stat: stat
         path: path
         relativePath: relativePath
-        ignore: _utils.simpleMatch _buildConfig.compress.ignore, relativePath
+        ignore: _utils.simpleMatch _utils.xPathMapValue('build.compress.ignore', _utils.config), relativePath
 
       _hookHost.triggerHook _hooks.build.willCompress, data, (err)->
         done data.ignore
@@ -146,6 +147,5 @@ compress = (path, cb)->
 
 #执行压缩
 exports.execute = (output, cb)->
-  _buildConfig = _utils.config?.build
   _outputRoot = output
   compress output, (err)-> cb null
