@@ -195,6 +195,7 @@ dateHelper = (args...)->
 
 rawHelper = (options)-> options.fn()
 
+
 #注册handlebars，直接执行
 (->
   _handlebars.registerHelper 'raw', rawHelper
