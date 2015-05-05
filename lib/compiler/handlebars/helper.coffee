@@ -193,8 +193,11 @@ dateHelper = (args...)->
   return value if not date.isValid()
   date.format fmtTarget
 
+rawHelper = (options)-> options.fn()
+
 #注册handlebars，直接执行
 (->
+  _handlebars.registerHelper 'raw', rawHelper
   _handlebars.registerHelper 'substr', substrHelper
   _handlebars.registerHelper 'date', dateHelper
   #获取xPath

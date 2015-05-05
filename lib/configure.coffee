@@ -41,7 +41,9 @@ exports.get = (xPath, isGlobal)->
   config = require file
   value = _utils.xPathMapValue xPath, config
   value = JSON.stringify value if typeof(value) is 'object'
-  console.log "#{xPath.green} -> #{value}"
+
+  xPathStr = xPath || "All"
+  console.log "#{xPathStr.green} -> #{value}"
 
 #设置honey
 exports.setAsHoney = ()->
