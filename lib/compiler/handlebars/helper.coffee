@@ -193,7 +193,7 @@ dateHelper = (args...)->
   return value if not date.isValid()
   date.format fmtTarget
 
-rawHelper = (options)-> options.fn()
+rawHelper = (options)->options.fn()
 
 
 #注册handlebars，直接执行
