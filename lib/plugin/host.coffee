@@ -19,6 +19,9 @@ exports.silkyForHook = (pluginName, pluginPriority)->
     watch: _utils.watch
     saveObjectAsCode: _utils.saveObjectAsCode
     execCommand: _utils.execCommand
+    isProduction: _utils.isProduction()
+    isDevelopment: _utils.isDevelopment()
+    homeDirectory: _utils.homeDirectory()
 
   data: _data.whole
   #用于编译的处理器
