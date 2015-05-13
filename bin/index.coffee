@@ -141,6 +141,8 @@ _program.command('build')
 .option('-x, --extra [value]', '用于扩展的参数，根据不同插件要求不同')
 .action((program)->
   options =
+    original:
+      env: program.environment
     #用于扩展的命令行参数，提供给插件使用
     extra: program.extra
     #指定为build模式
