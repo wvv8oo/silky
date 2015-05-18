@@ -14,6 +14,7 @@ _make = require './make'
 _compress = require './compress'
 _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
+_os = require 'os'
 
 exports.execute = (cb)->
   queue = []
@@ -75,6 +76,26 @@ exports.execute = (cb)->
     (done)->
       data = output: output
       _hookHost.triggerHook _hooks.build.didBuild, data, (err)-> done null
+  )
+
+  #添加日志文件
+  queue.push(
+    (done)->
+      logContent = "
+        Time: #{new Date().toString()}\n
+        Hostname: #{_os.hostname()}\n
+        OS: #{_os.type()}\n
+        OS Version: #{_os.release()}\n
+        UUID: #{_utils.globalConfig.uuid}\n
+        Version: #{_utils.options.version}\n\n
+
+        Options:\n
+        #{JSON.stringify(_utils.options)}
+      "
+
+      file = _path.join output, 'build.log'
+      _utils.writeFile file, logContent
+      done null
   )
 
   _async.waterfall queue, cb
