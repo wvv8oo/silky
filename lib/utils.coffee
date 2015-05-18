@@ -263,7 +263,7 @@ exports.updateGitRepos = (remoteRepos, localRepos, cb)->
   console.log "正在同步git仓库..."
   #目录已经存在，则clone
   if _fs.existsSync localRepos
-    command = "cd \"#{localRepos}\" && git pull"
+    command = "cd \"#{localRepos}\" && git pull origin master"
   else
     command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
 
