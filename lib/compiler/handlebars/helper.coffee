@@ -157,10 +157,12 @@ loopCommand = (name, count, options)->
 
 #仅重复block内html
 repeatCommand = (count, options)->
+  console.log "警告：justloop将会停止使用，请使用repeat".red if options.name is 'justloop'
+
   count = ~~count
   self = this
   html = ''
-  for index in [0..count]
+  for index in [0...count]
     self.__index__ = index
     html += options.fn(self)
   html
