@@ -39,4 +39,4 @@ exports.compiler = (source, options, cb)->
         target = _utils.replaceExt options.target, 'js'
         _utils.writeFile target, compiledJs
 
-    cb null, compiledJs
+    cb null, compiledJs, target

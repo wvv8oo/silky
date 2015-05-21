@@ -90,12 +90,14 @@ arrangeSingleFile = (source, target, cb)->
 
         #从插件中查找编译器
         compilerName = _host.getCompilerWithExt(data.type) || data.type
-        _compiler.execute compilerName, data.source, options, (err, content)->
+        _compiler.execute compilerName, data.source, options, (err, content, newTarget)->
           #编译时出现错误直接中断
           if err
             console.log err
             return process.exit 1
 
+          #如果编译器变更了target，则使用新的target
+          target = newTarget || target
           #编译器没有处理，则复制文件
           if content is false
             console.log "Copy -> #{relativeSource}".green

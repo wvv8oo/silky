@@ -56,7 +56,7 @@ exports.compile = (source, options, cb)->
         target = _utils.replaceExt options.target, 'css'
         _utils.writeFile target, cssContent
 
-      cb err, cssContent
+      cb err, cssContent, target
     catch e
       console.log "CSS Error: #{file}".red
       console.log err

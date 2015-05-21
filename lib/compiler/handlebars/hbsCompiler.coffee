@@ -42,7 +42,7 @@ exports.compile = (source, options, cb)->
       target = _utils.replaceExt options.target, 'html'
       _utils.writeFile target, content
 
-    cb null, html
+    cb null, html, target
   catch e
     console.log e
     #调用目的是为了产品环境throw
