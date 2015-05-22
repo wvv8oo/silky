@@ -12,23 +12,13 @@ module.exports = {
             //"/ajax": "/"
         }
     },
-    //简单的文件合并功能
-    merge: {
-        //是否为每个文件都加上闭包
-        closure: true,
-        //支持用正则表达式进行合并
-        files: {
-            //支持数组，全文字匹配或者正则匹配
-            'js/all.js': /\/js\/.+$/
-        }
-    },
     //路由
     routers: [
         //如果希望访问目录直接访问index.html，则可以启用下面的路由
-        //{
+        {
             //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换，static：是否为静态文件，静态文件直接返回
-            //path: /^\/$/, to: 'index.html', next: true, static: false
-        //}
+            path: /^\/$/, to: 'index.html', next: true, static: false
+        }
     ],
     //插件的配置
     plugins: {
@@ -51,9 +41,6 @@ module.exports = {
         //重命名
         rename: [
             {
-                source: /source\.(js)$/i, target: '$1', next: false
-            },
-            {
                 source: /^template\/(.+)/i, target: '$1', next: false
             }
         ],
@@ -72,6 +59,3 @@ module.exports = {
         }
     }
 }
-/*
-    silky运行的配置文件
- */
