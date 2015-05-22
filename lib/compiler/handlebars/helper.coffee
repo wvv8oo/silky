@@ -123,6 +123,8 @@ importCommand = (name, context, options)->
     options = context
     context = _.extend {}, options.data.root
 
+  #如果传过来的值
+  context = $current: context if not _.isObject context
   context = context || options.data.root
   context = context() if _.isFunction context
   context._ = options.data.root._ || options.data.root
@@ -141,16 +143,20 @@ orCommand = (args..., options)->
     return item if item
 
 #循环
-loopCommand = (name, count, options)->
+loopCommand = (name, condition, options)->
+  return console.log "Loop必需提供两个参数".red if arguments.length isnt 3
+
   #循环
-  count = count || []
-  isNumber = typeof count is 'number'
-  count = [1..count] if isNumber
+  condition = condition || []
+  isNumber = typeof condition is 'number'
+  list = if isNumber then [1..condition] else condition
   results = []
 
-  for value in count
-    #如果循环次数量，则将上级数据传递下去
-    context = if isNumber then _.extend({'$index': value}, options.data.root) else value
+  _.map list, (item, index)->
+    current = if _.isObject(item) then item else {$current: item}
+    current.$index = index
+
+    context = _.extend current, options.data.root
     results.push compilePartial(name, context, options)
 
   new _handlebars.SafeString(results.join(''))
@@ -163,7 +169,7 @@ repeatCommand = (count, options)->
   self = this
   html = ''
   for index in [0...count]
-    self.__index__ = index
+    self.$index = index
     html += options.fn(self)
   html
 
@@ -214,6 +220,7 @@ rawHelper = (options)->options.fn()
   #打印出变量
   _handlebars.registerHelper 'print', (value)->
     return '<empty>' if value is undefined
+    return 'Print: is not JSON object' if not _.isPlainObject value
     new _handlebars.SafeString JSON.stringify(value)
 
   _handlebars.registerHelper 'css', linkCommand
