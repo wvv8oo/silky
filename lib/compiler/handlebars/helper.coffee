@@ -201,8 +201,26 @@ dateHelper = (args...)->
   return value if not date.isValid()
   date.format fmtTarget
 
+#输出不解析的数据
 rawHelper = (options)->options.fn()
 
+#比较
+compareCommand = (left, symbol, right, options)->
+  result = switch symbol
+    when '==' then left == right
+    when '===' then left is right
+    when 'in' then _.indexOf(right, left) >= 0
+    when '<' then left < right
+    when '<=' then left <= right
+    when '>' then left > right
+    when '>=' then left >= right
+    when '!=' then left != right
+    when '!==' then left isnt right
+
+  if result
+    options.fn this
+  else
+    options.inverse this
 
 #注册handlebars，直接执行
 (->
@@ -241,4 +259,7 @@ rawHelper = (options)->options.fn()
   #or
   _handlebars.registerHelper 'or', orCommand
   #timestamp
+
+  #比较
+  _handlebars.registerHelper 'compare', compareCommand
 )()
