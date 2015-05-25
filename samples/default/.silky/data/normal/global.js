@@ -19,5 +19,11 @@ module.exports = {
             Math.random(),
             Math.random()
         ]
+    },
+    plus: function(left, right){
+        return left + right;
+    },
+    isOldMan: function(age){
+        return (age >= 60)
     }
 }
