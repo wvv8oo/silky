@@ -204,10 +204,23 @@ dateHelper = (args...)->
 #输出不解析的数据
 rawHelper = (options)->options.fn()
 
+#执行数据库的命令
+executeCommand = (cmd, args...)->
+  fn = _utils.xPathMapValue(cmd, this)
+  return "#{cmd} is not a valid function." if not _.isFunction fn
+
+  options = args.pop()
+  result = fn.apply null, args
+  if result
+    options.fn this
+  else
+    options.inverse this
+
 #比较
 compareCommand = (left, symbol, right, options)->
+  console.log _.indexOf(right, left)
   result = switch symbol
-    when '==' then left == right
+    when '==' then `left == right`
     when '===' then left is right
     when 'in' then _.indexOf(right, left) >= 0
     when '<' then left < right
@@ -262,4 +275,7 @@ compareCommand = (left, symbol, right, options)->
 
   #比较
   _handlebars.registerHelper 'compare', compareCommand
+
+  #执行data中的函数
+  _handlebars.registerHelper 'execute', executeCommand
 )()
