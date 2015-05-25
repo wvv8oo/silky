@@ -12,6 +12,8 @@ module.exports = {
             //"/ajax": "/"
         }
     },
+    //如果不需要启用livereload，请注释掉livereload，默认监控扩展名为：'less', 'coffee', 'hbs', 'html', 'css'
+    livereload: {},
     //路由
     routers: [
         //如果希望访问目录直接访问index.html，则可以启用下面的路由
