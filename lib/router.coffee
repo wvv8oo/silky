@@ -23,6 +23,11 @@ responseFileIfExists = (file, res)->
 
 #响应纯内容数据
 responseContent = (content, mime, req, res, next)->
+  #如果是html，则考虑要在head前加入livereload
+  if _utils.config.livereload and _mime.extension(mime) is 'html'
+    script = "    <script src='#{_utils.options.livereload}'></script>\n$1"
+    content = content.replace /(<\/\s*head>)/i, script
+
   data =
     content: content
     mime: mime
