@@ -206,15 +206,13 @@ rawHelper = (options)->options.fn()
 
 #执行数据库的命令
 executeCommand = (cmd, args...)->
-  fn = _utils.xPathMapValue(cmd, this)
+  fn = if _.isFunction cmd then cmd else _utils.xPathMapValue(cmd, this)
   return "#{cmd} is not a valid function." if not _.isFunction fn
 
   options = args.pop()
   result = fn.apply null, args
-  if result
-    options.fn this
-  else
-    options.inverse this
+  return result if not (options.fn and options.inverse)
+  if result then options.fn this else options.inverse this
 
 #比较
 compareCommand = (left, symbol, right, options)->
