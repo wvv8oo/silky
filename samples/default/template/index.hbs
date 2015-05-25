@@ -38,6 +38,20 @@
                 {{abc}}这里的内容是不解析的
             {{{{/raw}}}}
 
+            <ul class="execute">
+                <li class="title">execute的使用</li>
+                <li>
+                    execute使用例子一:
+                    1 + 2 = {{execute global.plus 1 2}}
+                </li>
+                <li>
+                    execute使用例子二：
+                    {{#execute global.isOldMan 60}}
+                        老年人
+                    {{/execute}}
+                </li>
+            </ul>
+
             {{import "module/cell" global.func}}
         </div>
         {{import "module/footer" global.footer}}
