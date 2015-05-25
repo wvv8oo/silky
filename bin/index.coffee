@@ -6,10 +6,11 @@ _path = require('path')
 _forever = require 'forever-monitor'
 _os = require 'os'
 _ = require 'lodash'
+_livereload = require 'livereload'
 require 'colors'
 
 _initialize = require '../lib/initialize'
-_common = require '../lib/utils'
+_utils = require '../lib/utils'
 _update = require '../lib/update'
 _pluginPackage = require '../lib/plugin/package'
 _build = require('../lib/build')
@@ -36,6 +37,20 @@ init = (options, loadPlugin)->
   _update.checkConfig()
   #初始化插件模块
   require('../lib/plugin').init() if loadPlugin
+
+#初始化livereload
+initLivereload = ()->
+  options = _utils.xPathMapValue('livereload', _utils.config)
+
+  return if not options
+  ops = {
+    exts: ['less', 'coffee', 'hbs', 'html', 'css']
+  }
+  _.extend ops, options
+
+  #启动livereload服务
+  llServer = _livereload.createServer(ops)
+  llServer.watch _utils.options.workbench
 
 #安装插件的命令
 _program.command('install [names...]')
@@ -158,11 +173,11 @@ _program.command('build')
   init options, true
 
   #输出目录
-  output = program.output || _common.config.build.output || './build'
-  output = _path.resolve _common.options.workbench, output
-  _common.options.output = output
+  output = program.output || _utils.config.build.output || './build'
+  output = _path.resolve _utils.options.workbench, output
+  _utils.options.output = output
 
-  if not _common.isSilkyProject()
+  if not _utils.isSilkyProject()
     message = if program.force then "提示：当前构建的目录非Silky目录".cyan else ""
     return console.log message
 
@@ -184,7 +199,7 @@ _program
 .action((arg1)->
   init()
   #清除缓存
-  _common.cleanCache() if arg1 is 'clean'
+  _utils.cleanCache() if arg1 is 'clean'
 
   process.exit 0
 )
@@ -200,7 +215,7 @@ _program
 .action((program)->
   options =
     #参数中提供的端口
-    port: program.port || process.env.PORT || ''
+    port: program.port || process.env.PORT || '14422'
     debug: Boolean(program.debug)
     env: program.environment
 
@@ -211,7 +226,7 @@ _program
   init options, true
 
   #非合法的silky项目，警告用户
-  if not _common.isSilkyProject()
+  if not _utils.isSilkyProject()
     console.log("警告：当前工作区不是一个合法的Silky项目".cyan)
 
   #触发事件再启动服务
@@ -221,6 +236,8 @@ _program
     server = require('http').createServer app
     silky = require '../lib/index'
     silky(app, server, true)
+
+    initLivereload()
 
 #  #暂时放弃forever的方式
 #  if true or _os.platform() is 'win32'
