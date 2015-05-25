@@ -149,6 +149,7 @@ exports.init = (options)->
     env: 'development'
     workbench: null
     buildMode: false
+    livereload: 'http://localhost:35729/livereload.js'
 
   _.merge _options, options
   _options.identity = '.silky'
