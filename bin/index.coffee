@@ -212,12 +212,15 @@ _program
 .option('-s, --sample', '查看示例项目')
 .option('-e, --environment [value]', '指定项目的运行环境，默认为 development')
 .option('-d, --debug', '启动调试模式')
+.option('-x, --extra [value]', '用于扩展的参数，根据不同插件要求不同')
 .action((program)->
   options =
     #参数中提供的端口
     port: program.port || process.env.PORT || '14422'
     debug: Boolean(program.debug)
     env: program.environment
+    #用于扩展的命令行参数，提供给插件使用
+    extra: program.extra
 
   options.language = program.language if program.language
 
