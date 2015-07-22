@@ -1,4 +1,7 @@
 module.exports =
+  plugin:
+    #执行某个产品，一般用于插件被执行一次
+    run: 'plugin:run'
   #路由的hook
   route:
     initial: 'route:initial'
