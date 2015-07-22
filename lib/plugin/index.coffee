@@ -20,7 +20,7 @@ _host = require './host'
 #  _utils.debug "Global Plugin -> #{globalPluginDir}".green
 
 #根据插件名称，从全局插件目录中注册插件
-registerPlugin = (pluginName, options)->
+registerPlugin = exports.registerPlugin = (pluginName, options)->
   options = options || {}
   file = _path.join _utils.globalPluginDirectory(), pluginName
   #插件已经指定了源，则从指定源中加载
@@ -44,6 +44,7 @@ registerPlugin = (pluginName, options)->
     silky = _host.silkyForHook(pluginName, options.priority)
     plugin.registerPlugin silky, options
     console.log "插件加载成功 -> #{pluginName}".green
+    return plugin
   catch e
     console.log "插件加载失败->#{pluginName}".red
     console.log file
