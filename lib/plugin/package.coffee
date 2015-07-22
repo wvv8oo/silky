@@ -2,10 +2,14 @@
   安装卸载插件
 ###
 _path = require 'path'
-_utils = require '../utils'
 _fs = require 'fs-extra'
 _ = require 'lodash'
 _async = require 'async'
+
+_utils = require '../utils'
+_plugin = require './index'
+_host = require './host'
+_hooks = require './hooks'
 
 ##更新仓库，如果仓库不存在，则clone仓库
 #updateGitRepos = (remoteRepos, localRepos, cb)->
@@ -167,3 +171,16 @@ exports.list = ()->
     console.log "#{pluginName}->#{pkg.version}".green
 
   console.log "#{total}个插件已经被安装"
+
+#用于执行某个插件一次
+exports.run = (pluginName, cb)->
+  file = _path.join _utils.globalPluginDirectory(), pluginName
+  if not _fs.existsSync file
+    console.log "Plugin #{pluginName} is not found."
+    return cb null
+
+  options = _utils.config.plugins[pluginName] || {}
+  #注册插件
+  _plugin.registerPlugin pluginName, options
+  #调用插件
+  _host.triggerHook _hooks.plugin.run, cb
