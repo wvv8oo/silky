@@ -1,6 +1,6 @@
 {
   "name": "silky",
-  "version": "0.8.7",
+  "version": "0.8.9",
   "dependencies": {
     "async": "0.8.0",
     "cheerio": "0.15.0",
@@ -17,6 +17,7 @@
     "json-literal": "^1.1.0",
     "json-proxy": "^0.3.1",
     "less": "1.7.3",
+    "livereload": "^0.3.7",
     "lodash": "^2.4.1",
     "mime": "^1.2.11",
     "mkdirp": "*",
