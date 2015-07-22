@@ -44,7 +44,7 @@ initLivereload = ()->
 
   return if not options
   ops = {
-    exts: ['less', 'coffee', 'hbs', 'html', 'css']
+    exts: ['less', 'coffee', 'hbs', 'html', 'css', 'js', 'htm', 'handlebars', 'scss']
   }
   _.extend ops, options
 
@@ -52,6 +52,7 @@ initLivereload = ()->
   llServer = _livereload.createServer(ops)
   llServer.watch _utils.options.workbench
 
+#######################################插件相关#########################################
 #安装插件的命令
 _program.command('install [names...]')
 .option('-d, --debug', '启动调试模式')
@@ -84,6 +85,15 @@ _program.command('list')
   process.exit 0
 )
 
+#执行某个插件一次
+_program.command('run [plugin]')
+.description('运行某个插件')
+.action((pluginName, program)->
+  init()
+  _pluginPackage.run pluginName, -> process.exit 0
+)
+
+#######################################配置相关#########################################
 #修改配置
 _program.command('config')
 .command('set [value]', '设置键值，如果没有设置值，则会删除该键')
@@ -124,6 +134,7 @@ _program.command('config')
   process.exit 0
 )
 
+#######################################初始化项目相关#########################################
 #初始化项目
 _program.command('init')
 .option('-f, --full', '复制完整示例项目')
@@ -146,6 +157,7 @@ _program.command('init')
     process.exit ~~!!err
 )
 
+#######################################构建相关#########################################
 _program.command('build')
 .description('构建项目')
 .option('-c, --config [value]', '指定配置文件')
@@ -192,6 +204,7 @@ _program.command('build')
       process.exit 0
 )
 
+#######################################缓存相关#########################################
 _program
 .command('cache')
 .option('clean', '清除所有的缓存')
@@ -281,7 +294,7 @@ _program.version(versionDesc).parse(process.argv)
 
 #提示用户需要使用start进行启动
 (->
-  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list', 'config', 'cache']
+  mustIncludeCommand = ['start', 'build', 'install', 'uninstall', 'list', 'config', 'cache', 'run']
   if _.difference(_program.rawArgs, mustIncludeCommand).length is _program.rawArgs.length
     console.log "提示：新版本的silky请使用silky start启动".cyan
 )()
