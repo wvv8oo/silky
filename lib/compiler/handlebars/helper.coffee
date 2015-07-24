@@ -89,6 +89,12 @@ compilePartial = (hbsPath, context, options)->
   return "无法找到partial：#{file}" if not _fs.existsSync file
 
   content = _utils.readFile file
+
+  #扫描子模块中的所有{{}}，如果发现有直接取值的，则考虑提醒用户
+  content.replace /\{\{(\w+)\}\}/ig, (entire, core)->
+    console.log "#{entire} -> {{$0.#{core}}}".red
+    console.log "File: #{_path.relative(_utils.options.workbench, file)}".red
+
   #查找对应的节点数据
   template = _handlebars.compile content
   template(context)
@@ -117,20 +123,23 @@ linkCommand = (args...)->
   new _handlebars.SafeString links.join('\n')
 
 #引入文件的命令
-importCommand = (name, context, options)->
-  #如果则第二个参数像options，则表示没有提供参数
-  if context and context.name in ['import', 'partial']
-    options = context
-    context = _.extend {}, options.data.root
+importCommand = (name, args...)->
+  options = args.pop()
+  data = _.extend {}, options.data.root._ || options.data.root
 
-  #如果传过来的值
-  context = $current: context if not _.isObject context
-  context = context || options.data.root
-  context = context() if _.isFunction context
-  context._ = options.data.root._ || options.data.root
-  #合并silky到context
-  context.silky = _.extend {}, _utils.options if not context.silky
-  html = compilePartial(name, context, options)
+  #要清掉旧数据中的$index
+  #注意，此处不需要删除，因为data是从root中clone过来的
+  #(delete data[key] if /^\$\d+$/.test key) for key, value of data
+
+  #收集每一个参数，按$+index的方式存入data
+  for value, index in args
+    #如果是函数，则先调用
+    value = value() if _.isFunction value
+    data["$#{index}"] = value
+
+  data.$current = data.$0
+
+  html = compilePartial(name, data, options)
   new _handlebars.SafeString(html)
 
 #如果两者等于，则输出
