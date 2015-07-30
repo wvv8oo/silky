@@ -1,6 +1,6 @@
 {
   "name": "silky",
-  "version": "0.8.10",
+  "version": "0.8.11",
   "dependencies": {
     "async": "0.8.0",
     "cheerio": "0.15.0",
@@ -23,6 +23,7 @@
     "mkdirp": "*",
     "moment": "^2.8.4",
     "request": "^2.55.0",
+    "shelljs": "^0.5.1",
     "uglify-js": "*",
     "uuid": "^2.0.1",
     "watch": "0.10.0"
