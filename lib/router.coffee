@@ -180,9 +180,20 @@ responseDirectory = (dir, req, res, next)->
 
 #请求其它静态资源，直接输入出
 responseStatic = (realpath, req, res, next)->
-  #查找文件是否存在
-  return next() if not _fs.existsSync realpath
-  res.sendfile realpath
+  #如果文件不存在，则
+  if not _fs.existsSync realpath
+    data =
+      realpath: realpath
+      req: req
+      res: res
+      next: next
+      stop: false
+
+    _hookHost.triggerHook _hooks.route.notFound, data, (err)->
+      return if data.stop
+      next()
+  else
+    res.sendfile realpath
 
 #找不到
 response404 = (req, res, next)->
