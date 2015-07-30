@@ -1,4 +1,6 @@
 require 'colors'
+require 'shelljs/global'
+
 #需要初始化helper
 require './compiler/handlebars/helper'
 

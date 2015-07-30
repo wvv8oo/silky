@@ -47,26 +47,27 @@ installPluginFromLocalDir = (pluginName, pluginRootDir, sourcePluginDir, registr
   _fs.removeSync targetPluginDir if _fs.existsSync targetPluginDir
   _fs.copySync sourcePluginDir, targetPluginDir
 
+  #切换到对应的目录，并运行npm install
+  cd targetPluginDir
 
-  #运行npm install
-  command = "cd \"#{targetPluginDir}\" && npm install --verbose --registry #{registry}"
-  _utils.execCommand command, (code, message, error)->
-    errMsg = "#{pluginName}安装失败"
-    if code isnt 0
-      console.log errMsg.red
-      return cb null
+  result = exec "npm install --verbose --registry #{registry}"
+  errMsg = "#{pluginName}安装失败"
 
-    #安装插件成功，检查是否为编译器
-    try
-      plugin = require targetPluginDir
-      #注册为编译器
-      registerAsCompiler pluginName if plugin.compiler
-      console.log "#{pluginName}安装成功".green
-    catch e
-      console.log errMsg.red
-      console.log e
+  if result.code isnt 0
+    console.log errMsg.red
+    return cb null
 
-    cb null
+  #安装插件成功，检查是否为编译器
+  try
+    plugin = require targetPluginDir
+    #注册为编译器
+    registerAsCompiler pluginName if plugin.compiler
+    console.log "#{pluginName}安装成功".green
+  catch e
+    console.log errMsg.red
+    console.log e
+
+  cb null
 
 #在指定仓库中安装插件列表
 installPluginsFromLocalDir = (names, pluginRootDir, localRepos, registry, cb)->

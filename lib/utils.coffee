@@ -21,7 +21,7 @@ _options = null
 #  #如果在workbench中没有找到.silky的文件夹，则将目录置为silky的samples目录
 #  if not workbench or not _fs.existsSync _path.join(workbench, exports.identity)
 #    workbench = _path.join __dirname, '..', 'samples'
-readConfig = ->
+readConfig = ()->
   globalConfig = {}
   localConfig = {}
 
@@ -38,7 +38,8 @@ readConfig = ->
     console.log "没有找到配置文件，加载配置默认的配置文件"
     localConfigFile = _path.join(__dirname, 'default_config.coffee')
 
-  localConfig = require(localConfigFile)
+  #需要指定合并本地配置的时候才会合并
+  localConfig = if _options.mergeLocalConfig then require(localConfigFile) else {}
 
   #复制global config中的custom节点
   globalCustom = _.extend {}, globalConfig.custom
@@ -261,16 +262,27 @@ exports.execCommand = (command, cb)->
 
 #更新仓库，如果仓库不存在，则clone仓库
 exports.updateGitRepos = (remoteRepos, localRepos, cb)->
-  console.log "正在同步git仓库..."
-  #目录已经存在，则clone
-  if _fs.existsSync localRepos
-    command = "cd \"#{localRepos}\" && git pull origin master"
-  else
-    command = "git clone \"#{remoteRepos}\" \"#{localRepos}\""
+  #检查git是否安装
+  if not which('git')
+    console.log "您没有安装git，请安装git".red
+    return cb 1
 
-  exports.execCommand command, (code)->
-    console.log "同步git仓库完成"
-    cb code
+  console.log "正在同步git仓库，请稍候..."
+  if _fs.existsSync localRepos
+    console.log "git仓库已经存在，执行git pull"
+    #目录已经存在切换目录，并直接pull
+    cd localRepos
+    result = exec "git pull origin master"
+  else
+    console.log "git仓库不存在，执行git clone"
+    result = exec git "git clone \"#{remoteRepos}\" \"#{localRepos}\""
+
+  if result.code is 0
+    console.log "同步git仓库完成".green
+  else
+    console.log "同步git仓库失败".red
+
+  cb result.code
 
 #清除缓存
 exports.cleanCache = ()->
