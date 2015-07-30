@@ -24,17 +24,19 @@ _version = require(_path.join(__dirname, '../package.json')).version
 console.log "Silky Version -> #{_version}"
 console.log "Silky Root -> #{_path.dirname __dirname}"
 
-init = (options, loadPlugin)->
+init = (ops, loadPlugin)->
   defaultOptions =
     workbench: process.cwd()
     version: _version
     language: 'en'
 
+  options = _.extend(defaultOptions, ops)
   #初始化
-  _initialize _.extend(defaultOptions, options)
+  _initialize options
   #检查silky是否有更新
-  _update.checkSilky _version
-  _update.checkConfig()
+  _update.checkSilky _version if options.checkSilky
+  _update.checkConfig() if options.checkConfig
+
   #初始化插件模块
   require('../lib/plugin').init() if loadPlugin
 
@@ -89,7 +91,7 @@ _program.command('list')
 _program.command('run [plugin]')
 .description('运行某个插件')
 .action((pluginName, program)->
-  init()
+  init(mergeLocalConfig: true)
   _pluginPackage.run pluginName, -> process.exit 0
 )
 
@@ -180,6 +182,8 @@ _program.command('build')
     debug: Boolean(program.debug)
     #特殊指定的配置文件
     config: program.config
+    #build时需要合并本地配置
+    mergeLocalConfig: true
 
   options.language = program.language if program.language
   init options, true
@@ -234,6 +238,12 @@ _program
     env: program.environment
     #用于扩展的命令行参数，提供给插件使用
     extra: program.extra
+    #合并本地配置
+    mergeLocalConfig: true
+    #检查silky的更新
+    updateSilky: true
+    #检查配置文件的更新
+    updateConfig: true
 
   options.language = program.language if program.language
 
