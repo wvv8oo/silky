@@ -92,6 +92,7 @@ compilePartial = (hbsPath, context, options)->
 
   #扫描子模块中的所有{{}}，如果发现有直接取值的，则考虑提醒用户
   content.replace /\{\{(\w+)\}\}/ig, (entire, core)->
+    return if /else|now|raw|date/i.test core
     console.log "#{entire} -> {{$0.#{core}}}".red
     console.log "File: #{_path.relative(_utils.options.workbench, file)}".red
 
