@@ -168,6 +168,7 @@ _program.command('build')
 .option('-f, --force', '强行构建当前目录，适用于编译非Silky项目')
 .option('-e, --environment [value]', '指定项目的运行环境，默认为 production')
 .option('-x, --extra [value]', '用于扩展的参数，根据不同插件要求不同')
+.allowUnknownOption()
 .action((program)->
   options =
     original:
