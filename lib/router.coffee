@@ -13,6 +13,7 @@ _hookHost = require './plugin/host'
 _hooks = require './plugin/hooks'
 _utils = require './utils'
 _compiler = require './compiler'
+_uniqueKey = require './uniqueKey'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
@@ -53,11 +54,12 @@ response = (route, options, req, res, next)->
 #  return next()  if not sourceFile
 
   #交给编译器
-  _compiler.execute route.compiler, route.realpath, options, (err, content)->
+  _compiler.execute route.compiler, route.realpath, options, (err, content, target, type)->
     #编译发生错误
     return response500 req, res, next, JSON.stringify(err) if err
     #没有编译成功，可能是文件格式没有匹配或者其它原因
     return responseStatic(route.realpath, req, res, next) if content is false
+
     #响应数据到客户端
     responseContent content, route.mime, req, res, next
 
@@ -288,5 +290,6 @@ module.exports = (app)->
 
       options =
         pluginData: data.pluginData
+        onCompiled: _uniqueKey.execute
 
       response data.route, options, req, res, next
