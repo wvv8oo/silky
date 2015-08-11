@@ -7,10 +7,10 @@ _hookHost = require '../plugin/host'
 _utils = require '../utils'
 _compiler = require '../compiler'
 _host = require '../plugin/host'
+_uniqueKey = require '../uniqueKey'
 
 _buildConfig = null
 _outputRoot = null
-
 
 #根据build的规则，判断是否要忽略
 pathIsIgnore = (source, relativePath)->
@@ -87,6 +87,7 @@ arrangeSingleFile = (source, target, cb)->
           pluginData: data.pluginData
           save: true
           target: target
+          onCompiled: _uniqueKey.execute
 
         #从插件中查找编译器
         compilerName = _host.getCompilerWithExt(data.type) || data.type
