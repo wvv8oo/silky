@@ -5,6 +5,9 @@ module.exports = {
     port: 14422,
     //使用兼容模式，即可以兼容0.5.5之前的silky项目
     compatibleModel: true,
+    //加在css与js后面加入缓存的md5信息
+    //{md5}将会获得一个随机的md5值，{date}将会获得当前的日期，{datetime}将会获得当前时间
+    uniqueKey: 'v={md5}',
     //代理配置相关，兼容json-proxy的代理配置
     proxy: {
         forward: {
