@@ -12,6 +12,7 @@ _plugin = require './plugin'
 _update = require './update'
 _object2string = require './object2string'
 _beautify = require('js-beautify').js_beautify
+_crypto = require 'crypto'
 
 require 'colors'
 
@@ -100,6 +101,11 @@ exports.samplesDirectory = (dir = '')->
 exports.isProduction = -> _options.env is 'production'
 
 exports.isDevelopment = -> _options.env is 'development'
+
+#md5处理字符
+exports.md5 = (text)->
+  md5 = _crypto.createHash 'md5'
+  md5.update(text).digest('base64')
 
 #如果是产品环境，则报错，否则返回字符
 exports.combError = (error)->
