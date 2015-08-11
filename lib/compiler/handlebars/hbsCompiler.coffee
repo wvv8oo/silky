@@ -37,12 +37,14 @@ exports.compile = (source, options, cb)->
     isBeautify =  _utils.xPathMapValue('beautify.html', _utils.config)
     html = if isBeautify then _htmlpretty(content) else content
 
+    fileType = 'html'
+    html = options.onCompiled html, fileType if options.onCompiled
     #需要写入文件
     if options.save and options.target
-      target = _utils.replaceExt options.target, 'html'
-      _utils.writeFile target, content
+      target = _utils.replaceExt options.target, fileType
+      _utils.writeFile target, html
 
-    cb null, html, target
+    cb null, html, target, 'html'
   catch e
     console.log e
     #调用目的是为了产品环境throw
