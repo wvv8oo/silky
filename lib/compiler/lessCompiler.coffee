@@ -51,12 +51,15 @@ exports.compile = (source, options, cb)->
 
     try
       cssContent = tree.toCSS(cleancss: false)
+      fileType = 'css'
+      cssContent = options.onCompiled cssContent, fileType if options.onCompiled
+
       #需要直接保存到文件中
       if options.save and options.target
-        target = _utils.replaceExt options.target, 'css'
+        target = _utils.replaceExt options.target, fileType
         _utils.writeFile target, cssContent
 
-      cb err, cssContent, target
+      cb err, cssContent, target, 'css'
     catch e
       console.log "CSS Error: #{file}".red
       console.log err
