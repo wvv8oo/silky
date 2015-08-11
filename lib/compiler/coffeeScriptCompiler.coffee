@@ -34,9 +34,12 @@ exports.compiler = (source, options, cb)->
         sourceMapStr = _convertSourceMap.fromObject(sourceMapObj).toComment()
         compiledJs += '\n' + sourceMapStr
 
+    fileType = 'js'
+    compiledJs = options.onCompiled compiledJs, fileType if options.onCompiled
+
     #如果需要保存编译后的文件
     if options.save and options.target
-        target = _utils.replaceExt options.target, 'js'
+        target = _utils.replaceExt options.target, fileType
         _utils.writeFile target, compiledJs
 
-    cb null, compiledJs, target
+    cb null, compiledJs, target, 'js'
