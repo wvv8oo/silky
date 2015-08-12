@@ -44,15 +44,15 @@ htmlUniqueKey  = (content, uniqueKey)->
   rules = [
     {
       firstExpr: /<link.+href=['"](.+?)['"].*>/g,
-      secondExpr: /href="(.+)"/i,
+      secondExpr: /href=['"](.+?)['"]/i,
       replaceTo: "href='{0}'"
     },{
       firstExpr: /<script.+src=['"](.+?)['"].*>/g,
-      secondExpr: /src="(.+)"/i,
+      secondExpr: /src=['"](.+?)['"]/i,
       replaceTo: "src='{0}'"
     },{
       firstExpr: /<img.+src=['"](.+?)['"].*>/g,
-      secondExpr: /src="(.+)"/i,
+      secondExpr: /src=['"](.+?)['"]/i,
       replaceTo: "src='{0}'"
     }
   ]
