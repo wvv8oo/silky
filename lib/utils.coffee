@@ -281,7 +281,7 @@ exports.updateGitRepos = (remoteRepos, localRepos, cb)->
     result = exec "git pull origin master"
   else
     console.log "git仓库不存在，执行git clone"
-    result = exec git "git clone \"#{remoteRepos}\" \"#{localRepos}\""
+    result = exec "git clone \"#{remoteRepos}\" \"#{localRepos}\""
 
   if result.code is 0
     console.log "同步git仓库完成".green
