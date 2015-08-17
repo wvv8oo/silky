@@ -14,6 +14,7 @@ _hooks = require './plugin/hooks'
 _utils = require './utils'
 _compiler = require './compiler'
 _uniqueKey = require './uniqueKey'
+_executable = require './executable'
 
 #如果文件存在，则直接响应这个文件
 responseFileIfExists = (file, res)->
@@ -219,7 +220,6 @@ getRouteRealPath = (route)->
   route.realpath = _path.join rootDir, route.url
   route
 
-
 #处理用户自定义的路由
 routeRewrite = (origin)->
   route =
@@ -257,6 +257,10 @@ module.exports = (app)->
     url = _url.parse(req.url)
     qs = _qs.parse url.query
     route = routeRewrite url.pathname
+
+    #遇到可执行的路由
+    return _executable route, url, req, res, next if route?.rule.executable
+
     #如果querystring中已经指定编译器，则使用指定的编译器
     route.compiler = qs.compiler || route.compiler
 
