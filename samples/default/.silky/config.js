@@ -21,8 +21,15 @@ module.exports = {
     routers: [
         //如果希望访问目录直接访问index.html，则可以启用下面的路由
         {
-            //path: 原路径，to: 替换后的路径，next：是否继承执行下一个路由替换，static：是否为静态文件，静态文件直接返回
-            path: /^\/$/, to: 'index.html', next: true, static: false
+            //path: 原路径，
+            //to: 替换后的路径
+            //next：是否继承执行下一个路由替换
+            //static：是否为静态文件，静态文件直接返回
+            //executable： 是否可执行，如果可执行，则会以node.js文件的方式被require并执行
+            path: /^\/$/, to: 'index.html', next: true, static: false, executable: false
+        },
+        {
+            path: /^\/api\/.+/, to: 'server.js', next: false, executable: true
         }
     ],
     //插件的配置
