@@ -1,7 +1,8 @@
 #    Author: 易晓峰
 #    E-mail: wvv8oo@gmail.com
 #    Date: 3/30/15 4:51 PM
-#    Description: 处理配置文件
+#    Description: 管理配置文件，以及读取配置
+
 _fs = require 'fs-extra'
 _jsonl = require 'json-literal'
 _ = require 'lodash'
