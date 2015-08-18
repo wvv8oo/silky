@@ -259,7 +259,7 @@ module.exports = (app)->
     route = routeRewrite url.pathname
 
     #遇到可执行的路由
-    return _executable route, url, req, res, next if route?.rule.executable
+    return _executable route, url, req, res, next if route?.rule?.executable
 
     #如果querystring中已经指定编译器，则使用指定的编译器
     route.compiler = qs.compiler || route.compiler
