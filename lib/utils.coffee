@@ -7,6 +7,8 @@ _fs = require 'fs-extra'
 _path = require 'path'
 _ = require 'lodash'
 _child = require 'child_process'
+_net = require 'net'
+_async = require 'async'
 
 _plugin = require './plugin'
 _update = require './update'
@@ -300,3 +302,20 @@ exports.cleanCache = ()->
 exports.honeyConfig =
   'boilerplateRepository': 'http://git.hunantv.com/honey-lab/silky-boilerplate.git'
   'pluginRepository': 'http://git.hunantv.com/honey-lab/silky-plugins.git'
+
+
+testFreePort = (fromPort, cb)->
+  server = _net.createServer()
+  server.listen fromPort, (err)->
+    server.once 'close', -> cb fromPort, true
+    server.close()
+
+  server.on 'error', (err)-> cb fromPort, false
+
+#获取可用端口
+exports.freePort = (fromPort, cb)->
+  callback = (port, success)->
+    return cb port if success
+    testFreePort port + 1, callback
+
+  testFreePort fromPort, callback
