@@ -50,9 +50,13 @@ initLivereload = ()->
   }
   _.extend ops, options
 
-  #启动livereload服务
-  llServer = _livereload.createServer(ops)
-  llServer.watch _utils.options.workbench
+  #取一个随机可用的端口
+  _utils.freePort 35729, (port)->
+    #启动livereload服务
+    ops.port = port
+    _utils.options.livereload = "http://localhost:#{port}{/livereload.js"
+    llServer = _livereload.createServer(ops)
+    llServer.watch _utils.options.workbench
 
 #######################################插件相关#########################################
 #安装插件的命令
