@@ -28,16 +28,15 @@ mergeLessPath = ()->
   paths
 
 #编译less
-exports.compile = (source, options, cb)->
-#  #css文件不处理
-#  if _path.extname(source) isnt '.less'
-#    return cb null, _utils.readFile(source)
+exports.compile = (source, relativeSource, options, cb)->
+  fileType = 'css'
+  return cb null, false if not _fs.existsSync source
 
-  file = _utils.replaceExt source, 'less'
-  return cb null, false if not _fs.existsSync file
+  content = _utils.readFile source
+  #不处理非less的文件
+  return cb null, content, fileType if /\.css$/i.test source
 
-  #读取并转换less
-  content = _fs.readFileSync file, 'utf-8'
+  console.log "Compile #{relativeSource} by less compiler"
   #选项
   lessOptions =  paths: mergeLessPath()
 
@@ -51,16 +50,8 @@ exports.compile = (source, options, cb)->
 
     try
       cssContent = tree.toCSS(cleancss: false)
-      fileType = 'css'
-      cssContent = options.onCompiled cssContent, fileType if options.onCompiled
-
-      #需要直接保存到文件中
-      if options.save and options.target
-        target = _utils.replaceExt options.target, fileType
-        _utils.writeFile target, cssContent
-
-      cb err, cssContent, target, 'css'
+      cb err, cssContent, fileType
     catch e
       console.log "CSS Error: #{file}".red
       console.log err
-      cb e
+      cb e, false
