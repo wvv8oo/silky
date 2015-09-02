@@ -11,9 +11,9 @@ _utils = require '../utils'
 _host = require '../plugin/host'
 
 #编译器列表
-_coffeeCompiler = require './coffeeScriptCompiler'
-_lessCompiler = require './lessCompiler'
-_hbsCompiler = require './handlebars/hbsCompiler'
+_coffeeCompiler = require './coffee_script_compiler'
+_lessCompiler = require './less_compiler'
+_hbsCompiler = require './handlebars/compiler'
 
 #根据path判断对应的编译器，优先匹配插件
 getCompilerWithPath = (path)->
