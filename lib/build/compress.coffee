@@ -4,23 +4,23 @@ _fs = require 'fs-extra'
 _path = require 'path'
 _cleanCSS = require 'clean-css'
 _cheerio = require 'cheerio'
+_ = require 'lodash'
 
 _hookHost = require '../plugin/host'
 _utils = require '../utils'
 _hooks = require '../plugin/hooks'
-_outputRoot = null
+_aft = require './aft'
 
 #压缩js
-compressJS = (file, relativePath, cb)->
+compressJS = (entity, cb)->
   #不需要压缩
   return cb null if not _utils.xPathMapValue('build.compress.js', _utils.config)
-  console.log "Compress JS -> #{relativePath}".green
-  result = _uglify.minify file
-  _utils.writeFile file, result.code
+  console.log "Compress JS #{entity.target}"
+  entity.content = _uglify.minify(entity.content, {fromString: true}).code
   cb null
 
 #压缩css
-compressCSS = (file, relativePath, cb)->
+compressCSS = (entity, cb)->
   userOptions = _utils.xPathMapValue('build.compress.css', _utils.config)
   return cb null if not userOptions
 
@@ -28,113 +28,77 @@ compressCSS = (file, relativePath, cb)->
   options = compatibility: 'ie7'
   options = userOptions if typeof userOptions is 'object'
 
-  console.log "Compress CSS-> #{relativePath}".green
-  content = _utils.readFile file
-  content = new _cleanCSS(options).minify content
-  _utils.writeFile file, content
+  console.log "Compress CSS #{entity.target}"
+  entity.content = new _cleanCSS(options).minify entity.content
   cb null
 
 #压缩html以及internal script
-compressHTML = (file, relativePath, cb)->
+compressHTML = (entity, cb)->
   compressHtml = _utils.xPathMapValue('build.compress.html', _utils.config)
   compressInternal = _utils.xPathMapValue('build.compress.internal', _utils.config)
   return cb null if not compressHtml and not compressInternal
 
-  content = _utils.readFile file
-  console.log "Compress HTML-> #{relativePath}".green
-  compressInternal = compressInternal and /<script.+<\/script>/i.test(content)
-  rewrite = compressInternal or compressHtml
+  console.log "Compress HTML #{entity.target}"
+  compressInternal = compressInternal and /<script.+<\/script>/i.test(entity.content)
 
   #如果不包含script在页面中，则不需要压缩
   if compressInternal
     #压缩internal的script
-    content = compressInternalJavascript file, content
+    entity.content = compressInternalJavascript entity
 
-  if compressHtml
-    #暂时不压缩html，以后考虑压缩html
-    content = content
+#  if compressHtml
+#    #暂时不压缩html，以后考虑压缩html
+#    content = content
 
-  _utils.writeFile file, content if rewrite
   cb null
 
 #调用cheerio，提取并压缩内联的js
-compressInternalJavascript = (file, content)->
-  $ = _cheerio.load content
+compressInternalJavascript = (entity)->
+  $ = _cheerio.load entity.content
   #跳过模板部分
   $('script').each ()->
     $this = $(this)
     if $this.attr('type') isnt 'html/tpl'
-      minify = scriptMinify file, $this.html()
+      minify = scriptMinify entity, $this.html()
       $this.html minify
 
   $.html()
 
 #压缩javascript的内容
-scriptMinify = (file, content)->
+scriptMinify = (entity, script)->
   try
-    result = _uglify.minify content, fromString: true
+    result = _uglify.minify script, fromString: true
     result.code
   catch e
-    console.log "编译JS出错，文件：#{file}".red
+    console.log "编译JS出错，文件：#{entity.source}".red
     console.log e
-    console.log content.red
-    return content
+    console.log script.red
+    return script
 
 #压缩文件，仅压缩html/js/
-compressSingleFile = (file, cb)->
-  relativePath = _path.relative _outputRoot, file
+compressSingleFile = (entity, cb)->
+  return cb null if not entity.compress
 
   #只处理js/html/css
-  if /\.js$/i.test file
-    compressJS file, relativePath, cb
-  else if /\.css$/i.test file
-    compressCSS file, relativePath, cb
-  else if /\.html?$/i.test file
-    compressHTML file, relativePath, cb
-  else
-    return cb null
+  switch entity.type
+    when 'js' then compressJS entity, cb
+    when 'css' then compressCSS entity, cb
+    when 'html' then compressHTML entity, cb
+    else cb null
 
-#压缩目录
-compressDirectory = (dir, cb)->
-  files = _fs.readdirSync dir
-  index = 0
-  _async.whilst(
-    -> index < files.length
-    ((done)->
-      filename = files[index++]
-      path = _path.join dir, filename
-      compress path, done
-    ),
-    cb
-  )
 
 #混淆整个目录或者文件
-compress = (path, cb)->
-  stat = _fs.statSync path
-
+compress = (entity, cb)->
   queue = []
 #  压缩之前，先让hook处理
   queue.push(
     (done)->
-      relativePath = _path.relative _outputRoot, path
-      data =
-        stat: stat
-        path: path
-        relativePath: relativePath
-        ignore: _utils.simpleMatch _utils.xPathMapValue('build.compress.ignore', _utils.config), relativePath
-
-      _hookHost.triggerHook _hooks.build.willCompress, data, (err)->
-        done data.ignore
+      _hookHost.triggerHook _hooks.build.willCompress, entity, (err)-> done err
   )
 
   #处理文件或者目录
   queue.push(
-    (done)->
-#      console.log path
-      if stat.isDirectory()
-        compressDirectory path, done
-      else
-        compressSingleFile path, done
+    (done)-> compressSingleFile entity, done
   )
 
   #处理完的hook
@@ -146,6 +110,21 @@ compress = (path, cb)->
   _async.waterfall queue, -> cb null
 
 #执行压缩
-exports.execute = (output, cb)->
-  _outputRoot = output
-  compress output, (err)-> cb null
+exports.execute = (cb)->
+  entities = _aft.tree()
+  index = 0
+  keys = _.keys entities
+
+  _async.whilst(
+    -> index < keys.length
+    ((done)->
+      entity = entities[keys[index++]]
+      compress entity, done
+    ),
+    cb
+  )
+
+#根据配置文件，检测文件是否需要压缩
+exports.needCompress = (source)->
+  rules = _utils.xPathMapValue('build.compress.ignore', _utils.config)
+  not _utils.simpleMatch(rules, source)
