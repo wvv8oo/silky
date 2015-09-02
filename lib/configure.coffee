@@ -4,7 +4,6 @@
 #    Description: 管理配置文件，以及读取配置
 
 _fs = require 'fs-extra'
-_jsonl = require 'json-literal'
 _ = require 'lodash'
 
 _utils = require './utils'

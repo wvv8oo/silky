@@ -22,6 +22,7 @@ exports.silkyForHook = (pluginName, pluginPriority)->
     isProduction: _utils.isProduction()
     isDevelopment: _utils.isDevelopment()
     homeDirectory: _utils.homeDirectory()
+    simpleMatch: _utils.simpleMatch
 
   data: _data.whole
   #用于编译的处理器
