@@ -5,6 +5,7 @@
 
 _fs = require 'fs-extra'
 _ = require 'lodash'
+_path = require 'path'
 
 _utils = require '../utils'
 _host = require '../plugin/host'
@@ -28,6 +29,7 @@ getCompilerWithPath = (path)->
 getCompilerWithType = (type)->
   #默认的编译器
   compilerMatches =
+    htm: 'hbs'
     html: 'hbs'
     css: 'less'
     js: 'coffee'
@@ -53,14 +55,16 @@ exports.execute = (compilerName, source, options, cb)->
     cb = options
     options = {}
 
+  relativeSource = _path.relative _utils.options.workbench, source
   #如果在插件中有指定了编译器，那么采用插件中指定的编译器
   compiler = _host.getCompilerWithName compilerName
 
-  return compiler source, options, cb if compiler
+  return compiler source, relativeSource, options, cb if compiler
 
+  #内置的编译器
   switch compilerName
-    when 'less' then return _lessCompiler.compile source, options, cb
-    when 'coffee' then return _coffeeCompiler.compiler source, options, cb
-    when 'hbs' then return _hbsCompiler.compile source, options, cb
+    when 'less' then return _lessCompiler.compile source, relativeSource, options, cb
+    when 'coffee' then return _coffeeCompiler.compile source, relativeSource, options, cb
+    when 'hbs' then return _hbsCompiler.compile source, relativeSource, options, cb
 
   cb null, false
