@@ -12,9 +12,17 @@ _utils = require '../../utils'
 _data = require '../../data'
 
 #渲染一个模板
-exports.compile = (source, options, cb)->
+exports.compile = (source, relativeSource, options, cb)->
+  fileType = 'html'
+  #非hbs文件直接返回
+  return cb null, false, fileType if not /\.hbs/i.test source
+  #文件不存在
+  return cb null, false if not _fs.existsSync source
+
+  console.log "Compile #{relativeSource} by handlebars compiler"
   try
-    source = _utils.replaceExt source, 'hbs'
+    #只处理hbs的扩展名
+#   source = _utils.replaceExt source, 'hbs'
     content = _utils.readFile source
     hbsTemplate = _handlebars.compile content
 
@@ -36,15 +44,7 @@ exports.compile = (source, options, cb)->
     #暂时不注入script，以后用livereload的时候再考虑
     isBeautify =  _utils.xPathMapValue('beautify.html', _utils.config)
     html = if isBeautify then _htmlpretty(content) else content
-
-    fileType = 'html'
-    html = options.onCompiled html, fileType if options.onCompiled
-    #需要写入文件
-    if options.save and options.target
-      target = _utils.replaceExt options.target, fileType
-      _utils.writeFile target, html
-
-    cb null, html, target, 'html'
+    cb null, html, fileType
   catch e
     console.log e
     #调用目的是为了产品环境throw
