@@ -228,11 +228,12 @@ exports.debug = (message)->
   console.log message
 
 #根据文件路径或者url，判断文件类型
-exports.detectFileType = (path)->
+#如果是url，则会判断没有.的为文件夹
+exports.detectFileType = (path, isUrl)->
   extname = _path.extname(path).toLowerCase()
   return 'html' if extname in ['.html', '.htm']
   #不包含.的，默认为一个文件夹
-  return 'dir' if not /\./.test extname
+  return 'directory' if isUrl and not /\./.test extname
   #替换掉.，返回扩展名
   return extname.replace('.', '')
 
