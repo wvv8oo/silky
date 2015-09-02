@@ -47,7 +47,7 @@ responseContent = (content, mime, req, res, next)->
 #统一处理响应
 response = (route, options, req, res, next)->
   #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
-  return if /\.(html|htm|js|css|coffee)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
+  return if /\.(html|htm|js|css)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
 
 #  #查找真实的未编译源文件路径
 #  sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
@@ -55,7 +55,7 @@ response = (route, options, req, res, next)->
 #  return next()  if not sourceFile
 
   #交给编译器
-  _compiler.execute route.compiler, route.realpath, options, (err, content, target, type)->
+  _compiler.execute route.compiler, route.realpath, options, (err, content, fileType)->
     #编译发生错误
     return response500 req, res, next, JSON.stringify(err) if err
     #没有编译成功，可能是文件格式没有匹配或者其它原因
@@ -64,45 +64,6 @@ response = (route, options, req, res, next)->
     #响应数据到客户端
     responseContent content, route.mime, req, res, next
 
-###
-#请求html文件
-responseHTML = (file, pluginData, req, res, next)->
-  #不存在这个文件，则读取模板
-  hbsFile = file.replace(/\.(html)|(html)$/i, '.hbs')
-  #没有这个模板文件，返回404错误
-  if not _fs.existsSync hbsFile
-    console.log "HTML或者hbs文件没找到->#{file}".red
-    return next()
-
-  content = _template.render hbsFile, pluginData
-  responseContent content, _mime.lookup('html'), req, res, next
-
-#请求css，如果是less则编译
-responseCSS = (file, req, res, next)->
-  #不存在这个css，则渲染less
-  lessFile = _utils.replaceExt file, '.less'
-  #如果不存在这个文件，则交到下一个路由
-  if not _fs.existsSync lessFile
-    console.log "CSS或Less无法找到->#{file}".red
-    return next()
-
-  _css.render lessFile, (err, css)->
-    #编译发生错误
-    return response500 req, res, next, JSON.stringify(err) if err
-    responseContent css, _mime.lookup('css'), req, res, next
-
-#响应js
-responseJS = (file, req, res, next)->
-  #如果没有找到，则考虑编译coffee
-  coffeeFile = _utils.replaceExt file, '.coffee'
-  #如果不存在这个文件，则交到下一个路由
-  if not _fs.existsSync coffeeFile
-    console.log "Coffee或JS无法找到->#{file}".red
-    return next()
-
-  content =  _script.compile coffeeFile
-  responseContent content, _mime.lookup('js'), req, res, next
-###
 
 #响应文件夹列表
 responseDirectory = (dir, req, res, next)->
@@ -238,7 +199,7 @@ routeRewrite = (origin)->
   console.log "#{origin} -> #{route.url}".green if route.url isnt origin
 
   #根据url判断类型
-  route.type = _utils.detectFileType(route.url)
+  route.type = _utils.detectFileType(route.url, true)
   #探测出mime的类型
   route.mime = _mime.lookup(route.url)
   #默认的编译器名称
@@ -294,6 +255,5 @@ module.exports = (app)->
 
       options =
         pluginData: data.pluginData
-        onCompiled: _uniqueKey.execute
 
       response data.route, options, req, res, next
