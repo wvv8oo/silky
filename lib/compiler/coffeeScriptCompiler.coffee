@@ -8,18 +8,21 @@ _fs = require 'fs'
 _convertSourceMap = require 'convert-source-map'
 
 #编译coffee
-exports.compiler = (source, options, cb)->
-    #编译coffee
-    file = _path.join _utils.replaceExt source, '.coffee'
-
+exports.compile = (source, relativeSource, options, cb)->
+    fileType = 'js'
     #文件不存在
-    return cb null, false if not _fs.existsSync file
+    return cb null, false if not _fs.existsSync source
 
+    content = _utils.readFile(source)
+    #对于js文件，直接返回内容即可
+    return cb null, content, fileType if /\.js$/i.test source
+
+    console.log "Compile #{relativeSource} by coffee compiler"
     compilerOptions =
-        filename: _path.basename(file)
+        filename: _path.basename(source)
         sourceMap: true
 
-    compiledObj = _coffee.compile _utils.readFile(file), compilerOptions
+    compiledObj = _coffee.compile content, compilerOptions
     compiledJs = compiledObj.js
 
     #开发模式下，加入source map
@@ -27,19 +30,11 @@ exports.compiler = (source, options, cb)->
         sourceMapObj = {
             version: 3,
             file:  _path.basename(_utils.replaceExt source + '.js'),
-            sources: [_path.basename(file)],
+            sources: [_path.basename(source)],
             names: [],
             mappings: JSON.parse(compiledObj.v3SourceMap).mappings
         }
         sourceMapStr = _convertSourceMap.fromObject(sourceMapObj).toComment()
         compiledJs += '\n' + sourceMapStr
 
-    fileType = 'js'
-    compiledJs = options.onCompiled compiledJs, fileType if options.onCompiled
-
-    #如果需要保存编译后的文件
-    if options.save and options.target
-        target = _utils.replaceExt options.target, fileType
-        _utils.writeFile target, compiledJs
-
-    cb null, compiledJs, target, 'js'
+    cb null, compiledJs, fileType
