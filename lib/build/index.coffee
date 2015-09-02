@@ -8,13 +8,14 @@ _fs = require 'fs-extra'
 _path = require 'path'
 _async = require 'async'
 require 'colors'
+_os = require 'os'
 
 _utils = require '../utils'
 _make = require './make'
 _compress = require './compress'
 _hooks = require '../plugin/hooks'
 _hookHost = require '../plugin/host'
-_os = require 'os'
+_aft = require './aft'
 
 exports.execute = (cb)->
   queue = []
@@ -69,7 +70,12 @@ exports.execute = (cb)->
   #压缩代码
   queue.push(
     (done)->
-      _compress.execute output, done
+      _compress.execute done
+  )
+
+  #保存
+  queue.push(
+    (done)-> _aft.save done
   )
 
   queue.push(
