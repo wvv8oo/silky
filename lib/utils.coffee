@@ -200,7 +200,7 @@ exports.xPathSetValue = (xPath, root, value)->
 
 
 #简单的匹配，支持绝对匹配，正则匹配，以及匿名函数匹配
-exports.simpleMatch = (rules, value)->
+exports.simpleMatch = (rules, value, ignoreCase)->
   return false if not rules
   rules = [rules] if not (rules instanceof Array)
   result = false
@@ -210,6 +210,8 @@ exports.simpleMatch = (rules, value)->
     else if typeof rule is 'function'
       result = rule(value)
     else
+      #将规则转换为正则，并且允许忽略大小写
+      rule = new RegExp("^#{rule}$", if ignoreCase then 'i' else '')
       result = rule is value
 
     return result if result
