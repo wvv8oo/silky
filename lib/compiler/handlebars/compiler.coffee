@@ -10,20 +10,11 @@ _htmlpretty = require('js-beautify').html
 
 _utils = require '../../utils'
 _data = require '../../data'
+_compilerMgr = require '../compiler_manager'
 
 #渲染一个模板
-exports.compile = (source, relativeSource, options, cb)->
-  fileType = 'html'
-  #非hbs文件直接返回
-  return cb null, false, fileType if not /\.hbs/i.test source
-  #文件不存在
-  return cb null, false if not _fs.existsSync source
-
-  console.log "Compile #{relativeSource} by handlebars compiler"
+hbsHandler = (content, options, cb)->
   try
-    #只处理hbs的扩展名
-#   source = _utils.replaceExt source, 'hbs'
-    content = _utils.readFile source
     hbsTemplate = _handlebars.compile content
 
     #使用json的数据进行渲染模板
@@ -36,17 +27,17 @@ exports.compile = (source, relativeSource, options, cb)->
     #额外的附加数据
     data.$$.plugin = options.pluginData
     data.$$.silky = data.silky
-    data.$$.file = source
+    data.$$.file = options.source
     data._ = data
 
-    content = hbsTemplate data
+    htmlContent = hbsTemplate data
 #    html = injectScript content
     #暂时不注入script，以后用livereload的时候再考虑
     isBeautify =  _utils.xPathMapValue('beautify.html', _utils.config)
-    html = if isBeautify then _htmlpretty(content) else content
-    cb null, html, fileType
+    htmlContent = _htmlpretty(htmlContent) if isBeautify
+    cb null, htmlContent
   catch e
     console.log e
-    #调用目的是为了产品环境throw
-    _utils.combError(e)
     cb e, false
+
+module.exports = _compilerMgr.registerCompiler('hbs', 'hbs', 'html', hbsHandler)
