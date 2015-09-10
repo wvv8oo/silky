@@ -124,6 +124,10 @@ exports.replaceExt = (file, ext)->
   ext = ".#{ext}" if not /^\./.test ext
   file.replace _path.extname(file), ext
 
+#获取不带.的扩展名
+exports.getExtension = (path)->
+  _path.extname(path).substr(1)
+
 #读取文件
 exports.readFile = (file)-> _fs.readFileSync file, 'utf-8'
 #保存文件
@@ -212,7 +216,7 @@ exports.simpleMatch = (rules, value, ignoreCase)->
     else
       #将规则转换为正则，并且允许忽略大小写
       rule = new RegExp("^#{rule}$", if ignoreCase then 'i' else '')
-      result = rule is value
+      result = rule.test value
 
     return result if result
 
