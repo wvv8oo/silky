@@ -3,38 +3,36 @@
 ###
 _path = require 'path'
 _utils = require '../utils'
-_coffee = require 'coffee-script'
 _fs = require 'fs'
-_convertSourceMap = require 'convert-source-map'
+_coffee = null
+_convertSourceMap = null
+
+_compilerMgr = require './compiler_manager'
 
 #编译coffee
-exports.compile = (source, relativeSource, options, cb)->
-    fileType = 'js'
-    #文件不存在
-    return cb null, false if not _fs.existsSync source
+coffeeHandler = (content, options, cb)->
+	_coffee = require 'coffee-script' if not _coffee
+	_convertSourceMap = require 'convert-source-map' if not _convertSourceMap
 
-    content = _utils.readFile(source)
-    #对于js文件，直接返回内容即可
-    return cb null, content, fileType if /\.js$/i.test source
+	compilerOptions =
+		filename: _path.basename(options.source)
+		sourceMap: true
+	compiledObj = _coffee.compile content, compilerOptions
+	compiledJs = compiledObj.js
 
-    console.log "Compile #{relativeSource} by coffee compiler"
-    compilerOptions =
-        filename: _path.basename(source)
-        sourceMap: true
+	#开发模式下，加入source map
+	if _utils.isDevelopment()
+		sourceMapObj = {
+			version: 3,
+			file:  _path.basename(_utils.replaceExt(options.source + '.js')),
+			sources: [_path.basename(options.source)],
+			names: [],
+			mappings: JSON.parse(compiledObj.v3SourceMap).mappings
+		}
+		sourceMapStr = _convertSourceMap.fromObject(sourceMapObj).toComment()
+		compiledJs += '\n' + sourceMapStr
 
-    compiledObj = _coffee.compile content, compilerOptions
-    compiledJs = compiledObj.js
+	cb null, compiledJs
 
-    #开发模式下，加入source map
-    if _utils.isDevelopment()
-        sourceMapObj = {
-            version: 3,
-            file:  _path.basename(_utils.replaceExt source + '.js'),
-            sources: [_path.basename(source)],
-            names: [],
-            mappings: JSON.parse(compiledObj.v3SourceMap).mappings
-        }
-        sourceMapStr = _convertSourceMap.fromObject(sourceMapObj).toComment()
-        compiledJs += '\n' + sourceMapStr
 
-    cb null, compiledJs, fileType
+module.exports = _compilerMgr.registerCompiler('coffee', 'coffee', 'js', coffeeHandler)
