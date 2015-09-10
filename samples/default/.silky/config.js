@@ -4,7 +4,7 @@ module.exports = {
     //80端口在*nix下需要sudo
     port: 14422,
     //使用兼容模式，即可以兼容0.5.5之前的silky项目
-    compatibleModel: true,
+    compatibleModel: false,
     //加在css与js后面加入缓存的md5信息
     //{md5}将会获得一个随机的md5值，{date}将会获得当前的日期，{datetime}将会获得当前时间
     uniqueKey: 'v={md5}',
@@ -15,32 +15,35 @@ module.exports = {
             //"/ajax": "/"
         }
     },
-    /*
     //编译器相关
     compiler: {
         //根据规则捕获文件路径，并指定路由
         //注意，路径捕获规则的优先级要高于扩展名规则
         rules: [
+            //所有扩展名带有handlebars的路径，都使用hbs编译器
+            //仅限于build的时候，如果是实时预览需要特别指定，可以在routers中指定编译器
             {
-                path: /^index\.(html|jade)$/i, compiler: 'jade'
+                path: /\.handlebars$/i, compiler: 'hbs'
             }
         ],
-        //根据扩展名指定编译器，这也是默认的编译器配置
-        extension: {
-            htm: 'hbs',
-            html: 'hbs',
-            css: 'less',
-            js: 'coffee'
-        }
+        //建立源文件与目标文件的映射关系
+        maps: [
+            //强制指定handlebars扩展名的使用hbs编译器，最终编译后的扩展为html，当用户请求html时，会去查找hbs的文件
+            {
+                sourceExt: 'handlebars', targetExt: 'html', compiler: 'hbs'
+            }
+        ]
     },
-    */
     //如果不需要启用livereload，请注释掉livereload，默认监控扩展名为：'less', 'coffee', 'hbs', 'html', 'css'
     livereload: {},
     //路由
     routers: [
         {
-          //将所有扩展名为js的重命名为coffee，指定编译器为coffee
-          path: /^(.+).js$/i, to: '$1.coffee', compiler: 'coffee', next: false
+            path: /^(.+).html$/i, to: '$1.hbs', compiler: 'hbs', next: true
+        },
+        {
+            //将所有扩展名为js的重命名为coffee，指定编译器为coffee
+            path: /^(.+).js$/i, to: '$1.coffee', compiler: 'coffee', next: false, mime: 'text/javascript'
         },
         //如果希望访问目录直接访问index.html，则可以启用下面的路由
         {
@@ -49,7 +52,8 @@ module.exports = {
             //next：是否继承执行下一个路由替换
             //static：是否为静态文件，静态文件直接返回
             //executable： 是否可执行，如果可执行，则会以node.js文件的方式被require并执行
-            path: /^\/$/, to: 'index.html', next: true, static: false, executable: false
+            //compiler：强行指定该路由使用的编译器，优先级要高于compiler.rules与compiler.exts
+            path: /^\/$/, to: '/template/index.html', next: true, static: false, executable: false
         },
         {
             path: /^\/api\/.+/, to: 'server.js', next: false, executable: true
