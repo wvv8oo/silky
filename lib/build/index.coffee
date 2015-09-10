@@ -61,9 +61,9 @@ exports.execute = (cb)->
   #处理完成
   queue.push(
     (done)->
-      data = output: output
+      entities = _aft.tree()
 
-      _hookHost.triggerHook  _hooks.build.didMake, data, (err)->
+      _hookHost.triggerHook  _hooks.build.didMake, entities, (err)->
         done null
   )
 
