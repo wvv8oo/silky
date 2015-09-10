@@ -4,9 +4,10 @@
 _utils = require '../utils'
 _fs = require 'fs'
 _path = require 'path'
-_less = require 'less'
 _ = require 'lodash'
+_less = null
 
+_compilerMgr = require './compiler_manager'
 _data = require '../data'
 
 #合并用户自定义的path
@@ -24,23 +25,15 @@ mergeLessPath = ()->
 
   _.map customPaths, (segment)->
     paths.push _path.resolve workbench, segment
-
   paths
 
-#编译less
-exports.compile = (source, relativeSource, options, cb)->
-  fileType = 'css'
-  return cb null, false if not _fs.existsSync source
-
-  content = _utils.readFile source
-  #不处理非less的文件
-  return cb null, content, fileType if /\.css$/i.test source
-
-  console.log "Compile #{relativeSource} by less compiler"
+#处理less
+lessHandler = (content, options, cb)->
+  _less = require 'less' if not _less
   #选项
   lessOptions =  paths: mergeLessPath()
-
   parser = new _less.Parser lessOptions
+
   #将全局配置中的less加入到content后面
   content += value for key, value of _data.whole.less
 
@@ -50,8 +43,10 @@ exports.compile = (source, relativeSource, options, cb)->
 
     try
       cssContent = tree.toCSS(cleancss: false)
-      cb err, cssContent, fileType
+      cb err, cssContent
     catch e
       console.log "CSS Error: #{file}".red
       console.log err
       cb e, false
+
+module.exports = _compilerMgr.registerCompiler('less', 'less', 'css', lessHandler)
