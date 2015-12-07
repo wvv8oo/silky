@@ -6,7 +6,6 @@ _path = require('path')
 _forever = require 'forever-monitor'
 _os = require 'os'
 _ = require 'lodash'
-_livereload = require 'livereload'
 require 'colors'
 
 _initialize = require '../lib/initialize'
@@ -39,20 +38,6 @@ init = (ops, loadPlugin)->
 
   #初始化插件模块
   require('../lib/plugin').init() if loadPlugin
-
-#初始化livereload
-initLivereload = ()->
-  options = _utils.xPathMapValue('livereload', _utils.config)
-
-  return if not options
-  ops = {
-    exts: ['less', 'coffee', 'hbs', 'html', 'css', 'js', 'htm', 'handlebars', 'scss']
-  }
-  _.extend ops, options
-
-  #启动livereload服务
-  llServer = _livereload.createServer(ops)
-  llServer.watch _utils.options.workbench
 
 #######################################插件相关#########################################
 #安装插件的命令
@@ -263,8 +248,6 @@ _program
     server = require('http').createServer app
     silky = require '../lib/index'
     silky(app, server, true)
-
-    initLivereload()
 
 #  #暂时放弃forever的方式
 #  if true or _os.platform() is 'win32'
