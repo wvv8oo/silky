@@ -175,11 +175,6 @@ exports.list = ()->
 
 #用于执行某个插件一次
 exports.run = (pluginName, cb)->
-  file = _path.join _utils.globalPluginDirectory(), pluginName
-  if not _fs.existsSync file
-    console.log "Plugin #{pluginName} is not found."
-    return cb null
-
   options = _utils.config.plugins[pluginName] || {}
   #注册插件
   _plugin.registerPlugin pluginName, options
