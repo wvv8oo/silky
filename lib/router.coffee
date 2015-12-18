@@ -14,20 +14,8 @@ _hooks = require './plugin/hooks'
 _utils = require './utils'
 _compiler = require './compiler'
 
-#如果文件存在，则直接响应这个文件
-responseFileIfExists = (file, res)->
-	#如果html文件存在，则直接输出
-	if _fs.existsSync file
-		res.sendfile file
-		return true
-
 #响应纯内容数据
 responseContent = (content, mime, req, res, next)->
-  #如果是html，则考虑要在head前加入livereload
-  if _utils.config.livereload and _mime.extension(mime) is 'html'
-    script = "    <script src='#{_utils.options.livereload}'></script>\n$1"
-    content = content.replace /(<\/\s*head>)/i, script
-
   data =
     content: content
     mime: mime
@@ -45,8 +33,11 @@ responseContent = (content, mime, req, res, next)->
 #统一处理响应
 response = (route, options, req, res, next)->
   #对于css/html/js，先检查文件是否存在，如果文件存在，则直接返回
-  return if /\.(html|htm|js|css|coffee)$/i.test(route.realpath) and responseFileIfExists(route.realpath, res)
-
+  if /\.(html|htm|js|css|coffee)$/i.test(route.realpath) and _fs.existsSync route.realpath
+    content = _fs.readFileSync(route.realpath, {encoding: 'utf8'})
+    responseContent content, route.mime, req, res, next
+    return
+    
 #  #查找真实的未编译源文件路径
 #  sourceFile = _compiler.sourceFile(route.compiler, route.realpath)
 #  #没有找到对应的源文件，这是一个404错误
